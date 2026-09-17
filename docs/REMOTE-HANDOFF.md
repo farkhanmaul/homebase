@@ -1,6 +1,6 @@
 # Continuation checkpoint
 
-Backend sesi kantor lokal sudah diimplementasikan di repo ini memakai PocketBase 0.40.4. UI statis tidak diubah dan `public/config.json` tetap `{"apiUrl":""}` sehingga preview GitHub Pages tidak pernah menunjuk ke localhost.
+Backend sesi kantor sudah diimplementasikan memakai PocketBase 0.40.4 dan dijalankan sebagai user service di VPS. Frontend GitHub Pages membaca endpoint HTTPS dari `public/config.json`. Endpoint sementara diekspos lewat Cloudflare Quick Tunnel di belakang Caddy path filter; URL tunnel dapat berubah jika cloudflared direstart.
 
 ## Sudah ada
 
@@ -36,9 +36,9 @@ npm run build:pages         # build statis -> dist-pages
 
 ## Berikutnya
 
-1. Realtime subscription + interpolasi gerak (saat ini polling 2 detik).
-2. Sprite empat arah lengkap; lembar sprite sesi ini hanya dua baris.
-3. Deploy ke VPS + Cloudflare Tunnel, lalu isi `public/config.json` hanya setelah backend benar-benar diuji (jangan arahkan Pages publik ke localhost).
+1. Ganti Quick Tunnel dengan Cloudflare named tunnel/domain permanen agar URL API tidak berubah saat cloudflared restart.
+2. Realtime subscription + interpolasi gerak (saat ini polling 2 detik).
+3. Sprite empat arah lengkap; lembar sprite sesi ini hanya dua baris.
 4. Backup SQLite, akses privat, serta QA browser desktop dan 320px.
 
 Build: `npm run build:pages`. Output: `dist-pages`. GitHub Pages workflow men-deploy push ke `main`.

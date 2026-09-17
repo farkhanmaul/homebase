@@ -15,7 +15,7 @@ State lokal di `app/page.tsx` tetap menjadi mode preview. Shared session memakai
 
 ## Backend lokal (PocketBase)
 
-Backend sesi kantor berjalan sebagai executable PocketBase 0.40.4 lokal (diunduh ke `tools/` yang gitignored) dengan migrasi di `backend/pb_migrations` dan hooks di `backend/pb_hooks`. Preview statis tetap memakai `public/config.json`; biarkan `apiUrl` kosong agar halaman publik tidak menunjuk ke localhost.
+Backend sesi kantor berjalan sebagai executable PocketBase 0.40.4 di VPS (diunduh ke `tools/` yang gitignored) dengan migrasi di `backend/pb_migrations` dan hooks di `backend/pb_hooks`. Frontend GitHub Pages membaca endpoint publik dari `public/config.json`. Deployment sementara memakai Cloudflare Quick Tunnel; URL dapat berubah bila service tunnel direstart, jadi named tunnel tetap diperlukan untuk URL produksi yang permanen.
 
 ```bash
 npm run backend:setup       # unduh + verifikasi checksum resmi PocketBase 0.40.4, idempoten
