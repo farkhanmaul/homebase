@@ -8,7 +8,7 @@ import './office.css';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 type Player = { id: number; name: string; sprite: number; x: number; y: number; direction: Direction; walking: boolean; status: string; online: boolean; sitting: boolean };
-type Message = { id: number; name: string; text: string; time: string; sprite: number };
+type Message = { id: string | number; name: string; text: string; time: string; sprite: number };
 const SEATS = [{ x: 250, y: 365 }, { x: 865, y: 258 }, { x: 250, y: 142 }, { x: 600, y: 258 }, { x: 390, y: 365 }, { x: 390, y: 142 }];
 const NAMES = ['Farkhan', 'Surya', 'Imam', 'Malla', 'Siska', 'Mona'];
 const INITIAL: Player[] = NAMES.map((name, i) => ({ id: i + 1, name, sprite: i, ...SEATS[i], direction: i === 0 || i === 4 ? 'up' : i === 1 || i === 3 ? 'left' : 'down', walking: false, status: 'Available', online: false, sitting: false }));

@@ -37,3 +37,10 @@ next-env.d.ts
 /outputs/
 /work/
 /dist-pages/
+
+# local pocketbase executable, downloads and runtime data
+/tools/
+
+# python test caches
+__pycache__/
+*.pyc
