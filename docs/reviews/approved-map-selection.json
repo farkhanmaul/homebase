@@ -1,0 +1,90 @@
+{
+  "id": "approved-map-selection",
+  "phase": "Builder Phase A — final office map consolidation",
+  "branch": "feat/final-office-map",
+  "purpose": "Authoritative, read-only selection of the approved review artifacts that the final 1920x960 app manifest (lib/office-map.json) is derived from. Hashes are the current bytes on disk; the generator rejects any drift.",
+  "sourceImage": {
+    "file": "img_52d36a282d20.png",
+    "width": 1516,
+    "height": 808,
+    "note": "Context only. The approved artifacts below win over any reading of the raster."
+  },
+  "transform": {
+    "worldX": "60 + (sourceX - 44) * 1.25",
+    "worldY": "40 + (sourceY - 41) * 1.25",
+    "world": { "width": 1920, "height": 960 },
+    "sourceExtents": { "x1": 44, "x2": 1465, "y1": 41, "y2": 761 },
+    "worldExtents": { "x1": 60, "x2": 1836.25, "y1": 40, "y2": 940 },
+    "uniform": true,
+    "rounding": "round-half-up to 2 decimals on every transformed coordinate; rect width/height derived from transformed endpoints so no gaps appear",
+    "note": "Uniform scale 1.25 on both axes. No non-uniform stretch."
+  },
+  "selected": [
+    {
+      "role": "base structure (walls, partitions, columns, lifts, doors, gaps, windows)",
+      "file": "docs/reviews/office-structure-review-v2.json",
+      "sha256": "2938e3376cffe56eb7769eee53f672462d1f7c24af13b671555e6c283baaec1f",
+      "paired": {
+        "svg": { "file": "docs/reviews/office-structure-review-v2.svg", "sha256": "4c6cb0c609198d3fa7ad19b9d6b3679b45f0e6265ba22a3813cdda3025462358" },
+        "png": { "file": "docs/reviews/office-structure-review-v2.png", "sha256": "0ff87dc0ba8ebbffc5068eb17f4ffa883f56063414bc672305eebd4bbc02fedf" }
+      }
+    },
+    {
+      "role": "top-row rooms + Reception + general furniture",
+      "file": "docs/reviews/office-furniture-review-v1.json",
+      "sha256": "1ad1da290bcddbf246836a11e855c2eeab4f79470dba2517deff24444d4096c6",
+      "paired": {
+        "svg": { "file": "docs/reviews/office-furniture-review-v1.svg", "sha256": "d84f7ca2142d9febbc79244ea0f8699d0494b8f67efcae5369e5f1a43101838b" },
+        "png": { "file": "docs/reviews/office-furniture-review-v1.png", "sha256": "e7091236024a209bd78c123976ab49ab8b77736e4e7698885f1077ab1bbdce41" }
+      }
+    },
+    {
+      "role": "Pantry / toilet / service corrections + extra furniture (lounge, certificate table, external table, pantry row, no Meeting-2 board)",
+      "file": "docs/reviews/office-pantry-service-focus-v1.json",
+      "sha256": "b51751dbfe62b96373fed5f5d25642f875fdabdffec2b7bd33b8cfed989fadb6",
+      "paired": {
+        "svg": { "file": "docs/reviews/office-pantry-service-focus-v1.svg", "sha256": "3f88c51441eb6b475883883523ccef780c1349d6262128f54095feddbd27fab2" },
+        "png": { "file": "docs/reviews/office-pantry-service-focus-v1.png", "sha256": "565a3bf8c2fac9e24b44ecdc5516e9d3d5f1cbbdbaa42828470eb6e057111ff3" }
+      }
+    },
+    {
+      "role": "Desk Collection / Tele corrections, Best Agent board, top-open Tele, final 18x12 access aisle",
+      "file": "docs/reviews/office-workareas-focus-v4.json",
+      "sha256": "fcd8f8e227e48ef573565154e011e4a7fdae1d81736fad55506d5f779a91401e",
+      "paired": {
+        "svg": { "file": "docs/reviews/office-workareas-focus-v4.svg", "sha256": "59d7bd3ee0a2ab2ecbb1e9c714edba6b185b1bd2d6a41c2e7254bb91fb6ae86e" },
+        "png": { "file": "docs/reviews/office-workareas-focus-v4.png", "sha256": "27454fe4b2efc7315e6940734bd4ac01636cac882031ad326fe0bb719fb6ce2e" }
+      }
+    }
+  ],
+  "superseded": [
+    {
+      "file": "docs/reviews/office-structure-review-v1.json",
+      "sha256": "43727fbe5e79c31c16f3ce489fdb279e7961b7a1050174bbefb15780d50a1ca6",
+      "supersededBy": "office-structure-review-v2.json",
+      "note": "history only"
+    },
+    {
+      "file": "docs/reviews/office-workareas-focus-v2.json",
+      "sha256": "2d658e15bdf30005119fc10860a3079ddfe11ac2531131b441320e234ea433f1",
+      "supersededBy": "office-workareas-focus-v4.json",
+      "note": "history only"
+    },
+    {
+      "file": "docs/reviews/office-workareas-focus-v3.json",
+      "sha256": "56f92844670bab4d70e80a8f8a6b177c4da4202e7ec8c2a5f96490a1d9c38d72",
+      "supersededBy": "office-workareas-focus-v4.json",
+      "note": "history only; invalid for the real 18x12 app actor"
+    }
+  ],
+  "overrideOrder": [
+    "structure v2 supplies the base walls/partitions/columns/lifts/doors/gaps/windows",
+    "pantry-service-focus v1 overrides the pantry/service cell geometry, toilet doors D8/D9, the open wash strip, and supplies the lounge / certificate / external tables and the pantry row",
+    "workareas-focus v4 overrides the Desk Collection / Tele top partition (open Tele top), splits the Desk Collection top at the C6 gap, shifts the two side chairs to x=738, and adds the wall-mounted Best Agent board",
+    "furniture v1 supplies the top-row, Reception and Desk Collection / Tele banks+chairs"
+  ],
+  "forbidden": [
+    "zone/label/collider named 'Koridor Servis'",
+    "zone/label/collider named 'Koridor Bawah'"
+  ]
+}

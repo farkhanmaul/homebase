@@ -61,9 +61,12 @@ class Response:
 class PocketBaseServer:
     """Runs the real PocketBase binary on a temporary data dir/port."""
 
-    def __init__(self, **env_overrides: str):
+    def __init__(self, migrations_dir: Path | None = None, data_dir: str | None = None, **env_overrides: str):
         self.env_overrides = env_overrides
-        self.data_dir = tempfile.mkdtemp(prefix="pb-office-test-")
+        self.migrations_dir = migrations_dir or MIGRATIONS_DIR
+        # A caller may supply an existing data dir to exercise a real restart
+        # (same database, a new process) instead of always starting empty.
+        self.data_dir = data_dir or tempfile.mkdtemp(prefix="pb-office-test-")
         self.port = free_port()
         self.process: subprocess.Popen | None = None
         self._log_handle = None
@@ -81,7 +84,7 @@ class PocketBaseServer:
             "serve",
             f"--dir={self.data_dir}",
             f"--hooksDir={HOOKS_DIR}",
-            f"--migrationsDir={MIGRATIONS_DIR}",
+            f"--migrationsDir={self.migrations_dir}",
             f"--http=127.0.0.1:{self.port}",
             f"--origins={ALLOWED_ORIGIN}",
         ]
@@ -232,6 +235,18 @@ class ServerTestCase(unittest.TestCase):
             ).fetchone()
         return row[0] - int(time.time() * 1000)
 
+    def collection_fields(self, name: str) -> list[dict]:
+        """The stored schema for a collection, straight from the PocketBase DB."""
+        with self.server.db() as connection:
+            row = connection.execute("SELECT fields FROM _collections WHERE name = ?", (name,)).fetchone()
+        self.assertIsNotNone(row, f"collection {name} not found")
+        return json.loads(row[0])
+
+    def field_limits(self, collection: str, field: str) -> tuple[int, int]:
+        fields = {entry["name"]: entry for entry in self.collection_fields(collection)}
+        self.assertIn(field, fields)
+        return fields[field]["min"], fields[field]["max"]
+
 
 class CharacterContractTests(ServerTestCase):
     # Generous limits so the concurrency/claim-heavy contract tests stay
@@ -257,9 +272,9 @@ class CharacterContractTests(ServerTestCase):
             self.assertIsInstance(row["x"], (int, float))
             self.assertIsInstance(row["y"], (int, float))
             self.assertGreaterEqual(row["x"], 0)
-            self.assertLessEqual(row["x"], 960)
+            self.assertLessEqual(row["x"], 1920)
             self.assertGreaterEqual(row["y"], 0)
-            self.assertLessEqual(row["y"], 540)
+            self.assertLessEqual(row["y"], 960)
             self.assertIn(row["direction"], ["up", "down", "left", "right"])
             self.assertIsInstance(row["status"], str)
 
@@ -297,8 +312,8 @@ class CharacterContractTests(ServerTestCase):
         token = self.claim_with_cleanup(3)
         cases = [
             {"x": -5, "y": 300, "direction": "left"},
-            {"x": 961, "y": 300, "direction": "left"},
-            {"x": 100, "y": 541, "direction": "left"},
+            {"x": 1921, "y": 300, "direction": "left"},
+            {"x": 100, "y": 961, "direction": "left"},
             {"x": "nope", "y": 300, "direction": "left"},
             {"x": 100, "y": 300, "direction": "north"},
             {"x": 100, "y": 300, "direction": "left", "status": "x" * 81},
@@ -401,6 +416,33 @@ class CharacterContractTests(ServerTestCase):
 
         blocked = self.server.request("GET", "/api/office/characters", headers={"Origin": "http://evil.example"})
         self.assertNotEqual(blocked.headers.get("access-control-allow-origin"), "http://evil.example")
+
+
+class SeedContractTests(ServerTestCase):
+    """A fresh install seeds the six characters on the manifest's assigned seats.
+
+    Runs on its own server: the contract tests deliberately move characters with
+    heartbeats, so seed checks cannot share their database.
+    """
+
+    def test_seeded_positions_match_the_frontend_manifest(self):
+        # The custom routes never serialize name/sprite, so read them straight
+        # from the seed database; x/y/direction/name/sprite must equal the
+        # generated manifest's seats (sprite is the app's cid-1 convention).
+        manifest = json.loads((REPO_ROOT / "lib" / "office-map.json").read_text(encoding="utf-8"))
+        with self.server.db() as connection:
+            rows = connection.execute(
+                "SELECT cid, name, sprite, x, y, direction FROM office_characters ORDER BY cid"
+            ).fetchall()
+        self.assertEqual(len(rows), 6)
+        by_cid = {row[0]: row for row in rows}
+        for seat in manifest["seats"]:
+            row = by_cid[seat["cid"]]
+            self.assertEqual(row[1], seat["character"], f"cid {seat['cid']} name")
+            self.assertEqual(row[2], seat["cid"] - 1, f"cid {seat['cid']} sprite")
+            self.assertEqual(row[3], seat["x"], f"cid {seat['cid']} x")
+            self.assertEqual(row[4], seat["y"], f"cid {seat['cid']} y")
+            self.assertEqual(row[5], seat["direction"], f"cid {seat['cid']} direction")
 
 
 class AuthBeforeBodyValidationTests(ServerTestCase):
@@ -926,6 +968,264 @@ class ReadRoutePruningTests(ServerTestCase):
 
         self.assertEqual(self.server.request("GET", "/api/office/characters").status, 200)
         self.assertIsNone(self.rate_count(stale_bucket))
+
+
+# Pre-change schema, mirrored here so the upgrade test can start PocketBase at the
+# previous revision and then apply the real forward migration. Using a fixture
+# (rather than `git show`) keeps the upgrade test deterministic and offline.
+LEGACY_SCHEMA_MIGRATION = r'''
+migrate(
+  (app) => {
+    const characters = new Collection({
+      type: "base",
+      name: "office_characters",
+      listRule: null,
+      viewRule: null,
+      createRule: null,
+      updateRule: null,
+      deleteRule: null,
+      fields: [
+        { name: "cid", type: "number", required: true, onlyInt: true, min: 1, max: 6 },
+        { name: "name", type: "text", required: true, min: 1, max: 40 },
+        { name: "sprite", type: "number", onlyInt: true, min: 0, max: 5 },
+        { name: "x", type: "number", min: 0, max: 960 },
+        { name: "y", type: "number", min: 0, max: 540 },
+        { name: "direction", type: "select", maxSelect: 1, values: ["up", "down", "left", "right"] },
+        { name: "status", type: "text", max: 80 },
+        { name: "active", type: "bool" },
+        { name: "lease_token_hash", type: "text", max: 64, hidden: true },
+        { name: "lease_expires", type: "number", onlyInt: true },
+      ],
+      indexes: [
+        "CREATE UNIQUE INDEX idx_office_characters_cid ON office_characters (cid)",
+        "CREATE INDEX idx_office_characters_token ON office_characters (lease_token_hash)",
+      ],
+    });
+    app.save(characters);
+
+    const seats = [
+      { cid: 1, name: "Farkhan", sprite: 0, x: 250, y: 365, direction: "up" },
+      { cid: 2, name: "Surya", sprite: 1, x: 865, y: 258, direction: "left" },
+      { cid: 3, name: "Imam", sprite: 2, x: 250, y: 142, direction: "down" },
+      { cid: 4, name: "Malla", sprite: 3, x: 600, y: 258, direction: "left" },
+      { cid: 5, name: "Siska", sprite: 4, x: 390, y: 365, direction: "up" },
+      { cid: 6, name: "Mona", sprite: 5, x: 390, y: 142, direction: "down" },
+    ];
+    for (const seat of seats) {
+      const record = new Record(characters);
+      record.set("cid", seat.cid);
+      record.set("name", seat.name);
+      record.set("sprite", seat.sprite);
+      record.set("x", seat.x);
+      record.set("y", seat.y);
+      record.set("direction", seat.direction);
+      record.set("status", "Available");
+      record.set("active", false);
+      record.set("lease_token_hash", "");
+      record.set("lease_expires", 0);
+      app.save(record);
+    }
+  },
+  (app) => {
+    try {
+      app.delete(app.findCollectionByNameOrId("office_characters"));
+    } catch (e) {
+      // already removed
+    }
+  },
+);
+'''
+
+
+class MapBoundsTests(ServerTestCase):
+    """The office world is 1920x960, enforced at the schema and the route layer."""
+
+    env = {"OFFICE_CLAIM_LIMIT": "100000", "OFFICE_HEARTBEAT_LIMIT": "100000"}
+
+    def test_fresh_schema_has_the_enlarged_field_constraints(self):
+        self.assertEqual(self.field_limits("office_characters", "x"), (0, 1920))
+        self.assertEqual(self.field_limits("office_characters", "y"), (0, 960))
+
+    def test_heartbeat_accepts_the_exact_world_corners(self):
+        token = self.claim_with_cleanup(1)
+        for payload in (
+            {"x": 1920, "y": 960, "direction": "down"},
+            {"x": 0, "y": 0, "direction": "up"},
+            {"x": 1919.5, "y": 959.5, "direction": "left"},
+        ):
+            response = self.server.request("POST", "/api/office/heartbeat", payload, token=token)
+            self.assertEqual(response.status, 200, f"{payload} -> {response.text}")
+
+        row = self.characters()[1]
+        self.assertEqual(row["x"], 1919.5)
+        self.assertEqual(row["y"], 959.5)
+
+    def test_heartbeat_rejects_just_outside_the_world(self):
+        token = self.claim_with_cleanup(2)
+        for payload in (
+            {"x": 1921, "y": 100, "direction": "down"},
+            {"x": 100, "y": 961, "direction": "down"},
+            {"x": 1920.5, "y": 100, "direction": "down"},
+            {"x": -0.5, "y": 100, "direction": "down"},
+        ):
+            response = self.server.request("POST", "/api/office/heartbeat", payload, token=token)
+            self.assertEqual(response.status, 400, f"{payload} -> {response.text}")
+
+
+class UpgradeMigrationTests(unittest.TestCase):
+    """Realistic upgrades: start at the pre-change schema and apply the real forward migrations.
+
+    Two forward migrations exist after the original:
+      * ``1789689600`` widens the world bounds (bounds-only, no row moved);
+      * ``1789776000`` re-seeds the six INACTIVE characters to the generated
+        manifest seats, leaving active rows (and every lease field) alone.
+    """
+
+    def _legacy_dir(self, tmp: str, prefixes: list[str]) -> Path:
+        migrations = Path(tmp)
+        (migrations / "1789603200_office_schema.js").write_text(LEGACY_SCHEMA_MIGRATION, encoding="utf-8")
+        for prefix in prefixes:
+            matches = sorted(MIGRATIONS_DIR.glob(f"{prefix}*.js"))
+            self.assertEqual(len(matches), 1, f"exactly one forward migration with prefix {prefix}")
+            shutil.copy2(matches[0], migrations / matches[0].name)
+        return migrations
+
+    @staticmethod
+    def _rows(server: PocketBaseServer) -> dict[int, tuple]:
+        with server.db() as connection:
+            rows = connection.execute(
+                "SELECT cid, name, sprite, x, y, direction, status, active, lease_token_hash, lease_expires "
+                "FROM office_characters ORDER BY cid"
+            ).fetchall()
+        return {row[0]: row for row in rows}
+
+    def test_a_forward_migration_exists_after_the_original(self):
+        forward = [path for path in sorted(MIGRATIONS_DIR.glob("*.js")) if not path.name.startswith("1789603200")]
+        self.assertTrue(forward, "a forward migration exists after the original")
+
+    def test_upgrade_enlarges_bounds_without_touching_existing_rows(self):
+        # The bounds migration in isolation: it only widens the field limits, so
+        # legacy rows keep their coordinates and stay valid in the enlarged world.
+        with tempfile.TemporaryDirectory(prefix="pb-office-upgrade-") as tmp:
+            migrations = self._legacy_dir(tmp, ["1789689600"])
+            server = PocketBaseServer(migrations_dir=migrations).start()
+            try:
+                with server.db() as connection:
+                    row = connection.execute(
+                        "SELECT fields FROM _collections WHERE name = 'office_characters'"
+                    ).fetchone()
+                    rows = connection.execute("SELECT cid, x, y FROM office_characters ORDER BY cid").fetchall()
+
+                fields = {entry["name"]: entry for entry in json.loads(row[0])}
+                self.assertEqual((fields["x"]["min"], fields["x"]["max"]), (0, 1920))
+                self.assertEqual((fields["y"]["min"], fields["y"]["max"]), (0, 960))
+                self.assertEqual(len(rows), 6)
+                self.assertEqual(rows[0], (1, 250, 365))
+            finally:
+                server.cleanup()
+
+    def test_upgrade_moves_inactive_legacy_rows_to_the_manifest_seats(self):
+        manifest = json.loads((REPO_ROOT / "lib" / "office-map.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory(prefix="pb-office-upgrade-") as tmp:
+            migrations = self._legacy_dir(tmp, ["1789689600", "1789776000"])
+            server = PocketBaseServer(migrations_dir=migrations).start()
+            try:
+                rows = self._rows(server)
+                self.assertEqual(len(rows), 6)
+                for seat in manifest["seats"]:
+                    row = rows[seat["cid"]]
+                    self.assertEqual(row[3], seat["x"], f"cid {seat['cid']} x")
+                    self.assertEqual(row[4], seat["y"], f"cid {seat['cid']} y")
+                    self.assertEqual(row[5], seat["direction"], f"cid {seat['cid']} direction")
+            finally:
+                server.cleanup()
+
+    def test_upgrade_preserves_every_other_field(self):
+        legacy = {
+            1: ("Farkhan", 0),
+            2: ("Surya", 1),
+            3: ("Imam", 2),
+            4: ("Malla", 3),
+            5: ("Siska", 4),
+            6: ("Mona", 5),
+        }
+        with tempfile.TemporaryDirectory(prefix="pb-office-upgrade-") as tmp:
+            migrations = self._legacy_dir(tmp, ["1789689600", "1789776000"])
+            server = PocketBaseServer(migrations_dir=migrations).start()
+            try:
+                rows = self._rows(server)
+                for cid, (name, sprite) in legacy.items():
+                    row = rows[cid]
+                    self.assertEqual(row[1], name, f"cid {cid} name unchanged")
+                    self.assertEqual(row[2], sprite, f"cid {cid} sprite unchanged")
+                    self.assertEqual(row[6], "Available", f"cid {cid} status unchanged")
+                    self.assertEqual(row[7], 0, f"cid {cid} active unchanged")
+                    self.assertEqual(row[8], "", f"cid {cid} lease hash unchanged")
+                    self.assertEqual(row[9], 0, f"cid {cid} lease expiry unchanged")
+            finally:
+                server.cleanup()
+
+    def test_upgrade_leaves_an_active_row_and_its_lease_untouched(self):
+        manifest = json.loads((REPO_ROOT / "lib" / "office-map.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory(prefix="pb-office-upgrade-") as tmp:
+            migrations = self._legacy_dir(tmp, ["1789689600"])
+            data_dir = tempfile.mkdtemp(prefix="pb-office-upgrade-data-")
+            server = PocketBaseServer(migrations_dir=migrations, data_dir=data_dir).start()
+            try:
+                future = int(time.time() * 1000) + 90000
+                with server.db() as connection:
+                    connection.execute(
+                        "UPDATE office_characters SET x=?, y=?, direction=?, status='Busy', active=1, "
+                        "lease_token_hash=?, lease_expires=? WHERE cid=1",
+                        (100, 200, "left", "deadbeef", future),
+                    )
+                # A new forward migration appears and the server restarts on the
+                # same database — the realistic deploy.
+                seat_migrations = sorted(MIGRATIONS_DIR.glob("1789776000*.js"))
+                self.assertEqual(len(seat_migrations), 1)
+                shutil.copy2(seat_migrations[0], migrations / seat_migrations[0].name)
+            finally:
+                server.stop()
+
+            restarted = PocketBaseServer(migrations_dir=migrations, data_dir=data_dir).start()
+            try:
+                rows = self._rows(restarted)
+                active = rows[1]
+                self.assertEqual((active[3], active[4], active[5]), (100, 200, "left"), "an active row must not be teleported")
+                self.assertEqual(active[6], "Busy")
+                self.assertEqual(active[7], 1)
+                self.assertEqual(active[8], "deadbeef")
+                self.assertGreaterEqual(active[9], future)
+                for seat in manifest["seats"]:
+                    if seat["cid"] == 1:
+                        continue
+                    moved = rows[seat["cid"]]
+                    self.assertEqual(
+                        (moved[3], moved[4], moved[5]),
+                        (seat["x"], seat["y"], seat["direction"]),
+                        f"inactive cid {seat['cid']} moved to its manifest seat",
+                    )
+            finally:
+                restarted.cleanup()
+
+    def test_upgrade_is_idempotent_and_restart_safe(self):
+        with tempfile.TemporaryDirectory(prefix="pb-office-upgrade-") as tmp:
+            migrations = self._legacy_dir(tmp, ["1789689600", "1789776000"])
+            data_dir = tempfile.mkdtemp(prefix="pb-office-upgrade-data-")
+            server = PocketBaseServer(migrations_dir=migrations, data_dir=data_dir).start()
+            try:
+                first = self._rows(server)
+            finally:
+                server.stop()
+
+            restarted = PocketBaseServer(migrations_dir=migrations, data_dir=data_dir).start()
+            try:
+                second = self._rows(restarted)
+            finally:
+                restarted.cleanup()
+
+            self.assertEqual(len(second), 6)
+            self.assertEqual(first, second, "restarting must not re-run or alter the seat migration")
 
 
 if __name__ == "__main__":

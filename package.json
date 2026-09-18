@@ -12,6 +12,7 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
     "test:frontend": "node --experimental-strip-types --test tests/*.test.ts",
+    "preview:map": "node --experimental-strip-types scripts/generate-map-preview.ts",
     "format": "oxfmt",
     "backend:setup": "bash scripts/setup-pocketbase.sh",
     "backend:setup:test": "bash scripts/test-setup-pocketbase.sh",

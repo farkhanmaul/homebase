@@ -12,15 +12,28 @@ import {
   type Occupant,
   type OfficeMessage,
 } from '../lib/office-session';
+import { clampCamera, isBlocked, officeMap, zoneAt, type Direction } from '../lib/office-map';
+import { computeViewport, defaultViewport, type Viewport, type ViewportBox, type ViewportMode } from '../lib/office-viewport';
+import { playerAtPoint, resolveInteraction, screenToWorld } from '../lib/office-interaction';
+import { createWorldCanvas, drawActors, drawWorldCrop } from '../lib/office-renderer';
 import './office.css';
 
-type Direction = 'up' | 'down' | 'left' | 'right';
 type Player = { id: number; name: string; sprite: number; x: number; y: number; direction: Direction; walking: boolean; status: string; online: boolean; sitting: boolean };
-const SEATS = [{ x: 250, y: 365 }, { x: 865, y: 258 }, { x: 250, y: 142 }, { x: 600, y: 258 }, { x: 390, y: 365 }, { x: 390, y: 142 }];
-const NAMES = ['Farkhan', 'Surya', 'Imam', 'Malla', 'Siska', 'Mona'];
-const INITIAL: Player[] = NAMES.map((name, i) => ({ id: i + 1, name, sprite: i, ...SEATS[i], direction: i === 0 || i === 4 ? 'up' : i === 1 || i === 3 ? 'left' : 'down', walking: false, status: 'Available', online: false, sitting: false }));
-const BLOCKS = [{ x: 174, y: 156, w: 300, h: 182 }, { x: 474, y: 156, w: 85, h: 182 }, { x: 745, y: 190, w: 82, h: 110 }];
-const inWall = (x: number, y: number) => x < 28 || x > 932 || y < 102 || y > 490 || BLOCKS.some(b => x + 9 > b.x && x - 9 < b.x + b.w && y + 4 > b.y && y - 4 < b.y + b.h);
+
+// Initial positions and facing come from the manifest seats, not from the page.
+const INITIAL: Player[] = officeMap.seats.map(seat => ({
+  id: seat.cid,
+  name: seat.character,
+  sprite: seat.cid - 1,
+  x: seat.x,
+  y: seat.y,
+  direction: seat.direction,
+  walking: false,
+  status: 'Available',
+  online: false,
+  sitting: false,
+}));
+const MOBILE_BREAKPOINT = 860;
 
 export default function Home() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -32,6 +45,12 @@ export default function Home() {
   const chatInput = useRef<HTMLTextAreaElement>(null);
   const blockedInput = useRef(false);
   const chatPoll = useRef<ChatPollState>({ initialized: false, seq: 0 });
+  // The canvas CSS box, kept up to date by a ResizeObserver so the animation
+  // frame never has to read layout.
+  const canvasBox = useRef<ViewportBox>({ width: 0, height: 0 });
+  // Mirrors the last zone pushed to React so the animation frame only re-renders
+  // when the player actually crosses into another zone.
+  const zoneRef = useRef('');
   const [active, setActive] = useState<number | null>(null);
   const [available, setAvailable] = useState<Occupant[]>([]);
   const [ready, setReady] = useState(false);
@@ -43,8 +62,9 @@ export default function Home() {
   const [messages, setMessages] = useState<OfficeMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [status, setStatus] = useState('Available');
-  const [hint, setHint] = useState('WASD / panah · E untuk duduk');
+  const [hint, setHint] = useState('WASD / panah · E untuk interaksi');
   const [announcement, setAnnouncement] = useState('');
+  const [zone, setZone] = useState('');
   const me = active ? INITIAL[active - 1] : undefined;
   const selectedName = selected !== null ? INITIAL[selected - 1].name : 'Profil';
   const selectedStatus = selected !== null
@@ -113,15 +133,50 @@ export default function Home() {
     try { await session.current.release(); if (id) players.current[id - 1].online = false; }
     catch { setError('Belum dapat melepas sesi. Coba lagi; sesi server juga kedaluwarsa otomatis.'); }
   }
+  // E/X resolves against the manifest hotspots; every outcome stays local.
   function interact() {
-    if (!activeId.current) return;
-    const p = players.current[activeId.current - 1], seat = SEATS[p.id - 1];
-    if (Math.hypot(p.x - seat.x, p.y - seat.y) < 48) { p.x = seat.x; p.y = seat.y; p.sitting = !p.sitting; setHint(p.sitting ? 'Sedang duduk · bergerak untuk berdiri' : 'Kembali berdiri'); }
-    else if (p.y > 450 && p.x > 200 && p.x < 300) { p.status = 'Pulang'; setStatus('Pulang'); setHint('Klik Keluar untuk melepas karakter.'); }
-    else setHint('Dekati kursimu lalu tekan E.');
+    const id = activeId.current;
+    if (!id) return;
+    const p = players.current[id - 1];
+    const outcome = resolveInteraction(officeMap, { cid: id, x: p.x, y: p.y, sitting: p.sitting });
+    if (outcome.kind === 'sit') { p.x = outcome.x; p.y = outcome.y; p.direction = outcome.direction; p.sitting = true; }
+    else if (outcome.kind === 'stand') p.sitting = false;
+    else if (outcome.kind === 'status-pulang') { p.status = 'Pulang'; setStatus('Pulang'); }
+    setHint(outcome.hint);
+    if ('announce' in outcome) setAnnouncement(outcome.announce);
   }
   useEffect(() => {
-    const map = new Image(), sheet = new Image(); map.src = 'room/bilik-geng-v4.png'; sheet.src = 'avatar/team-six.png';
+    const sheet = new Image(); sheet.src = 'avatar/team-six.png';
+    // The whole static world is painted once into an offscreen canvas; each frame
+    // only blits the camera crop and the avatars.
+    const world = createWorldCanvas(officeMap);
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let reduced = motion.matches;
+    const onMotion = () => { reduced = motion.matches; };
+    motion.addEventListener('change', onMotion);
+    // Track the real CSS box; the camera view is only recomputed when it (or the
+    // desktop/mobile mode) actually changes, never once per frame.
+    const observer = typeof ResizeObserver === 'function'
+      ? new ResizeObserver((entries) => {
+          const entry = entries[0];
+          if (!entry) return;
+          canvasBox.current = { width: entry.contentRect.width, height: entry.contentRect.height };
+        })
+      : null;
+    const observed = canvas.current;
+    if (observer && observed) observer.observe(observed);
+
+    let viewCacheKey = '';
+    let cachedView: Viewport = defaultViewport('desktop');
+    function viewFor(mode: ViewportMode): Viewport {
+      const box = canvasBox.current;
+      const key = `${mode}:${Math.round(box.width)}x${Math.round(box.height)}`;
+      if (key !== viewCacheKey) {
+        viewCacheKey = key;
+        cachedView = box.width > 0 && box.height > 0 ? computeViewport(box, mode) : defaultViewport(mode);
+      }
+      return cachedView;
+    }
     let handle = 0, last = performance.now();
     const clear = () => keys.current.clear();
     function onDown(e: KeyboardEvent) {
@@ -129,7 +184,7 @@ export default function Home() {
       if (!activeId.current) return;
       if (e.key === 'Escape') { setSelected(null); setChatOpen(false); clear(); return; }
       if (blockedInput.current) return;
-      if (e.key === 'Enter') { e.preventDefault(); if (innerWidth < 860) setChatOpen(true); else chatInput.current?.focus(); clear(); return; }
+      if (e.key === 'Enter') { e.preventDefault(); if (innerWidth < MOBILE_BREAKPOINT) setChatOpen(true); else chatInput.current?.focus(); clear(); return; }
       const key = e.key.toLowerCase();
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) { e.preventDefault(); keys.current.add(key); }
       if (!e.repeat && ['e', 'x'].includes(key)) interact();
@@ -152,27 +207,24 @@ export default function Home() {
         if (p.walking) {
           p.sitting = false; p.direction = dx ? dx < 0 ? 'left' : 'right' : dy < 0 ? 'up' : 'down';
           const speed = 125 * dt / (Math.hypot(dx, dy) || 1);
-          if (!inWall(p.x + dx * speed, p.y)) p.x += dx * speed;
-          if (!inWall(p.x, p.y + dy * speed)) p.y += dy * speed;
+          if (!isBlocked(officeMap, p.x + dx * speed, p.y)) p.x += dx * speed;
+          if (!isBlocked(officeMap, p.x, p.y + dy * speed)) p.y += dy * speed;
         }
       }
-      const width = innerWidth < 860 ? 560 : 960, height = innerWidth < 860 ? 360 : 540;
-      if (target.width !== width) { target.width = width; target.height = height; }
-      const cam = { x: p ? Math.max(0, Math.min(960 - width, p.x - width / 2)) : 0, y: p ? Math.max(0, Math.min(540 - height, p.y - height / 2)) : 0 }; camera.current = cam;
-      ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, width, height);
-      if (map.complete && map.naturalWidth) ctx.drawImage(map, cam.x / 960 * map.naturalWidth, cam.y / 540 * map.naturalHeight, width / 960 * map.naturalWidth, height / 540 * map.naturalHeight, 0, 0, width, height);
-      if (sheet.complete && sheet.naturalWidth) players.current.filter(person => person.online).sort((a, b) => a.y - b.y).forEach(person => {
-        const cw = sheet.naturalWidth / 6, ch = sheet.naturalHeight / 2, f = person.walking && !matchMedia('(prefers-reduced-motion: reduce)').matches ? Math.floor(now / 180) % 2 : 0;
-        const w = person.id === 2 ? 40 : 34, h = person.sitting ? 46 : person.id === 1 ? 62 : 56, x = person.x - cam.x, y = person.y - cam.y;
-        ctx.save(); if (person.direction === 'left') { ctx.translate(x + w / 2, y - h); ctx.scale(-1, 1); ctx.drawImage(sheet, cw * person.sprite, ch * f, cw, ch, 0, 0, w, h); } else ctx.drawImage(sheet, cw * person.sprite, ch * f, cw, ch, x - w / 2, y - h, w, h); ctx.restore();
-        ctx.font = 'bold 11px sans-serif'; const label = person.name + (person.id === activeId.current ? ' · kamu' : ''), tw = ctx.measureText(label).width;
-        ctx.fillStyle = '#17283b'; ctx.fillRect(x - tw / 2 - 5, y + 2, tw + 10, 18); ctx.fillStyle = '#fff6df'; ctx.fillText(label, x - tw / 2, y + 15);
-        if (person.id === activeId.current) { ctx.strokeStyle = '#f6ca65'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, 21, 6, 0, 0, Math.PI * 2); ctx.stroke(); }
-      });
+      // The backing size matches the container aspect, so CSS 100% x 100% fills
+      // the box without object-fit letterboxing.
+      const cameraView = viewFor(innerWidth < MOBILE_BREAKPOINT ? 'mobile' : 'desktop');
+      if (target.width !== cameraView.w || target.height !== cameraView.h) { target.width = cameraView.w; target.height = cameraView.h; }
+      const cam = p ? clampCamera(officeMap, cameraView, { x: p.x, y: p.y }) : { x: 0, y: 0 }; camera.current = cam;
+      drawWorldCrop(ctx, world, cam, cameraView);
+      drawActors(ctx, players.current, { camera: cam, activeId: activeId.current, sheet, now, reducedMotion: reduced });
+      // Only touch React state when the zone actually changes.
+      const zoneName = p ? zoneAt(officeMap, p.x, p.y)?.name ?? '' : '';
+      if (zoneRef.current !== zoneName) { zoneRef.current = zoneName; setZone(zoneName); }
       handle = requestAnimationFrame(frame);
     }
     addEventListener('keydown', onDown); addEventListener('keyup', onUp); addEventListener('blur', clear); document.addEventListener('visibilitychange', clear); handle = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(handle); removeEventListener('keydown', onDown); removeEventListener('keyup', onUp); removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear); };
+    return () => { cancelAnimationFrame(handle); observer?.disconnect(); motion.removeEventListener('change', onMotion); removeEventListener('keydown', onDown); removeEventListener('keyup', onUp); removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear); };
   }, []);
 
   async function send(e: SyntheticEvent) {
@@ -191,17 +243,18 @@ export default function Home() {
   const chat = <><header><small>SATU RUANG, SATU GENG</small><h2>Obrolan kantor</h2></header><div className="office-messages" aria-label="Riwayat obrolan">{!messages.length && <p className="empty-chat">Belum ada obrolan.<br />Mulai dengan menyapa geng 👋</p>}{messages.map(m => <article key={m.id}><b>{m.name}<time>{m.time}</time></b><p>{m.text}</p></article>)}</div><form onSubmit={send}><textarea ref={chatInput} aria-label="Pesan ke geng" disabled={!active} maxLength={500} value={draft} placeholder="Tulis pesan ke geng…" onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} /><button disabled={!active || !draft.trim()} aria-label="Kirim pesan"><Send size={20}/></button></form></>;
   return <main className="office-app">
     <output className="sr-only" aria-live="polite">{announcement}</output>
+    <output className="sr-only" aria-live="polite">{zone ? `Zona aktif: ${zone}` : ''}</output>
     <header className="office-header"><span className="office-logo">NK</span><div><strong>Nongkrong Kantor</strong><small>Bilik Geng Kami / Blugreen · Lt. 6</small></div><span className="office-presence">● {available.filter(p => p.active).length || (active ? 1 : 0)} di kantor</span>{active && <button onClick={() => void leave()}><LogOut size={16}/><span>Keluar</span></button>}</header>
-    <div className="office-layout"><section className="office-world"><div className="office-caption"><span>RUANG UTAMA</span><small>{remote ? 'Kantor bersama' : 'Preview lokal · sesi antartab'}</small></div><div className="office-canvas-wrap"><canvas ref={canvas} aria-label="Peta kantor, kontrol WASD atau tombol arah" onClick={e => {
-      const c = e.currentTarget, rect = c.getBoundingClientRect(), scale = Math.min(rect.width / c.width, rect.height / c.height);
-      const x = (e.clientX - rect.left - (rect.width - c.width * scale) / 2) / scale + camera.current.x, y = (e.clientY - rect.top - (rect.height - c.height * scale) / 2) / scale + camera.current.y;
-      const found = players.current.find(p => p.online && Math.abs(p.x - x) < 25 && y > p.y - 65 && y < p.y + 20); if (found) { keys.current.clear(); setSelected(found.id); }
+    <div className="office-layout"><section className="office-world"><div className="office-caption"><span>{zone || 'Ruang utama'}</span><small>{remote ? 'Kantor bersama' : 'Preview lokal · sesi antartab'}</small></div><div className="office-canvas-wrap"><canvas ref={canvas} aria-label="Peta kantor, kontrol WASD atau tombol arah" onClick={e => {
+      const c = e.currentTarget, rect = c.getBoundingClientRect();
+      const point = screenToWorld({ x: e.clientX, y: e.clientY }, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, { width: c.width, height: c.height }, camera.current);
+      const found = playerAtPoint(players.current, point); if (found !== null) { keys.current.clear(); setSelected(found); }
     }}/></div>
     <ul className="office-roster" aria-label="Daftar penghuni kantor">{INITIAL.map(p => {
       const row = available.find(entry => entry.id === p.id);
       return <li key={p.id}><button type="button" onClick={() => setSelected(p.id)}>{p.name} · {row?.status || 'Available'} · {row?.active ? 'Online' : 'Offline'}</button></li>;
     })}</ul>
-    <footer className="office-controls"><div><small>KARAKTERMU</small><strong>{me?.name || 'Pilih karakter untuk masuk'}</strong></div><span>{hint}</span><button disabled={!active} onClick={() => { keys.current.clear(); setSelected(active); }}>Status</button><button disabled={!active} onClick={interact}>Duduk <kbd>E</kbd></button><button className="open-mobile-chat" aria-label="Buka obrolan kantor" onClick={() => setChatOpen(true)}><MessageCircle size={18}/></button></footer><div className="office-dpad">{[['w','↑'],['a','←'],['s','↓'],['d','→']].map(([key,label]) => <button key={key} aria-label={`Gerak ${label}`} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); if (active) keys.current.add(key); }} onPointerUp={() => keys.current.delete(key)} onPointerCancel={() => keys.current.delete(key)}>{label}</button>)}<button aria-label="Interaksi (E)" onClick={interact}>E</button></div></section><aside className="office-chat">{chat}</aside></div>
+    <footer className="office-controls"><div><small>KARAKTERMU</small><strong>{me?.name || 'Pilih karakter untuk masuk'}</strong></div><span>{hint}</span><button disabled={!active} onClick={() => { keys.current.clear(); setSelected(active); }}>Status</button><button disabled={!active} onClick={interact}>Interaksi <kbd>E</kbd></button><button className="open-mobile-chat" aria-label="Buka obrolan kantor" onClick={() => setChatOpen(true)}><MessageCircle size={18}/></button></footer><div className="office-dpad">{[['w','↑'],['a','←'],['s','↓'],['d','→']].map(([key,label]) => <button key={key} aria-label={`Gerak ${label}`} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); if (active) keys.current.add(key); }} onPointerUp={() => keys.current.delete(key)} onPointerCancel={() => keys.current.delete(key)}>{label}</button>)}<button aria-label="Interaksi (E)" onClick={interact}>E</button></div></section><aside className="office-chat">{chat}</aside></div>
     {error && <div className="office-error" role="alert">{error}</div>}
     <Dialog.Root open={!active} disablePointerDismissal><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="entry-popup"><small className="entry-eyebrow">BLUGREEN / LANTAI 6</small><Dialog.Title className="entry-title">Selamat datang di bilik.</Dialog.Title><Dialog.Description className="entry-description">Siapa yang datang hari ini? Pilih karaktermu dan langsung bergabung.</Dialog.Description><div className="character-grid">{INITIAL.map(p => {
       const busy = available.some(row => row.id === p.id && row.active);

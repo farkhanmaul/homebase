@@ -1,0 +1,152 @@
+{
+  "meta": {
+    "id": "office-pantry-service-focus-v1",
+    "version": "v1",
+    "title": "DENAH KANTOR",
+    "subtitle": "REVIEW FOKUS — PANTRY · TOILET · MEETING 2 (KOREKSI)",
+    "scaleNote": "Koordinat: piksel sumber (1516x808). Fokus x390..735, y170..520.",
+    "source": {
+      "file": "img_52d36a282d20.png",
+      "width": 1516,
+      "height": 808
+    },
+    "focus": { "x1": 390, "y1": 170, "x2": 735, "y2": 520 },
+    "view": { "x1": 388, "y1": 134, "x2": 716, "y2": 568 },
+    "headerBand": { "x1": 388, "y1": 134, "x2": 716, "y2": 183 },
+    "legendBand": { "x1": 388, "y1": 507, "x2": 716, "y2": 564 },
+    "output": { "width": 1300 },
+    "protected": {
+      "structureV1Svg": "b7b890697acafdc1413ddc97f1bb075e7f4d908563e7d00153e08cae0fbb1be2",
+      "structureV1Png": "419a477955be2b380ed85665a3ff7403d8aa5aca15cee366adc49455329ceb9e",
+      "structureV2Svg": "4c6cb0c609198d3fa7ad19b9d6b3679b45f0e6265ba22a3813cdda3025462358",
+      "structureV2Png": "0ff87dc0ba8ebbffc5068eb17f4ffa883f56063414bc672305eebd4bbc02fedf",
+      "furnitureV1Svg": "d84f7ca2142d9febbc79244ea0f8699d0494b8f67efcae5369e5f1a43101838b",
+      "furnitureV1Png": "e7091236024a209bd78c123976ab49ab8b77736e4e7698885f1077ab1bbdce41",
+      "furnitureV1TopRowSvg": "198b0e376876bcbbde858c6f482feab3d68802f71f2550b7016273ea34515fa4",
+      "furnitureV1TopRowPng": "f3febc56a18889b34a1257f55d7b074b273d3b7a300b8e9fdc02e158ad28da7e",
+      "furnitureV1LeftMiddleSvg": "8972115192688141aaa1d7579f9b33f052f669f4558e766f926500ddf30c1813",
+      "furnitureV1LeftMiddlePng": "ce5c1c6ca9e9821482faab1ae66ff5539b8de090dbe7f61a4bd45a94dd3dad98",
+      "furnitureV1WorkareasSvg": "d458eaabfee747eee7a9ee9d6ad0663e7713d9315a57e363551053c1ecee2d8a",
+      "furnitureV1WorkareasPng": "6aa105773a03d5c7419cc99633000a4f6745a738c32e06ccce680411e718adaf"
+    },
+    "stroke": {
+      "wall": 3,
+      "partition": 2,
+      "window": 2,
+      "door": 1.8,
+      "furniture": 1.8,
+      "chair": 1.4,
+      "tick": 9
+    },
+    "colors": {
+      "bg": "#ffffff",
+      "floorOffice": "#ffffff",
+      "floorOpen": "#f4f6f8",
+      "floorService": "#eef1f4",
+      "wall": "#5b636d",
+      "partition": "#9aa2ab",
+      "window": "#b9c0c7",
+      "line": "#111111",
+      "muted": "#8a929b",
+      "label": "#3f474f",
+      "dispenser": "#cfe8f7",
+      "dispenserLine": "#2b7fb0",
+      "fridge": "#d7f0d2",
+      "fridgeLine": "#3a8f52",
+      "cut": "#ffffff",
+      "path": "#2f6fb0",
+      "callout": "#1f5f9e"
+    }
+  },
+  "rooms": [
+    { "id": "sirkulasi", "name": "Sirkulasi", "kind": "open", "x1": 407, "y1": 189, "x2": 554, "y2": 322 },
+    { "id": "pantry", "name": "Pantry", "kind": "open", "x1": 407, "y1": 322, "x2": 512, "y2": 389 },
+    { "id": "jalur-terbuka", "name": "Jalur terbuka", "kind": "open", "x1": 512, "y1": 322, "x2": 554, "y2": 476 },
+    { "id": "gudang", "name": "Gudang", "kind": "service", "locked": true, "x1": 407, "y1": 389, "x2": 468, "y2": 501 },
+    { "id": "toilet-wanita", "name": "Toilet Wanita", "kind": "service", "x1": 468, "y1": 424, "x2": 512, "y2": 501 },
+    { "id": "wastafel", "name": "Wastafel", "kind": "open", "x1": 512, "y1": 476, "x2": 554, "y2": 501 },
+    { "id": "toilet-pria", "name": "Toilet Pria", "kind": "service", "x1": 554, "y1": 415, "x2": 591, "y2": 501 },
+    { "id": "meeting-2", "name": "Ruang Meeting 2", "kind": "room", "x1": 554, "y1": 243, "x2": 695, "y2": 381 },
+    { "id": "server", "name": "Ruang Server", "kind": "room", "x1": 591, "y1": 381, "x2": 695, "y2": 501 }
+  ],
+  "walls": [
+    { "id": "W-CORRIDOR", "x1": 380, "y1": 189, "x2": 691, "y2": 189, "type": "full" },
+    { "id": "W-WEST", "x1": 407, "y1": 189, "x2": 407, "y2": 501, "type": "full" },
+    { "id": "W-PANTRY-TOP", "x1": 407, "y1": 322, "x2": 512, "y2": 322, "type": "full", "note": "KOREKSI: dinding belakang pantry berhenti di x=512; jalur x512..554 tetap terbuka." },
+    { "id": "W-GUDANG-TOP", "x1": 407, "y1": 389, "x2": 512, "y2": 389, "type": "full" },
+    { "id": "W-BOTTOM", "x1": 407, "y1": 501, "x2": 591, "y2": 501, "type": "full" },
+    { "id": "W-TW-LEFT", "x1": 468, "y1": 424, "x2": 468, "y2": 501, "type": "full" },
+    { "id": "W-TW-TOP", "x1": 468, "y1": 424, "x2": 512, "y2": 424, "type": "full" },
+    { "id": "W-STRIP-LEFT", "x1": 512, "y1": 388, "x2": 512, "y2": 501, "type": "full" },
+    { "id": "W-WASTAFEL-TOP", "x1": 512, "y1": 476, "x2": 554, "y2": 476, "type": "full" },
+    { "id": "W-STRIP-RIGHT", "x1": 554, "y1": 415, "x2": 554, "y2": 501, "type": "full" },
+    { "id": "W-TP-TOP", "x1": 554, "y1": 415, "x2": 591, "y2": 415, "type": "full" },
+    { "id": "W-SERVER-LEFT", "x1": 591, "y1": 381, "x2": 591, "y2": 501, "type": "full" },
+    { "id": "W-MTG2-WEST", "x1": 554, "y1": 243, "x2": 554, "y2": 381, "type": "full" },
+    { "id": "W-MTG2-TOP", "x1": 554, "y1": 243, "x2": 695, "y2": 243, "type": "full" },
+    { "id": "W-MTG2-BOTTOM", "x1": 554, "y1": 381, "x2": 695, "y2": 381, "type": "full" },
+    { "id": "W-EAST", "x1": 695, "y1": 243, "x2": 695, "y2": 501, "type": "full" },
+    { "id": "W-DC-TOP", "x1": 695, "y1": 244, "x2": 716, "y2": 244, "type": "partition", "note": "Tepi Desk Collection (konteks)." }
+  ],
+  "doors": [
+    { "id": "D5", "room": "meeting-2", "label": "Ruang Meeting 2", "axis": "h", "x": 584, "y": 243, "len": 40, "hinge": "start", "swing": "down", "inward": true },
+    { "id": "D6", "room": "server", "label": "Ruang Server", "axis": "v", "x": 695, "y": 448, "len": 36, "hinge": "end", "swing": "right", "inward": false },
+    { "id": "D7", "room": "gudang", "label": "Gudang", "axis": "h", "x": 437, "y": 389, "len": 30, "hinge": "start", "swing": "down", "locked": true, "inward": true },
+    { "id": "D8", "room": "toilet-wanita", "label": "Toilet Wanita (sisi timur, atas)", "axis": "v", "x": 512, "y": 442, "len": 36, "hinge": "start", "swing": "left", "inward": true },
+    { "id": "D9", "room": "toilet-pria", "label": "Toilet Pria (sisi barat, atas)", "axis": "v", "x": 554, "y": 433.5, "len": 37, "hinge": "start", "swing": "right", "inward": true }
+  ],
+  "openPaths": [
+    {
+      "id": "P1",
+      "label": "Jalur terbuka ke lorong utama",
+      "x1": 524,
+      "y1": 232,
+      "x2": 550,
+      "y2": 470,
+      "arrow": { "x": 537, "y1": 466, "y2": 238 }
+    }
+  ],
+  "furniture": [
+    { "id": "F-PS-LOUNGE-C1", "group": "lounge-chair", "type": "chair", "room": "sirkulasi", "shape": "point", "point": { "x": 464, "y": 209.5 }, "w": 26, "h": 27, "facing": "down", "note": "Kursi area santai, kiri." },
+    { "id": "F-PS-LOUNGE-T", "group": "lounge-table", "type": "table", "room": "sirkulasi", "shape": "rect", "rect": { "x1": 481, "y1": 196, "x2": 522, "y2": 223 }, "note": "Meja kecil di antara 2 kursi." },
+    { "id": "F-PS-LOUNGE-C2", "group": "lounge-chair", "type": "chair", "room": "sirkulasi", "shape": "point", "point": { "x": 536, "y": 209.5 }, "w": 26, "h": 27, "facing": "down", "note": "Kursi area santai, kanan." },
+    { "id": "F-PS-CERT-TABLE", "group": "cert-table", "type": "table", "room": "sirkulasi", "shape": "rect", "rect": { "x1": 410, "y1": 286, "x2": 522, "y2": 321 }, "note": "Meja sertifikat di sisi belakang dinding pantry." },
+    { "id": "F-PS-PANTRY-COUNTER", "group": "pantry-counter", "type": "counter", "room": "pantry", "shape": "rect", "rect": { "x1": 410, "y1": 323, "x2": 440, "y2": 347 }, "note": "Counter/meja pantry, kiri." },
+    { "id": "F-PS-PANTRY-DISPENSER", "group": "pantry-dispenser", "type": "dispenser", "room": "pantry", "shape": "rect", "rect": { "x1": 446, "y1": 323, "x2": 477, "y2": 347 }, "note": "Dispenser biru muda, tengah." },
+    { "id": "F-PS-PANTRY-FRIDGE", "group": "pantry-fridge", "type": "fridge", "room": "pantry", "shape": "rect", "rect": { "x1": 478, "y1": 323, "x2": 509, "y2": 347 }, "note": "Kulkas hijau muda, kanan." },
+    { "id": "F-PS-EXT-TABLE", "group": "ext-table", "type": "table", "room": "meeting-2", "shape": "rect", "rect": { "x1": 557, "y1": 288, "x2": 590, "y2": 378 }, "external": true, "note": "MEJA LUAR di dinding barat Meeting 2 — bukan papan/layar." },
+    { "id": "F-PS-MTG2-TABLE", "group": "mtg2-table", "type": "table", "room": "meeting-2", "shape": "rect", "rect": { "x1": 602, "y1": 297, "x2": 692, "y2": 339 }, "note": "Meja rapat besar tengah (sama dengan review furniture v1)." },
+    { "id": "F-PS-MTG2-C1", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 618, "y": 281 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-PS-MTG2-C2", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 647, "y": 281 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-PS-MTG2-C3", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 676, "y": 281 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-PS-MTG2-C4", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 618, "y": 355 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-PS-MTG2-C5", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 647, "y": 355 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-PS-MTG2-C6", "group": "mtg2-chair", "type": "chair", "room": "meeting-2", "shape": "point", "point": { "x": 676, "y": 355 }, "w": 26, "h": 24, "facing": "up" }
+  ],
+  "roomLabels": [
+    { "room": "pantry", "x": 470, "y": 372, "size": 9, "lines": ["Pantry"] },
+    { "room": "toilet-wanita", "x": 490, "y": 481, "size": 8, "lines": ["Toilet", "Wanita"] },
+    { "room": "wastafel", "x": 533, "y": 492, "size": 7.5, "lines": ["Wastafel"] },
+    { "room": "toilet-pria", "x": 572, "y": 481, "size": 8, "lines": ["Toilet", "Pria"] },
+    { "room": "meeting-2", "x": 648, "y": 262, "size": 9, "lines": ["Ruang Meeting 2"] },
+    { "room": "server", "x": 643, "y": 470, "size": 9, "lines": ["Ruang Server"] }
+  ],
+  "callouts": [
+    { "id": "CO-LOUNGE", "text": ["Area santai"], "lx": 414, "ly": 234, "anchor": "start", "size": 8, "leader": [[468, 231], [497, 225]], "target": [500, 224] },
+    { "id": "CO-CERT", "text": ["Meja sertifikat"], "lx": 414, "ly": 252, "anchor": "start", "size": 8, "leader": [[468, 254], [466, 287]], "target": [466, 290] },
+    { "id": "CO-PATH", "text": ["Jalur terbuka", "ke lorong utama"], "lx": 414, "ly": 267, "anchor": "start", "size": 8, "lineStep": 11, "leader": [[488, 267], [528, 267], [528, 305], [535, 305]], "target": [537, 305] },
+    { "id": "CO-EXT", "text": ["Meja luar"], "lx": 600, "ly": 232, "anchor": "middle", "size": 8, "leader": [[600, 236], [559, 236], [559, 300], [571, 300]], "target": [573, 302] },
+    { "id": "CO-GUDANG", "text": ["Gudang", "terkunci"], "lx": 437, "ly": 466, "anchor": "middle", "size": 8, "lineStep": 11, "leader": [[437, 452], [437, 442]], "target": [437, 438] }
+  ],
+  "legend": [
+    { "kind": "wall", "label": "Dinding penuh" },
+    { "kind": "partition", "label": "Sekat (konteks)" },
+    { "kind": "door-in", "label": "Pintu ke dalam" },
+    { "kind": "locked", "label": "Terkunci (Gudang)" },
+    { "kind": "table", "label": "Meja" },
+    { "kind": "chair", "label": "Kursi" },
+    { "kind": "dispenser", "label": "Dispenser (biru)" },
+    { "kind": "fridge", "label": "Kulkas (hijau)" },
+    { "kind": "path", "label": "Jalur terbuka" }
+  ]
+}

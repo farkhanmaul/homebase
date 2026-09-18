@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1720" viewBox="388 134 328 434" font-family="DejaVu Sans Mono, ui-monospace, Menlo, Consolas, monospace">
+<rect x="388" y="134" width="328" height="434" fill="#ffffff" />
+<rect x="407" y="189" width="147" height="133" fill="#f4f6f8" />
+<rect x="407" y="322" width="105" height="67" fill="#f4f6f8" />
+<rect x="512" y="322" width="42" height="154" fill="#f4f6f8" />
+<rect x="407" y="389" width="61" height="112" fill="#eef1f4" />
+<rect x="468" y="424" width="44" height="77" fill="#eef1f4" />
+<rect x="512" y="476" width="42" height="25" fill="#f4f6f8" />
+<rect x="554" y="415" width="37" height="86" fill="#eef1f4" />
+<rect x="554" y="243" width="141" height="138" fill="#ffffff" />
+<rect x="591" y="381" width="104" height="120" fill="#ffffff" />
+<rect x="561" y="239.5" width="46" height="7" fill="#ffffff" />
+<rect x="691.5" y="427" width="7" height="42" fill="#ffffff" />
+<rect x="419" y="385.5" width="36" height="7" fill="#ffffff" />
+<rect x="508.5" y="421" width="7" height="42" fill="#ffffff" />
+<rect x="550.5" y="412" width="7" height="43" fill="#ffffff" />
+<line x1="380" y1="189" x2="691" y2="189" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="407" y1="189" x2="407" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="407" y1="322" x2="512" y2="322" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="407" y1="389" x2="512" y2="389" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="407" y1="501" x2="591" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="468" y1="424" x2="468" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="468" y1="424" x2="512" y2="424" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="512" y1="388" x2="512" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="512" y1="476" x2="554" y2="476" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="554" y1="415" x2="554" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="554" y1="415" x2="591" y2="415" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="591" y1="381" x2="591" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="554" y1="243" x2="554" y2="381" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="554" y1="243" x2="695" y2="243" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="554" y1="381" x2="695" y2="381" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="695" y1="243" x2="695" y2="501" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<line x1="695" y1="244" x2="716" y2="244" stroke="#9aa2ab" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" />
+<line x1="564" y1="243" x2="564" y2="283" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="564,283 567.92,282.81 571.8,282.23 575.61,281.28 579.31,279.96 582.86,278.28 586.22,276.26 589.38,273.92 592.28,271.28 594.92,268.38 597.26,265.22 599.28,261.86 600.96,258.31 602.28,254.61 603.23,250.8 603.81,246.92 604,243" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="564,283 570.82,279.16 571.16,286.15" fill="#111111" />
+<line x1="695" y1="466" x2="731" y2="466" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="731,466 730.83,462.47 730.31,458.98 729.45,455.55 728.26,452.22 726.75,449.03 724.93,446 722.83,443.16 720.46,440.54 717.84,438.17 715,436.07 711.97,434.25 708.78,432.74 705.45,431.55 702.02,430.69 698.53,430.17 695,430" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="731,466 727.16,459.18 734.15,458.84" fill="#111111" />
+<line x1="422" y1="389" x2="422" y2="419" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="422,419 424.94,418.86 427.85,418.42 430.71,417.71 433.48,416.72 436.14,415.46 438.67,413.94 441.03,412.19 443.21,410.21 445.19,408.03 446.94,405.67 448.46,403.14 449.72,400.48 450.71,397.71 451.42,394.85 451.86,391.94 452,389" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="422,419 428.82,415.16 429.16,422.15" fill="#111111" />
+<line x1="512" y1="424" x2="476" y2="424" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="476,424 476.17,427.53 476.69,431.02 477.55,434.45 478.74,437.78 480.25,440.97 482.07,444 484.17,446.84 486.54,449.46 489.16,451.83 492,453.93 495.03,455.75 498.22,457.26 501.55,458.45 504.98,459.31 508.47,459.83 512,460" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="476,424 479.84,430.82 472.85,431.16" fill="#111111" />
+<line x1="554" y1="415" x2="591" y2="415" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="591,415 590.82,418.63 590.29,422.22 589.41,425.74 588.18,429.16 586.63,432.44 584.76,435.56 582.6,438.47 580.16,441.16 577.47,443.6 574.56,445.76 571.44,447.63 568.16,449.18 564.74,450.41 561.22,451.29 557.63,451.82 554,452" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="591,415 594.15,422.16 587.16,421.82" fill="#111111" />
+<rect x="432" y="431" width="10" height="10" fill="#ffffff" stroke="#111111" stroke-width="1.4" />
+<polyline points="434,431 434.15,430.07 434.57,429.24 435.24,428.57 436.07,428.15 437,428 437.93,428.15 438.76,428.57 439.43,429.24 439.85,430.07 440,431" fill="none" stroke="#111111" stroke-width="1.4" stroke-linecap="round" />
+<circle cx="437" cy="436" r="1.1" fill="#111111" />
+<rect x="451" y="196" width="26" height="27" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="453" y1="198" x2="475" y2="198" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="481" y="196" width="41" height="27" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<rect x="523" y="196" width="26" height="27" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="525" y1="198" x2="547" y2="198" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="410" y="286" width="112" height="35" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<rect x="410" y="323" width="30" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<rect x="446" y="323" width="31" height="24" fill="#cfe8f7" stroke="#2b7fb0" stroke-width="1.8" />
+<line x1="456.54" y1="325" x2="456.54" y2="345" stroke="#2b7fb0" stroke-width="1.4" stroke-linecap="round" />
+<circle cx="466.77" cy="332.12" r="2.6" fill="none" stroke="#2b7fb0" stroke-width="1.4" />
+<rect x="478" y="323" width="31" height="24" fill="#d7f0d2" stroke="#3a8f52" stroke-width="1.8" />
+<line x1="499.7" y1="326" x2="499.7" y2="344" stroke="#3a8f52" stroke-width="1.4" stroke-linecap="round" />
+<rect x="557" y="288" width="33" height="90" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<rect x="602" y="297" width="90" height="42" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<rect x="605" y="269" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="607" y1="271" x2="629" y2="271" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="634" y="269" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="636" y1="271" x2="658" y2="271" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="663" y="269" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="665" y1="271" x2="687" y2="271" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="605" y="343" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="607" y1="365" x2="629" y2="365" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="634" y="343" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="636" y1="365" x2="658" y2="365" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<rect x="663" y="343" width="26" height="24" fill="#ffffff" stroke="#111111" stroke-width="1.8" />
+<line x1="665" y1="365" x2="687" y2="365" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<line x1="537" y1="466" x2="537" y2="246" stroke="#2f6fb0" stroke-width="2.2" stroke-dasharray="7 6" stroke-linecap="round" />
+<polygon points="537,238 541.5,247 532.5,247" fill="#2f6fb0" />
+<text x="470" y="372" font-size="9" font-weight="600" fill="#3f474f" text-anchor="middle">Pantry</text>
+<text x="490" y="481" font-size="8" font-weight="600" fill="#3f474f" text-anchor="middle">Toilet</text>
+<text x="490" y="490" font-size="8" font-weight="600" fill="#3f474f" text-anchor="middle">Wanita</text>
+<text x="533" y="492" font-size="7.5" font-weight="600" fill="#3f474f" text-anchor="middle">Wastafel</text>
+<text x="572" y="481" font-size="8" font-weight="600" fill="#3f474f" text-anchor="middle">Toilet</text>
+<text x="572" y="490" font-size="8" font-weight="600" fill="#3f474f" text-anchor="middle">Pria</text>
+<text x="648" y="262" font-size="9" font-weight="600" fill="#3f474f" text-anchor="middle">Ruang Meeting 2</text>
+<text x="643" y="470" font-size="9" font-weight="600" fill="#3f474f" text-anchor="middle">Ruang Server</text>
+<text x="414" y="234" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="start">Area santai</text>
+<polyline points="468,231 497,225 500,224" fill="none" stroke="#1f5f9e" stroke-width="1.2" stroke-linecap="round" />
+<circle cx="500" cy="224" r="1.6" fill="#1f5f9e" />
+<text x="414" y="252" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="start">Meja sertifikat</text>
+<polyline points="468,254 466,287 466,290" fill="none" stroke="#1f5f9e" stroke-width="1.2" stroke-linecap="round" />
+<circle cx="466" cy="290" r="1.6" fill="#1f5f9e" />
+<text x="414" y="267" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="start">Jalur terbuka</text>
+<text x="414" y="278" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="start">ke lorong utama</text>
+<polyline points="488,267 528,267 528,305 535,305 537,305" fill="none" stroke="#1f5f9e" stroke-width="1.2" stroke-linecap="round" />
+<circle cx="537" cy="305" r="1.6" fill="#1f5f9e" />
+<text x="600" y="232" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="middle">Meja luar</text>
+<polyline points="600,236 559,236 559,300 571,300 573,302" fill="none" stroke="#1f5f9e" stroke-width="1.2" stroke-linecap="round" />
+<circle cx="573" cy="302" r="1.6" fill="#1f5f9e" />
+<text x="437" y="466" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="middle">Gudang</text>
+<text x="437" y="477" font-size="8" font-weight="700" fill="#1f5f9e" text-anchor="middle">terkunci</text>
+<polyline points="437,452 437,442 437,438" fill="none" stroke="#1f5f9e" stroke-width="1.2" stroke-linecap="round" />
+<circle cx="437" cy="438" r="1.6" fill="#1f5f9e" />
+<rect x="388" y="134" width="328" height="49" fill="#ffffff" />
+<text x="396" y="149" font-size="13" font-weight="700" fill="#111111" text-anchor="start">DENAH KANTOR</text>
+<text x="396" y="162" font-size="7.6" font-weight="700" fill="#111111" text-anchor="start">REVIEW FOKUS — PANTRY · TOILET · MEETING 2 (KOREKSI)</text>
+<text x="708" y="174" font-size="6" font-weight="400" fill="#8a929b" text-anchor="end">Koordinat: piksel sumber (1516x808). Fokus x390..735, y170..520.</text>
+<line x1="388" y1="183" x2="716" y2="183" stroke="#5b636d" stroke-width="2" stroke-linecap="round" />
+<rect x="388" y="507" width="328" height="57" fill="#ffffff" />
+<line x1="388" y1="507" x2="716" y2="507" stroke="#5b636d" stroke-width="2" stroke-linecap="round" />
+<text x="396" y="520" font-size="9" font-weight="700" fill="#111111" text-anchor="start">LEGENDA</text>
+<text x="424" y="536.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Dinding penuh</text>
+<line x1="398" y1="534" x2="418" y2="534" stroke="#5b636d" stroke-width="3" stroke-linecap="round" />
+<text x="424" y="548.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Sekat (konteks)</text>
+<line x1="398" y1="546" x2="418" y2="546" stroke="#9aa2ab" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" />
+<text x="424" y="560.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Pintu ke dalam</text>
+<line x1="400" y1="552" x2="400" y2="562" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="400,566 400.98,565.95 401.95,565.81 402.9,565.57 403.83,565.24 404.71,564.82 405.56,564.31 406.34,563.73 407.07,563.07 407.73,562.34 408.31,561.56 408.82,560.71 409.24,559.83 409.57,558.9 409.81,557.95 409.95,556.98 410,556" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="410,556 408.41,560.77 405.23,557.59" fill="#111111" />
+<text x="529.33" y="536.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Terkunci (Gudang)</text>
+<rect x="508.33" y="528" width="10" height="10" fill="#ffffff" stroke="#111111" stroke-width="1.4" />
+<polyline points="510.33,528 510.48,527.07 510.91,526.24 511.57,525.57 512.41,525.15 513.33,525 514.26,525.15 515.1,525.57 515.76,526.24 516.19,527.07 516.33,528" fill="none" stroke="#111111" stroke-width="1.4" stroke-linecap="round" />
+<circle cx="513.33" cy="533" r="1.1" fill="#111111" />
+<text x="529.33" y="548.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Meja</text>
+<rect x="503.33" y="542" width="20" height="8" fill="#ffffff" stroke="#111111" stroke-width="1.2" />
+<text x="529.33" y="560.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Kursi</text>
+<rect x="503.33" y="554" width="20" height="8" fill="#ffffff" stroke="#111111" stroke-width="1.2" />
+<line x1="505.33" y1="556" x2="521.33" y2="556" stroke="#111111" stroke-width="2.8" stroke-linecap="round" />
+<text x="634.67" y="536.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Dispenser (biru)</text>
+<rect x="608.67" y="530" width="20" height="8" fill="#cfe8f7" stroke="#2b7fb0" stroke-width="1.8" />
+<line x1="615.47" y1="532" x2="615.47" y2="536" stroke="#2b7fb0" stroke-width="1.4" stroke-linecap="round" />
+<circle cx="622.07" cy="533.04" r="2.6" fill="none" stroke="#2b7fb0" stroke-width="1.4" />
+<text x="634.67" y="548.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Kulkas (hijau)</text>
+<rect x="608.67" y="542" width="20" height="8" fill="#d7f0d2" stroke="#3a8f52" stroke-width="1.8" />
+<line x1="622.67" y1="545" x2="622.67" y2="547" stroke="#3a8f52" stroke-width="1.4" stroke-linecap="round" />
+<text x="634.67" y="560.5" font-size="7.2" font-weight="400" fill="#111111" text-anchor="start">Jalur terbuka</text>
+<line x1="608.67" y1="561" x2="628.67" y2="561" stroke="#2f6fb0" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round" />
+<polygon points="628.67,561 623.67,563.5 623.67,558.5" fill="#2f6fb0" />
+<rect x="388" y="134" width="328" height="434" fill="none" stroke="#5b636d" stroke-width="2" />
+</svg>

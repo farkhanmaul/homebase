@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "id": "office-structure-review-v1",
+    "title": "DENAH KANTOR",
+    "subtitle": "TAHAP 1 — DINDING, SEKAT, PINTU/CELAH (TANPA FURNITURE)",
+    "scaleNote": "Koordinat memakai ruang piksel gambar sumber (1516 x 808).",
+    "source": {
+      "file": "img_52d36a282d20.png",
+      "width": 1516,
+      "height": 808
+    },
+    "canvas": { "width": 1516, "height": 808 },
+    "stroke": {
+      "wall": 5,
+      "partition": 3,
+      "window": 2,
+      "door": 2,
+      "tick": 9
+    },
+    "colors": {
+      "bg": "#ffffff",
+      "line": "#111111",
+      "window": "#555555",
+      "floorOffice": "#ffffff",
+      "floorOpen": "#f4f4f4",
+      "floorLobby": "#eef0f2",
+      "floorService": "#eef0f2",
+      "column": "#111111",
+      "cut": "#ffffff",
+      "label": "#111111",
+      "muted": "#555555"
+    }
+  },
+  "rooms": [
+    { "id": "meeting-1", "name": "Ruang Meeting 1", "x1": 407, "y1": 41, "x2": 550, "y2": 189, "kind": "room" },
+    { "id": "hrga", "name": "Ruangan HRGA", "x1": 550, "y1": 41, "x2": 691, "y2": 189, "kind": "room" },
+    { "id": "komisaris", "name": "Bilik Komisaris", "x1": 691, "y1": 41, "x2": 807, "y2": 189, "kind": "room" },
+    { "id": "product-manager", "name": "Bilik Product Manager", "x1": 807, "y1": 41, "x2": 923, "y2": 189, "kind": "room" },
+    { "id": "it", "name": "Bilik IT", "x1": 923, "y1": 41, "x2": 1038, "y2": 189, "kind": "room" },
+    { "id": "direktur-finance", "name": "Bilik Direktur Finance", "x1": 1038, "y1": 41, "x2": 1156, "y2": 189, "kind": "room" },
+    { "id": "geng-kami", "name": "Bilik Geng Kami", "x1": 1156, "y1": 41, "x2": 1388, "y2": 189, "kind": "room" },
+    { "id": "resepsionis", "name": "Resepsionis", "x1": 270, "y1": 189, "x2": 407, "y2": 322, "kind": "room" },
+    { "id": "lobby-besar", "name": "Lobby Besar", "x1": 103, "y1": 322, "x2": 407, "y2": 761, "kind": "lobby" },
+    { "id": "pantry", "name": "Pantry", "x1": 407, "y1": 322, "x2": 554, "y2": 389, "kind": "open" },
+    { "id": "gudang", "name": "Gudang", "x1": 407, "y1": 389, "x2": 468, "y2": 501, "kind": "service" },
+    { "id": "toilet-wanita", "name": "Toilet Wanita", "x1": 468, "y1": 424, "x2": 512, "y2": 501, "kind": "service" },
+    { "id": "wastafel", "name": "Wastafel", "x1": 512, "y1": 476, "x2": 554, "y2": 501, "kind": "open" },
+    { "id": "toilet-pria", "name": "Toilet Pria", "x1": 554, "y1": 415, "x2": 591, "y2": 501, "kind": "service" },
+    { "id": "meeting-2", "name": "Ruang Meeting 2", "x1": 554, "y1": 243, "x2": 695, "y2": 381, "kind": "room" },
+    { "id": "server", "name": "Ruang Server", "x1": 591, "y1": 381, "x2": 695, "y2": 501, "kind": "room" },
+    { "id": "desk-collection", "name": "Desk Collection", "x1": 695, "y1": 244, "x2": 1156, "y2": 501, "kind": "open" },
+    { "id": "tele-cs-ca", "name": "Tele / CS / CA", "x1": 1156, "y1": 244, "x2": 1465, "y2": 501, "kind": "open" }
+  ],
+  "walls": [
+    { "x1": 407, "y1": 41, "x2": 691, "y2": 41, "type": "full" },
+    { "x1": 269, "y1": 189, "x2": 691, "y2": 189, "type": "full" },
+    { "x1": 691, "y1": 189, "x2": 1388, "y2": 189, "type": "partition" },
+    { "x1": 1388, "y1": 189, "x2": 1465, "y2": 189, "type": "full" },
+    { "x1": 407, "y1": 41, "x2": 407, "y2": 189, "type": "full" },
+    { "x1": 550, "y1": 41, "x2": 550, "y2": 189, "type": "full" },
+    { "x1": 691, "y1": 41, "x2": 691, "y2": 189, "type": "partition" },
+    { "x1": 807, "y1": 41, "x2": 807, "y2": 189, "type": "partition" },
+    { "x1": 923, "y1": 41, "x2": 923, "y2": 189, "type": "partition" },
+    { "x1": 1038, "y1": 41, "x2": 1038, "y2": 189, "type": "partition" },
+    { "x1": 1156, "y1": 41, "x2": 1156, "y2": 189, "type": "partition" },
+    { "x1": 270, "y1": 189, "x2": 270, "y2": 322, "type": "full" },
+    { "x1": 407, "y1": 189, "x2": 407, "y2": 322, "type": "full" },
+    { "x1": 270, "y1": 322, "x2": 407, "y2": 322, "type": "full" },
+    { "x1": 103, "y1": 322, "x2": 103, "y2": 761, "type": "full" },
+    { "x1": 103, "y1": 761, "x2": 407, "y2": 761, "type": "full" },
+    { "x1": 407, "y1": 322, "x2": 407, "y2": 761, "type": "full" },
+    { "x1": 407, "y1": 322, "x2": 554, "y2": 322, "type": "full" },
+    { "x1": 407, "y1": 389, "x2": 512, "y2": 389, "type": "full" },
+    { "x1": 407, "y1": 501, "x2": 556, "y2": 501, "type": "full" },
+    { "x1": 468, "y1": 424, "x2": 468, "y2": 501, "type": "full" },
+    { "x1": 468, "y1": 424, "x2": 512, "y2": 424, "type": "full" },
+    { "x1": 512, "y1": 389, "x2": 512, "y2": 501, "type": "full" },
+    { "x1": 512, "y1": 476, "x2": 554, "y2": 476, "type": "full" },
+    { "x1": 554, "y1": 415, "x2": 591, "y2": 415, "type": "full" },
+    { "x1": 554, "y1": 415, "x2": 554, "y2": 501, "type": "full" },
+    { "x1": 591, "y1": 381, "x2": 591, "y2": 501, "type": "full" },
+    { "x1": 554, "y1": 243, "x2": 554, "y2": 381, "type": "full" },
+    { "x1": 554, "y1": 243, "x2": 695, "y2": 243, "type": "full" },
+    { "x1": 591, "y1": 381, "x2": 695, "y2": 381, "type": "full" },
+    { "x1": 591, "y1": 501, "x2": 695, "y2": 501, "type": "full" },
+    { "x1": 695, "y1": 243, "x2": 695, "y2": 501, "type": "full" },
+    { "x1": 695, "y1": 244, "x2": 1465, "y2": 244, "type": "partition" },
+    { "x1": 695, "y1": 501, "x2": 1465, "y2": 501, "type": "partition" },
+    { "x1": 1156, "y1": 244, "x2": 1156, "y2": 501, "type": "partition" }
+  ],
+  "windows": [
+    { "x1": 691, "y1": 41, "x2": 1360, "y2": 41 },
+    { "x1": 1360, "y1": 41, "x2": 1465, "y2": 146 },
+    { "x1": 1465, "y1": 146, "x2": 1465, "y2": 501 }
+  ],
+  "columns": [
+    { "x1": 407, "y1": 55, "x2": 435, "y2": 96, "note": "Meeting 1 sudut kiri-atas" },
+    { "x1": 789, "y1": 72, "x2": 832, "y2": 113, "note": "Batas Komisaris / Product Manager" },
+    { "x1": 1334, "y1": 54, "x2": 1382, "y2": 100, "note": "Bilik Geng Kami" }
+  ],
+  "lifts": [
+    { "id": "L1", "x1": 44, "y1": 508, "x2": 103, "y2": 592, "open": "right" },
+    { "id": "L2", "x1": 44, "y1": 647, "x2": 103, "y2": 729, "open": "right" },
+    { "id": "L3", "x1": 407, "y1": 508, "x2": 464, "y2": 592, "open": "left" },
+    { "id": "L4", "x1": 407, "y1": 647, "x2": 464, "y2": 729, "open": "left" }
+  ],
+  "doors": [
+    { "id": "D1", "room": "Ruang Meeting 1", "axis": "h", "x": 442, "y": 189, "len": 46, "hinge": "start", "swing": "up" },
+    { "id": "D2", "room": "Ruangan HRGA", "axis": "h", "x": 616, "y": 189, "len": 46, "hinge": "start", "swing": "up" },
+    { "id": "D3", "room": "Resepsionis", "axis": "h", "x": 387, "y": 189, "len": 40, "hinge": "end", "swing": "down" },
+    { "id": "D4", "room": "Resepsionis -> Lobby Besar", "axis": "h", "x": 338, "y": 322, "len": 76, "hinge": "double", "swing": "down" },
+    { "id": "D5", "room": "Ruang Meeting 2", "axis": "h", "x": 584, "y": 243, "len": 40, "hinge": "start", "swing": "down" },
+    { "id": "D6", "room": "Ruang Server", "axis": "v", "x": 695, "y": 448, "len": 36, "hinge": "end", "swing": "right" },
+    { "id": "D7", "room": "Gudang", "axis": "h", "x": 437, "y": 389, "len": 30, "hinge": "start", "swing": "down" },
+    { "id": "D8", "room": "Toilet Wanita", "axis": "h", "x": 490, "y": 424, "len": 26, "hinge": "start", "swing": "down" },
+    { "id": "D9", "room": "Toilet Pria", "axis": "h", "x": 572, "y": 415, "len": 24, "hinge": "start", "swing": "down" }
+  ],
+  "gaps": [
+    { "id": "C1", "room": "Bilik Komisaris", "axis": "h", "x": 738, "y": 189, "len": 30 },
+    { "id": "C2", "room": "Bilik Product Manager", "axis": "h", "x": 862, "y": 189, "len": 30 },
+    { "id": "C3", "room": "Bilik IT (kanan)", "axis": "h", "x": 1020, "y": 189, "len": 26 },
+    { "id": "C4", "room": "Bilik Direktur Finance (kiri)", "axis": "h", "x": 1062, "y": 189, "len": 26 },
+    { "id": "C5", "room": "Bilik Geng Kami (kiri)", "axis": "h", "x": 1180, "y": 189, "len": 26 },
+    { "id": "C6", "room": "Desk Collection (kiri-atas)", "axis": "h", "x": 716, "y": 244, "len": 24 }
+  ]
+}

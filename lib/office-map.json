@@ -1,0 +1,2944 @@
+{
+  "id": "homebase-office",
+  "name": "Nongkrong Kantor - Blugreen Lt. 6",
+  "width": 1920,
+  "height": 960,
+  "margin": 40,
+  "wallThickness": 6.25,
+  "partitionThickness": 3.75,
+  "actor": {
+    "halfWidth": 9,
+    "feet": 12
+  },
+  "spawn": {
+    "x": 1542.5,
+    "y": 88.75,
+    "direction": "down"
+  },
+  "seats": [
+    {
+      "id": "seat-1",
+      "cid": 1,
+      "character": "Farkhan",
+      "x": 1542.5,
+      "y": 88.75,
+      "direction": "down",
+      "zone": "bilik-geng-kami"
+    },
+    {
+      "id": "seat-2",
+      "cid": 2,
+      "character": "Surya",
+      "x": 1621.25,
+      "y": 88.75,
+      "direction": "down",
+      "zone": "bilik-geng-kami"
+    },
+    {
+      "id": "seat-3",
+      "cid": 3,
+      "character": "Imam",
+      "x": 1542.5,
+      "y": 186.25,
+      "direction": "up",
+      "zone": "bilik-geng-kami"
+    },
+    {
+      "id": "seat-4",
+      "cid": 4,
+      "character": "Malla",
+      "x": 1621.25,
+      "y": 186.25,
+      "direction": "up",
+      "zone": "bilik-geng-kami"
+    },
+    {
+      "id": "seat-5",
+      "cid": 5,
+      "character": "Siska",
+      "x": 1697.5,
+      "y": 128.75,
+      "direction": "right",
+      "zone": "bilik-geng-kami"
+    },
+    {
+      "id": "seat-6",
+      "cid": 6,
+      "character": "Mona",
+      "x": 1811.25,
+      "y": 128.75,
+      "direction": "left",
+      "zone": "bilik-geng-kami"
+    }
+  ],
+  "zones": [
+    {
+      "id": "meeting-1",
+      "name": "Ruang Meeting 1",
+      "kind": "room",
+      "rect": {
+        "x": 513.75,
+        "y": 40,
+        "w": 178.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "hrga",
+      "name": "Ruangan HRGA",
+      "kind": "room",
+      "rect": {
+        "x": 692.5,
+        "y": 40,
+        "w": 176.25,
+        "h": 185
+      }
+    },
+    {
+      "id": "komisaris",
+      "name": "Bilik Komisaris",
+      "kind": "room",
+      "rect": {
+        "x": 868.75,
+        "y": 40,
+        "w": 145,
+        "h": 185
+      }
+    },
+    {
+      "id": "product-manager",
+      "name": "Bilik Product Manager",
+      "kind": "room",
+      "rect": {
+        "x": 1013.75,
+        "y": 40,
+        "w": 145,
+        "h": 185
+      }
+    },
+    {
+      "id": "it",
+      "name": "Bilik IT",
+      "kind": "room",
+      "rect": {
+        "x": 1158.75,
+        "y": 40,
+        "w": 143.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "direktur-finance",
+      "name": "Bilik Direktur Finance",
+      "kind": "room",
+      "rect": {
+        "x": 1302.5,
+        "y": 40,
+        "w": 147.5,
+        "h": 185
+      }
+    },
+    {
+      "id": "bilik-geng-kami",
+      "name": "Bilik Geng Kami",
+      "kind": "room",
+      "rect": {
+        "x": 1450,
+        "y": 40,
+        "w": 386.25,
+        "h": 185
+      }
+    },
+    {
+      "id": "resepsionis",
+      "name": "Resepsionis",
+      "kind": "room",
+      "rect": {
+        "x": 342.5,
+        "y": 225,
+        "w": 171.25,
+        "h": 166.25
+      }
+    },
+    {
+      "id": "lobby-besar",
+      "name": "Lobby Besar",
+      "kind": "lobby",
+      "rect": {
+        "x": 133.75,
+        "y": 391.25,
+        "w": 380,
+        "h": 548.75
+      }
+    },
+    {
+      "id": "lorong-utama",
+      "name": "Lorong Utama",
+      "kind": "corridor",
+      "rect": {
+        "x": 513.75,
+        "y": 225,
+        "w": 1322.5,
+        "h": 68.75
+      }
+    },
+    {
+      "id": "sirkulasi",
+      "name": "Sirkulasi",
+      "kind": "corridor",
+      "rect": {
+        "x": 513.75,
+        "y": 293.75,
+        "w": 131.25,
+        "h": 97.5
+      },
+      "showLabel": false
+    },
+    {
+      "id": "jalur-terbuka",
+      "name": "Jalur Terbuka",
+      "kind": "corridor",
+      "rect": {
+        "x": 645,
+        "y": 293.75,
+        "w": 52.5,
+        "h": 290
+      },
+      "showLabel": false
+    },
+    {
+      "id": "pantry",
+      "name": "Pantry",
+      "kind": "open",
+      "rect": {
+        "x": 513.75,
+        "y": 391.25,
+        "w": 131.25,
+        "h": 83.75
+      }
+    },
+    {
+      "id": "gudang",
+      "name": "Gudang",
+      "kind": "service",
+      "rect": {
+        "x": 513.75,
+        "y": 475,
+        "w": 76.25,
+        "h": 140
+      }
+    },
+    {
+      "id": "toilet-wanita",
+      "name": "Toilet Wanita",
+      "kind": "service",
+      "rect": {
+        "x": 590,
+        "y": 518.75,
+        "w": 55,
+        "h": 96.25
+      }
+    },
+    {
+      "id": "wastafel",
+      "name": "Wastafel",
+      "kind": "open",
+      "rect": {
+        "x": 645,
+        "y": 583.75,
+        "w": 52.5,
+        "h": 31.25
+      },
+      "showLabel": false
+    },
+    {
+      "id": "toilet-pria",
+      "name": "Toilet Pria",
+      "kind": "service",
+      "rect": {
+        "x": 697.5,
+        "y": 507.5,
+        "w": 46.25,
+        "h": 107.5
+      }
+    },
+    {
+      "id": "meeting-2",
+      "name": "Ruang Meeting 2",
+      "kind": "room",
+      "rect": {
+        "x": 697.5,
+        "y": 292.5,
+        "w": 176.25,
+        "h": 172.5
+      }
+    },
+    {
+      "id": "server",
+      "name": "Ruang Server",
+      "kind": "service",
+      "rect": {
+        "x": 743.75,
+        "y": 465,
+        "w": 130,
+        "h": 150
+      }
+    },
+    {
+      "id": "desk-collection",
+      "name": "Desk Collection",
+      "kind": "open",
+      "rect": {
+        "x": 873.75,
+        "y": 293.75,
+        "w": 576.25,
+        "h": 321.25
+      }
+    },
+    {
+      "id": "tele-cs-ca",
+      "name": "Tele / CS / CA",
+      "kind": "open",
+      "rect": {
+        "x": 1450,
+        "y": 293.75,
+        "w": 386.25,
+        "h": 321.25
+      }
+    }
+  ],
+  "walls": [
+    {
+      "id": "w-top-left",
+      "kind": "full",
+      "rect": {
+        "x": 513.75,
+        "y": 36.88,
+        "w": 355,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-toprow-bottom",
+      "kind": "full",
+      "rect": {
+        "x": 341.25,
+        "y": 221.88,
+        "w": 527.5,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-toprow-partition",
+      "kind": "partition",
+      "rect": {
+        "x": 868.75,
+        "y": 223.13,
+        "w": 871.25,
+        "h": 3.75
+      }
+    },
+    {
+      "id": "w-toprow-right",
+      "kind": "full",
+      "rect": {
+        "x": 1740,
+        "y": 221.88,
+        "w": 96.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-m1-left",
+      "kind": "full",
+      "rect": {
+        "x": 510.63,
+        "y": 40,
+        "w": 6.25,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-m1-hrga",
+      "kind": "full",
+      "rect": {
+        "x": 689.38,
+        "y": 40,
+        "w": 6.25,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-hrga-komisaris",
+      "kind": "partition",
+      "rect": {
+        "x": 866.88,
+        "y": 40,
+        "w": 3.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-komisaris-pm",
+      "kind": "partition",
+      "rect": {
+        "x": 1011.88,
+        "y": 40,
+        "w": 3.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-pm-it",
+      "kind": "partition",
+      "rect": {
+        "x": 1156.88,
+        "y": 40,
+        "w": 3.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-it-finance",
+      "kind": "partition",
+      "rect": {
+        "x": 1300.63,
+        "y": 40,
+        "w": 3.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-finance-geng",
+      "kind": "partition",
+      "rect": {
+        "x": 1448.13,
+        "y": 40,
+        "w": 3.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "w-recep-left",
+      "kind": "full",
+      "rect": {
+        "x": 339.38,
+        "y": 225,
+        "w": 6.25,
+        "h": 166.25
+      }
+    },
+    {
+      "id": "w-recep-right",
+      "kind": "full",
+      "rect": {
+        "x": 510.63,
+        "y": 225,
+        "w": 6.25,
+        "h": 166.25
+      }
+    },
+    {
+      "id": "w-lobby-top",
+      "kind": "full",
+      "rect": {
+        "x": 342.5,
+        "y": 388.13,
+        "w": 171.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-lobby-left",
+      "kind": "full",
+      "rect": {
+        "x": 130.63,
+        "y": 391.25,
+        "w": 6.25,
+        "h": 548.75
+      }
+    },
+    {
+      "id": "w-lobby-bottom",
+      "kind": "full",
+      "rect": {
+        "x": 133.75,
+        "y": 936.88,
+        "w": 380,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-lobby-right",
+      "kind": "full",
+      "rect": {
+        "x": 510.63,
+        "y": 391.25,
+        "w": 6.25,
+        "h": 548.75
+      }
+    },
+    {
+      "id": "w-pantry-top",
+      "kind": "full",
+      "rect": {
+        "x": 513.75,
+        "y": 388.13,
+        "w": 131.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-gudang-top",
+      "kind": "full",
+      "rect": {
+        "x": 513.75,
+        "y": 471.88,
+        "w": 131.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-service-bottom",
+      "kind": "full",
+      "rect": {
+        "x": 513.75,
+        "y": 611.88,
+        "w": 230,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-tw-left",
+      "kind": "full",
+      "rect": {
+        "x": 586.88,
+        "y": 518.75,
+        "w": 6.25,
+        "h": 96.25
+      }
+    },
+    {
+      "id": "w-tw-top",
+      "kind": "full",
+      "rect": {
+        "x": 590,
+        "y": 515.63,
+        "w": 55,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-strip-left",
+      "kind": "full",
+      "rect": {
+        "x": 641.88,
+        "y": 475,
+        "w": 6.25,
+        "h": 140
+      }
+    },
+    {
+      "id": "w-wastafel-top",
+      "kind": "full",
+      "rect": {
+        "x": 645,
+        "y": 580.63,
+        "w": 52.5,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-strip-right",
+      "kind": "full",
+      "rect": {
+        "x": 694.38,
+        "y": 507.5,
+        "w": 6.25,
+        "h": 107.5
+      }
+    },
+    {
+      "id": "w-tp-top",
+      "kind": "full",
+      "rect": {
+        "x": 697.5,
+        "y": 504.38,
+        "w": 46.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-server-left",
+      "kind": "full",
+      "rect": {
+        "x": 740.63,
+        "y": 465,
+        "w": 6.25,
+        "h": 150
+      }
+    },
+    {
+      "id": "w-m2-west",
+      "kind": "full",
+      "rect": {
+        "x": 694.38,
+        "y": 292.5,
+        "w": 6.25,
+        "h": 172.5
+      }
+    },
+    {
+      "id": "w-m2-top",
+      "kind": "full",
+      "rect": {
+        "x": 697.5,
+        "y": 289.38,
+        "w": 176.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-m2-bottom",
+      "kind": "full",
+      "rect": {
+        "x": 697.5,
+        "y": 461.88,
+        "w": 176.25,
+        "h": 6.25
+      }
+    },
+    {
+      "id": "w-m2-east",
+      "kind": "full",
+      "rect": {
+        "x": 870.63,
+        "y": 292.5,
+        "w": 6.25,
+        "h": 322.5
+      }
+    },
+    {
+      "id": "w-dc-top-a",
+      "kind": "partition",
+      "rect": {
+        "x": 873.75,
+        "y": 291.88,
+        "w": 11.25,
+        "h": 3.75
+      }
+    },
+    {
+      "id": "w-dc-top-b",
+      "kind": "partition",
+      "rect": {
+        "x": 915,
+        "y": 291.88,
+        "w": 535,
+        "h": 3.75
+      }
+    },
+    {
+      "id": "w-desk-tele",
+      "kind": "partition",
+      "rect": {
+        "x": 1448.13,
+        "y": 293.75,
+        "w": 3.75,
+        "h": 321.25
+      }
+    },
+    {
+      "id": "w-lower-bottom",
+      "kind": "partition",
+      "rect": {
+        "x": 873.75,
+        "y": 613.13,
+        "w": 962.5,
+        "h": 3.75
+      }
+    }
+  ],
+  "columns": [
+    {
+      "id": "col-meeting-1",
+      "rect": {
+        "x": 513.75,
+        "y": 57.5,
+        "w": 35,
+        "h": 51.25
+      }
+    },
+    {
+      "id": "col-komisaris",
+      "rect": {
+        "x": 991.25,
+        "y": 78.75,
+        "w": 53.75,
+        "h": 51.25
+      }
+    },
+    {
+      "id": "col-geng-1",
+      "rect": {
+        "x": 1672.5,
+        "y": 56.25,
+        "w": 60,
+        "h": 57.5
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "id": "blk-void-top",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 40
+      }
+    },
+    {
+      "id": "blk-void-left",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 60,
+        "h": 960
+      }
+    },
+    {
+      "id": "blk-void-right",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 1836.25,
+        "y": 0,
+        "w": 83.75,
+        "h": 960
+      }
+    },
+    {
+      "id": "blk-void-bottom",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 0,
+        "y": 940,
+        "w": 1920,
+        "h": 20
+      }
+    },
+    {
+      "id": "blk-void-notch",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 60,
+        "y": 40,
+        "w": 453.75,
+        "h": 185
+      }
+    },
+    {
+      "id": "blk-void-left-recep",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 60,
+        "y": 225,
+        "w": 282.5,
+        "h": 166.25
+      }
+    },
+    {
+      "id": "blk-void-left-bank",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 60,
+        "y": 391.25,
+        "w": 73.75,
+        "h": 548.75
+      }
+    },
+    {
+      "id": "blk-void-below-core",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 513.75,
+        "y": 615,
+        "w": 360,
+        "h": 325
+      }
+    },
+    {
+      "id": "blk-void-below-desk",
+      "kind": "void",
+      "name": "",
+      "rect": {
+        "x": 873.75,
+        "y": 615,
+        "w": 962.5,
+        "h": 325
+      }
+    },
+    {
+      "id": "blk-gudang",
+      "kind": "sealed",
+      "name": "Gudang",
+      "rect": {
+        "x": 513.75,
+        "y": 475,
+        "w": 76.25,
+        "h": 140
+      }
+    },
+    {
+      "id": "blk-toilet-wanita",
+      "kind": "sealed",
+      "name": "Toilet Wanita",
+      "rect": {
+        "x": 590,
+        "y": 518.75,
+        "w": 55,
+        "h": 96.25
+      }
+    },
+    {
+      "id": "blk-toilet-pria",
+      "kind": "sealed",
+      "name": "Toilet Pria",
+      "rect": {
+        "x": 697.5,
+        "y": 507.5,
+        "w": 46.25,
+        "h": 107.5
+      }
+    },
+    {
+      "id": "blk-server",
+      "kind": "sealed",
+      "name": "Ruang Server",
+      "rect": {
+        "x": 743.75,
+        "y": 465,
+        "w": 130,
+        "h": 150
+      }
+    },
+    {
+      "id": "blk-lift-1",
+      "kind": "sealed",
+      "name": "Lift 1",
+      "rect": {
+        "x": 60,
+        "y": 623.75,
+        "w": 73.75,
+        "h": 105
+      }
+    },
+    {
+      "id": "blk-lift-2",
+      "kind": "sealed",
+      "name": "Lift 2",
+      "rect": {
+        "x": 60,
+        "y": 797.5,
+        "w": 73.75,
+        "h": 102.5
+      }
+    },
+    {
+      "id": "blk-lift-3",
+      "kind": "sealed",
+      "name": "Lift 3",
+      "rect": {
+        "x": 513.75,
+        "y": 623.75,
+        "w": 71.25,
+        "h": 105
+      }
+    },
+    {
+      "id": "blk-lift-4",
+      "kind": "sealed",
+      "name": "Lift 4",
+      "rect": {
+        "x": 513.75,
+        "y": 797.5,
+        "w": 71.25,
+        "h": 102.5
+      }
+    }
+  ],
+  "furniture": [
+    {
+      "id": "F-MTG1-TABLE",
+      "kind": "table",
+      "solid": true,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 573.75,
+        "y": 108.75,
+        "w": 113.75,
+        "h": 55
+      }
+    },
+    {
+      "id": "F-MTG1-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 573.75,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-MTG1-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 614.38,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-MTG1-C3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 655,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-MTG1-C4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 573.75,
+        "y": 168.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-MTG1-C5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 614.38,
+        "y": 168.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-MTG1-C6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-1",
+      "rect": {
+        "x": 655,
+        "y": 168.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-DESK-A",
+      "kind": "desk",
+      "solid": true,
+      "zone": "hrga",
+      "rect": {
+        "x": 715,
+        "y": 118.75,
+        "w": 80,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-HRGA-DESK-B",
+      "kind": "desk",
+      "solid": true,
+      "zone": "hrga",
+      "rect": {
+        "x": 797.5,
+        "y": 118.75,
+        "w": 68.75,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-HRGA-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "hrga",
+      "rect": {
+        "x": 738.75,
+        "y": 83.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "hrga",
+      "rect": {
+        "x": 738.75,
+        "y": 155,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-C3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "hrga",
+      "rect": {
+        "x": 815.63,
+        "y": 83.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-C4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "hrga",
+      "rect": {
+        "x": 815.63,
+        "y": 155,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-CABINET",
+      "kind": "cabinet",
+      "solid": true,
+      "zone": "hrga",
+      "rect": {
+        "x": 797.5,
+        "y": 195,
+        "w": 70,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-HRGA-DISPENSER",
+      "kind": "dispenser",
+      "solid": true,
+      "zone": "hrga",
+      "rect": {
+        "x": 710,
+        "y": 195,
+        "w": 40,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-KOM-DESK",
+      "kind": "desk",
+      "solid": true,
+      "zone": "komisaris",
+      "rect": {
+        "x": 900,
+        "y": 175,
+        "w": 55,
+        "h": 50
+      }
+    },
+    {
+      "id": "F-KOM-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "komisaris",
+      "rect": {
+        "x": 901.25,
+        "y": 126.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PM-DESK",
+      "kind": "desk",
+      "solid": true,
+      "zone": "product-manager",
+      "rect": {
+        "x": 1068.75,
+        "y": 177.5,
+        "w": 87.5,
+        "h": 47.5
+      }
+    },
+    {
+      "id": "F-PM-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "product-manager",
+      "rect": {
+        "x": 1096.25,
+        "y": 130,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-IT-DESK-H",
+      "kind": "desk",
+      "solid": true,
+      "zone": "it",
+      "rect": {
+        "x": 1170,
+        "y": 117.5,
+        "w": 90,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-IT-DESK-V",
+      "kind": "desk",
+      "solid": true,
+      "zone": "it",
+      "rect": {
+        "x": 1167.5,
+        "y": 157.5,
+        "w": 30,
+        "h": 67.5
+      }
+    },
+    {
+      "id": "F-IT-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "it",
+      "rect": {
+        "x": 1197.5,
+        "y": 80,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-IT-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "it",
+      "rect": {
+        "x": 1203.75,
+        "y": 170,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-IT-DISPENSER",
+      "kind": "dispenser",
+      "solid": true,
+      "zone": "lorong-utama",
+      "rect": {
+        "x": 1200,
+        "y": 226.25,
+        "w": 40,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-FIN-DESK-V",
+      "kind": "desk",
+      "solid": true,
+      "zone": "direktur-finance",
+      "rect": {
+        "x": 1303.75,
+        "y": 90,
+        "w": 32.5,
+        "h": 42.5
+      }
+    },
+    {
+      "id": "F-FIN-COUNTER",
+      "kind": "counter",
+      "solid": true,
+      "zone": "direktur-finance",
+      "rect": {
+        "x": 1350,
+        "y": 132.5,
+        "w": 57.5,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-FIN-DESK-H",
+      "kind": "desk",
+      "solid": true,
+      "zone": "direktur-finance",
+      "rect": {
+        "x": 1408.75,
+        "y": 132.5,
+        "w": 38.75,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-FIN-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "direktur-finance",
+      "rect": {
+        "x": 1375,
+        "y": 91.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-FIN-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "direktur-finance",
+      "rect": {
+        "x": 1381.88,
+        "y": 178.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-FIN-DISPENSER",
+      "kind": "dispenser",
+      "solid": true,
+      "zone": "lorong-utama",
+      "rect": {
+        "x": 1407.5,
+        "y": 226.25,
+        "w": 42.5,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "F-GENG-BANK",
+      "kind": "desk",
+      "solid": true,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1497.5,
+        "y": 106.25,
+        "w": 168.75,
+        "h": 62.5
+      }
+    },
+    {
+      "id": "F-GENG-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1526.25,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1605,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-C3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1526.25,
+        "y": 171.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-C4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1605,
+        "y": 171.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-DESK-V",
+      "kind": "desk",
+      "solid": true,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1748.75,
+        "y": 92.5,
+        "w": 31.25,
+        "h": 62.5
+      }
+    },
+    {
+      "id": "F-GENG-C5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1681.25,
+        "y": 113.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-C6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1795,
+        "y": 113.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-GENG-CABINET",
+      "kind": "cabinet",
+      "solid": true,
+      "zone": "bilik-geng-kami",
+      "rect": {
+        "x": 1703.75,
+        "y": 195,
+        "w": 132.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-REC-COUNTER",
+      "kind": "counter",
+      "solid": true,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 342.5,
+        "y": 283.75,
+        "w": 101.25,
+        "h": 22.5
+      }
+    },
+    {
+      "id": "F-REC-CH-1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 387.5,
+        "y": 252.5,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-REC-S1",
+      "kind": "sofa",
+      "solid": false,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 345,
+        "y": 311.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-REC-S2",
+      "kind": "sofa",
+      "solid": false,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 345,
+        "y": 348.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-REC-S3",
+      "kind": "sofa",
+      "solid": false,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 478.75,
+        "y": 311.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-REC-S4",
+      "kind": "sofa",
+      "solid": false,
+      "zone": "resepsionis",
+      "rect": {
+        "x": 478.75,
+        "y": 348.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-LOUNGE-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "sirkulasi",
+      "rect": {
+        "x": 568.75,
+        "y": 233.76,
+        "w": 32.5,
+        "h": 33.75
+      }
+    },
+    {
+      "id": "F-PS-LOUNGE-T",
+      "kind": "table",
+      "solid": true,
+      "zone": "sirkulasi",
+      "rect": {
+        "x": 606.25,
+        "y": 233.75,
+        "w": 51.25,
+        "h": 33.75
+      }
+    },
+    {
+      "id": "F-PS-LOUNGE-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "sirkulasi",
+      "rect": {
+        "x": 658.75,
+        "y": 233.76,
+        "w": 32.5,
+        "h": 33.75
+      }
+    },
+    {
+      "id": "F-PS-CERT-TABLE",
+      "kind": "table",
+      "solid": true,
+      "zone": "sirkulasi",
+      "rect": {
+        "x": 517.5,
+        "y": 346.25,
+        "w": 140,
+        "h": 43.75
+      }
+    },
+    {
+      "id": "F-PS-PANTRY-COUNTER",
+      "kind": "counter",
+      "solid": true,
+      "zone": "pantry",
+      "rect": {
+        "x": 517.5,
+        "y": 392.5,
+        "w": 37.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-PANTRY-DISPENSER",
+      "kind": "dispenser",
+      "solid": true,
+      "zone": "pantry",
+      "rect": {
+        "x": 562.5,
+        "y": 392.5,
+        "w": 38.75,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-PANTRY-FRIDGE",
+      "kind": "fridge",
+      "solid": true,
+      "zone": "pantry",
+      "rect": {
+        "x": 602.5,
+        "y": 392.5,
+        "w": 38.75,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-EXT-TABLE",
+      "kind": "table",
+      "solid": true,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 701.25,
+        "y": 348.75,
+        "w": 41.25,
+        "h": 112.5
+      }
+    },
+    {
+      "id": "F-PS-MTG2-TABLE",
+      "kind": "table",
+      "solid": true,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 757.5,
+        "y": 360,
+        "w": 112.5,
+        "h": 52.5
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 761.25,
+        "y": 325,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 797.5,
+        "y": 325,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 833.75,
+        "y": 325,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 761.25,
+        "y": 417.5,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 797.5,
+        "y": 417.5,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-PS-MTG2-C6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "meeting-2",
+      "rect": {
+        "x": 833.75,
+        "y": 417.5,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-BANK-TOP",
+      "kind": "desk",
+      "solid": true,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 905,
+        "y": 351.25,
+        "w": 531.25,
+        "h": 52.5
+      }
+    },
+    {
+      "id": "F-DC-BANK-BOTTOM",
+      "kind": "desk",
+      "solid": true,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 905,
+        "y": 513.75,
+        "w": 531.25,
+        "h": 52.5
+      }
+    },
+    {
+      "id": "F-DC-T-UP-1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 921.95,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 988.36,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1054.76,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1121.18,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1187.57,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1253.99,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-7",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1320.39,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-UP-8",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1386.8,
+        "y": 318.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 921.95,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 988.36,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1054.76,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1121.18,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1187.57,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1253.99,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-7",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1320.39,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-DN-8",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1386.8,
+        "y": 406.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-T-SIDE",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 911.25,
+        "y": 362.5,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 921.95,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 988.36,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1054.76,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1121.18,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1187.57,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1253.99,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-7",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1320.39,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-UP-8",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1386.8,
+        "y": 481.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 921.95,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 988.36,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1054.76,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1121.18,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1187.57,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1253.99,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-7",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1320.39,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-DN-8",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 1386.8,
+        "y": 568.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-DC-B-SIDE",
+      "kind": "chair",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 911.25,
+        "y": 525,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-BANK-L",
+      "kind": "desk",
+      "solid": true,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1505,
+        "y": 326.25,
+        "w": 50,
+        "h": 250
+      }
+    },
+    {
+      "id": "F-TC-BANK-R",
+      "kind": "desk",
+      "solid": true,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1730,
+        "y": 326.25,
+        "w": 50,
+        "h": 250
+      }
+    },
+    {
+      "id": "F-TC-L-L1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 332.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-L2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 373.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-L3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 415.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-L4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 457.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-L5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 498.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-L6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1471.25,
+        "y": 540.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 332.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 373.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 415.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 457.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 498.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-L-R6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1556.25,
+        "y": 540.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 332.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 373.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 415.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 457.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 498.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-L6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1696.25,
+        "y": 540.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R1",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 332.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R2",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 373.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R3",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 415.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R4",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 457.09,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R5",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 498.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-TC-R-R6",
+      "kind": "chair",
+      "solid": false,
+      "zone": "tele-cs-ca",
+      "rect": {
+        "x": 1781.25,
+        "y": 540.41,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "F-WA-BOARD-BAP",
+      "kind": "board",
+      "solid": false,
+      "zone": "desk-collection",
+      "rect": {
+        "x": 876.25,
+        "y": 301.25,
+        "w": 8.75,
+        "h": 52.5
+      }
+    }
+  ],
+  "openings": [
+    {
+      "id": "op-meeting-1",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 528.75,
+        "y": 219.88,
+        "w": 57.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-hrga",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 746.25,
+        "y": 219.88,
+        "w": 57.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-recep-corridor",
+      "orientation": "vertical",
+      "rect": {
+        "x": 508.63,
+        "y": 233.75,
+        "w": 10.25,
+        "h": 40
+      }
+    },
+    {
+      "id": "op-recep-lobby",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 380,
+        "y": 386.13,
+        "w": 95,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-meeting-2",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 710,
+        "y": 287.38,
+        "w": 50,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-server",
+      "orientation": "vertical",
+      "rect": {
+        "x": 868.63,
+        "y": 526.25,
+        "w": 10.25,
+        "h": 45
+      }
+    },
+    {
+      "id": "op-gudang",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 532.5,
+        "y": 469.88,
+        "w": 37.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-toilet-wanita",
+      "orientation": "vertical",
+      "rect": {
+        "x": 639.88,
+        "y": 518.75,
+        "w": 10.25,
+        "h": 45
+      }
+    },
+    {
+      "id": "op-toilet-pria",
+      "orientation": "vertical",
+      "rect": {
+        "x": 692.38,
+        "y": 507.5,
+        "w": 10.25,
+        "h": 46.25
+      }
+    },
+    {
+      "id": "op-komisaris",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 967.5,
+        "y": 219.88,
+        "w": 37.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-product-manager",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 1021.25,
+        "y": 219.88,
+        "w": 37.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-it",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 1263.75,
+        "y": 219.88,
+        "w": 32.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-direktur-finance",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 1316.25,
+        "y": 219.88,
+        "w": 32.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-geng-kami",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 1463.75,
+        "y": 219.88,
+        "w": 32.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-desk-collection",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 885,
+        "y": 288.63,
+        "w": 30,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "op-wastafel",
+      "orientation": "horizontal",
+      "rect": {
+        "x": 655,
+        "y": 578.63,
+        "w": 32.5,
+        "h": 10.25
+      }
+    }
+  ],
+  "windows": [
+    {
+      "id": "win-top",
+      "side": "top",
+      "rect": {
+        "x": 868.75,
+        "y": 38.75,
+        "w": 836.25,
+        "h": 2.5
+      }
+    },
+    {
+      "id": "win-chamfer",
+      "side": "top",
+      "rect": {
+        "x": 1705,
+        "y": 38.75,
+        "w": 131.25,
+        "h": 2.5
+      }
+    },
+    {
+      "id": "win-right",
+      "side": "right",
+      "rect": {
+        "x": 1835,
+        "y": 171.25,
+        "w": 2.5,
+        "h": 443.75
+      }
+    }
+  ],
+  "surfaces": [
+    {
+      "zone": "meeting-1",
+      "kind": "office"
+    },
+    {
+      "zone": "hrga",
+      "kind": "office"
+    },
+    {
+      "zone": "komisaris",
+      "kind": "office"
+    },
+    {
+      "zone": "product-manager",
+      "kind": "office"
+    },
+    {
+      "zone": "it",
+      "kind": "office"
+    },
+    {
+      "zone": "direktur-finance",
+      "kind": "office"
+    },
+    {
+      "zone": "bilik-geng-kami",
+      "kind": "office"
+    },
+    {
+      "zone": "resepsionis",
+      "kind": "office"
+    },
+    {
+      "zone": "lobby-besar",
+      "kind": "lobby"
+    },
+    {
+      "zone": "lorong-utama",
+      "kind": "corridor"
+    },
+    {
+      "zone": "sirkulasi",
+      "kind": "corridor"
+    },
+    {
+      "zone": "jalur-terbuka",
+      "kind": "corridor"
+    },
+    {
+      "zone": "pantry",
+      "kind": "service"
+    },
+    {
+      "zone": "gudang",
+      "kind": "service"
+    },
+    {
+      "zone": "toilet-wanita",
+      "kind": "service"
+    },
+    {
+      "zone": "wastafel",
+      "kind": "service"
+    },
+    {
+      "zone": "toilet-pria",
+      "kind": "service"
+    },
+    {
+      "zone": "meeting-2",
+      "kind": "office"
+    },
+    {
+      "zone": "server",
+      "kind": "service"
+    },
+    {
+      "zone": "desk-collection",
+      "kind": "office"
+    },
+    {
+      "zone": "tele-cs-ca",
+      "kind": "office"
+    },
+    {
+      "zone": "lobby-besar",
+      "kind": "rug",
+      "rect": {
+        "x": 192.5,
+        "y": 763.75,
+        "w": 262.5,
+        "h": 137.5
+      }
+    }
+  ],
+  "hotspots": [
+    {
+      "id": "hs-seat-1",
+      "kind": "seat",
+      "name": "Kursi Farkhan",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 1,
+      "rect": {
+        "x": 1526.25,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-seat-2",
+      "kind": "seat",
+      "name": "Kursi Surya",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 2,
+      "rect": {
+        "x": 1605,
+        "y": 73.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-seat-3",
+      "kind": "seat",
+      "name": "Kursi Imam",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 3,
+      "rect": {
+        "x": 1526.25,
+        "y": 171.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-seat-4",
+      "kind": "seat",
+      "name": "Kursi Malla",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 4,
+      "rect": {
+        "x": 1605,
+        "y": 171.25,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-seat-5",
+      "kind": "seat",
+      "name": "Kursi Siska",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 5,
+      "rect": {
+        "x": 1681.25,
+        "y": 113.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-seat-6",
+      "kind": "seat",
+      "name": "Kursi Mona",
+      "zone": "bilik-geng-kami",
+      "action": "sit",
+      "cid": 6,
+      "rect": {
+        "x": 1795,
+        "y": 113.75,
+        "w": 32.5,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-lift-1",
+      "kind": "lift",
+      "name": "Lift 1",
+      "zone": "lobby-besar",
+      "action": "message",
+      "message": "Lift/transisi belum aktif di preview.",
+      "rect": {
+        "x": 60,
+        "y": 623.75,
+        "w": 73.75,
+        "h": 105
+      }
+    },
+    {
+      "id": "hs-lift-2",
+      "kind": "lift",
+      "name": "Lift 2",
+      "zone": "lobby-besar",
+      "action": "message",
+      "message": "Lift/transisi belum aktif di preview.",
+      "rect": {
+        "x": 60,
+        "y": 797.5,
+        "w": 73.75,
+        "h": 102.5
+      }
+    },
+    {
+      "id": "hs-lift-3",
+      "kind": "lift",
+      "name": "Lift 3",
+      "zone": "lobby-besar",
+      "action": "message",
+      "message": "Lift/transisi belum aktif di preview.",
+      "rect": {
+        "x": 513.75,
+        "y": 623.75,
+        "w": 71.25,
+        "h": 105
+      }
+    },
+    {
+      "id": "hs-lift-4",
+      "kind": "lift",
+      "name": "Lift 4",
+      "zone": "lobby-besar",
+      "action": "message",
+      "message": "Lift/transisi belum aktif di preview.",
+      "rect": {
+        "x": 513.75,
+        "y": 797.5,
+        "w": 71.25,
+        "h": 102.5
+      }
+    },
+    {
+      "id": "hs-gudang",
+      "kind": "gudang",
+      "name": "Gudang",
+      "zone": "gudang",
+      "action": "message",
+      "message": "Gudang terkunci.",
+      "rect": {
+        "x": 532.5,
+        "y": 469.88,
+        "w": 37.5,
+        "h": 10.25
+      }
+    },
+    {
+      "id": "hs-fridge",
+      "kind": "fridge",
+      "name": "Kulkas",
+      "zone": "pantry",
+      "action": "message",
+      "message": "Kulkas: ambil minum dingin.",
+      "rect": {
+        "x": 602.5,
+        "y": 392.5,
+        "w": 38.75,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-dispenser-pantry",
+      "kind": "dispenser",
+      "name": "Dispenser Pantry",
+      "zone": "pantry",
+      "action": "message",
+      "message": "Dispenser: isi air minum.",
+      "rect": {
+        "x": 562.5,
+        "y": 392.5,
+        "w": 38.75,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-dispenser-hrga",
+      "kind": "dispenser",
+      "name": "Dispenser HRGA",
+      "zone": "hrga",
+      "action": "message",
+      "message": "Dispenser: isi air minum.",
+      "rect": {
+        "x": 710,
+        "y": 195,
+        "w": 40,
+        "h": 30
+      }
+    },
+    {
+      "id": "hs-dispenser-it",
+      "kind": "dispenser",
+      "name": "Dispenser IT",
+      "zone": "lorong-utama",
+      "action": "message",
+      "message": "Dispenser koridor: isi air minum.",
+      "rect": {
+        "x": 1200,
+        "y": 226.25,
+        "w": 40,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "hs-dispenser-finance",
+      "kind": "dispenser",
+      "name": "Dispenser Finance",
+      "zone": "lorong-utama",
+      "action": "message",
+      "message": "Dispenser koridor: isi air minum.",
+      "rect": {
+        "x": 1407.5,
+        "y": 226.25,
+        "w": 42.5,
+        "h": 31.25
+      }
+    },
+    {
+      "id": "hs-board",
+      "kind": "board",
+      "name": "Best Agent Performance",
+      "zone": "desk-collection",
+      "action": "message",
+      "message": "Papan Best Agent Performance.",
+      "rect": {
+        "x": 876.25,
+        "y": 301.25,
+        "w": 8.75,
+        "h": 52.5
+      }
+    },
+    {
+      "id": "hs-cert-table",
+      "kind": "certificate-table",
+      "name": "Meja Sertifikat",
+      "zone": "sirkulasi",
+      "action": "message",
+      "message": "Meja sertifikat.",
+      "rect": {
+        "x": 517.5,
+        "y": 346.25,
+        "w": 140,
+        "h": 43.75
+      }
+    },
+    {
+      "id": "hs-server",
+      "kind": "server",
+      "name": "Ruang Server",
+      "zone": "server",
+      "action": "message",
+      "message": "Ruang server terbatas. Hanya tim IT.",
+      "rect": {
+        "x": 868.63,
+        "y": 526.25,
+        "w": 10.25,
+        "h": 45
+      }
+    },
+    {
+      "id": "hs-reception",
+      "kind": "reception",
+      "name": "Resepsionis",
+      "zone": "resepsionis",
+      "action": "message",
+      "message": "Resepsionis: selamat datang di kantor.",
+      "rect": {
+        "x": 342.5,
+        "y": 283.75,
+        "w": 101.25,
+        "h": 22.5
+      }
+    },
+    {
+      "id": "hs-exit",
+      "kind": "exit",
+      "name": "Pintu Keluar",
+      "zone": "lobby-besar",
+      "action": "status-pulang",
+      "message": "Kamu pulang. Sampai jumpa!",
+      "rect": {
+        "x": 292.5,
+        "y": 888.75,
+        "w": 87.5,
+        "h": 43.75
+      }
+    }
+  ]
+}

@@ -1,0 +1,320 @@
+{
+  "meta": {
+    "id": "office-workareas-focus-v4",
+    "version": "v4",
+    "title": "DENAH KANTOR",
+    "subtitle": "PANEL C (REVISI 4) — AREA KERJA: DESK COLLECTION · TELE / CS / CA",
+    "scaleNote": "Koordinat: piksel sumber (1516x808). Fokus x686..1474, y126..578.",
+    "source": {
+      "file": "img_52d36a282d20.png",
+      "width": 1516,
+      "height": 808
+    },
+    "focus": { "x1": 686, "y1": 186, "x2": 1474, "y2": 510 },
+    "view": { "x1": 686, "y1": 126, "x2": 1474, "y2": 578 },
+    "headerBand": { "x1": 686, "y1": 126, "x2": 1474, "y2": 180 },
+    "legendBand": { "x1": 686, "y1": 510, "x2": 1474, "y2": 578 },
+    "output": { "width": 1600 },
+    "protected": {
+      "structureV1Svg": "b7b890697acafdc1413ddc97f1bb075e7f4d908563e7d00153e08cae0fbb1be2",
+      "structureV1Png": "419a477955be2b380ed85665a3ff7403d8aa5aca15cee366adc49455329ceb9e",
+      "structureV2Svg": "4c6cb0c609198d3fa7ad19b9d6b3679b45f0e6265ba22a3813cdda3025462358",
+      "structureV2Png": "0ff87dc0ba8ebbffc5068eb17f4ffa883f56063414bc672305eebd4bbc02fedf",
+      "structureV2Json": "2938e3376cffe56eb7769eee53f672462d1f7c24af13b671555e6c283baaec1f",
+      "furnitureV1Svg": "d84f7ca2142d9febbc79244ea0f8699d0494b8f67efcae5369e5f1a43101838b",
+      "furnitureV1Png": "e7091236024a209bd78c123976ab49ab8b77736e4e7698885f1077ab1bbdce41",
+      "furnitureV1Json": "1ad1da290bcddbf246836a11e855c2eeab4f79470dba2517deff24444d4096c6",
+      "furnitureV1TopRowSvg": "198b0e376876bcbbde858c6f482feab3d68802f71f2550b7016273ea34515fa4",
+      "furnitureV1TopRowPng": "f3febc56a18889b34a1257f55d7b074b273d3b7a300b8e9fdc02e158ad28da7e",
+      "furnitureV1LeftMiddleSvg": "8972115192688141aaa1d7579f9b33f052f669f4558e766f926500ddf30c1813",
+      "furnitureV1LeftMiddlePng": "ce5c1c6ca9e9821482faab1ae66ff5539b8de090dbe7f61a4bd45a94dd3dad98",
+      "furnitureV1WorkareasSvg": "d458eaabfee747eee7a9ee9d6ad0663e7713d9315a57e363551053c1ecee2d8a",
+      "furnitureV1WorkareasPng": "6aa105773a03d5c7419cc99633000a4f6745a738c32e06ccce680411e718adaf",
+      "workareasV2Json": "2d658e15bdf30005119fc10860a3079ddfe11ac2531131b441320e234ea433f1",
+      "workareasV2Svg": "b7013558f44ff63bad7999e811bb7369618e521c261817eb6f7e3d581bdee065",
+      "workareasV2Png": "0ea562bf16ee090e11307ea7d0e86b3eae90c5af72fdecc3fcb88263af580d69",
+      "workareasV3Json": "56f92844670bab4d70e80a8f8a6b177c4da4202e7ec8c2a5f96490a1d9c38d72",
+      "workareasV3Svg": "c4cb809cea9fa67b426cd837a74726ee0af271d5c0bf765d86bf1c7142330869",
+      "workareasV3Png": "43f118081424c655567d16ea344795e204555c6b387de6b5c24ffa8c57dac2eb"
+    },
+    "stroke": {
+      "wall": 2,
+      "partition": 2,
+      "window": 2,
+      "door": 1.8,
+      "furniture": 1.8,
+      "chair": 1.4,
+      "board": 2,
+      "path": 1.6,
+      "aisle": 1.4,
+      "tick": 9
+    },
+    "colors": {
+      "bg": "#ffffff",
+      "floorOffice": "#ffffff",
+      "floorOpen": "#f4f6f8",
+      "wall": "#5b636d",
+      "partition": "#9aa2ab",
+      "window": "#b9c0c7",
+      "line": "#111111",
+      "muted": "#8a929b",
+      "label": "#3f474f",
+      "board": "#fdeec8",
+      "boardLine": "#a97b16",
+      "path": "#2f6fb0",
+      "aisle": "#4a86c8",
+      "callout": "#1f5f9e",
+      "cut": "#ffffff"
+    }
+  },
+
+  "reference": {
+    "baseStructure": {
+      "file": "office-structure-review-v2.json",
+      "svg": "office-structure-review-v2.svg",
+      "png": "office-structure-review-v2.png",
+      "status": "approved, read-only"
+    },
+    "baseFurniture": {
+      "file": "office-furniture-review-v1.json",
+      "panel": "C (office-furniture-review-v1-workareas)",
+      "status": "approved, read-only"
+    },
+    "inherited": {
+      "desk-collection": {
+        "bank": 2,
+        "chair": 34,
+        "ids": [
+          "F-DC-BANK-TOP", "F-DC-BANK-BOTTOM",
+          "F-DC-T-UP-1", "F-DC-T-UP-2", "F-DC-T-UP-3", "F-DC-T-UP-4", "F-DC-T-UP-5", "F-DC-T-UP-6", "F-DC-T-UP-7", "F-DC-T-UP-8",
+          "F-DC-T-DN-1", "F-DC-T-DN-2", "F-DC-T-DN-3", "F-DC-T-DN-4", "F-DC-T-DN-5", "F-DC-T-DN-6", "F-DC-T-DN-7", "F-DC-T-DN-8",
+          "F-DC-T-SIDE",
+          "F-DC-B-UP-1", "F-DC-B-UP-2", "F-DC-B-UP-3", "F-DC-B-UP-4", "F-DC-B-UP-5", "F-DC-B-UP-6", "F-DC-B-UP-7", "F-DC-B-UP-8",
+          "F-DC-B-DN-1", "F-DC-B-DN-2", "F-DC-B-DN-3", "F-DC-B-DN-4", "F-DC-B-DN-5", "F-DC-B-DN-6", "F-DC-B-DN-7", "F-DC-B-DN-8",
+          "F-DC-B-SIDE"
+        ],
+        "note": "Dua bank horizontal (atas + bawah), 34 kursi terlihat. V4: dua kursi samping kiri (satu per bank) di x=738 (tepi kiri x=725) agar jalur barat di samping dinding x=695 tetap >=24 px."
+      },
+      "tele-cs-ca": {
+        "bank": 2,
+        "chair": 24,
+        "ids": [
+          "F-TC-BANK-L", "F-TC-BANK-R",
+          "F-TC-L-L1", "F-TC-L-L2", "F-TC-L-L3", "F-TC-L-L4", "F-TC-L-L5", "F-TC-L-L6",
+          "F-TC-L-R1", "F-TC-L-R2", "F-TC-L-R3", "F-TC-L-R4", "F-TC-L-R5", "F-TC-L-R6",
+          "F-TC-R-L1", "F-TC-R-L2", "F-TC-R-L3", "F-TC-R-L4", "F-TC-R-L5", "F-TC-R-L6",
+          "F-TC-R-R1", "F-TC-R-R2", "F-TC-R-R3", "F-TC-R-R4", "F-TC-R-R5", "F-TC-R-R6"
+        ],
+        "note": "Dua bank vertikal (kiri + kanan), 24 kursi; tidak diubah."
+      }
+    }
+  },
+
+  "overrides": {
+    "structure": [
+      {
+        "id": "OV-TOP-OPEN",
+        "action": "omit-segment",
+        "axis": "h",
+        "y": 244,
+        "x1": 1156,
+        "x2": 1465,
+        "type": "partition",
+        "source": "office-structure-review-v2.json walls[]: { x1:695, y1:244, x2:1465, y2:244, type:'partition' }",
+        "reason": "Sisi TOP/NORTH Tele/CS/CA tidak punya sekat/dinding sama sekali — langsung terbuka ke sirkulasi horizontal utama. Hanya segmen x=1156..1465 yang dibuang; bagian Desk Collection x=695..1156 (termasuk celah C6) tetap."
+      }
+    ],
+    "furniture": [
+      {
+        "id": "OV-ADD-BOARD",
+        "action": "add",
+        "ref": "F-WA-BOARD-BAP",
+        "reason": "Papan dinding 'BEST AGENT PERFORMANCE' dipasang rata pada sisi timur dinding Meeting Room 2 (x=695), menghadap timur ke Desk Collection. Ini furniture/interactable, bukan kolom/struktur."
+      },
+      {
+        "id": "OV-SHIFT-SIDE-CHAIRS",
+        "action": "shift",
+        "ref": "F-DC-T-SIDE, F-DC-B-SIDE",
+        "delta": { "x": 30 },
+        "reason": "V4: dua kursi samping kiri (menghadap kanan, satu per bank) digeser ke x=738 (tepi kiri x=725) — dari x=708 furniture-v1 (+30) / x=722 v3 (+16) — karena lebar aktor sebenarnya 18 px (bukan 12). Dengan geseran ini jalur akses barat di samping dinding x=695 tetap >=24 px bebas setelah tebal dinding, di pita bank maupun pita kursi samping. Jumlah kursi tetap 34."
+      }
+    ]
+  },
+
+  "board": {
+    "id": "F-WA-BOARD-BAP",
+    "label": "BEST AGENT PERFORMANCE",
+    "kind": "furniture-interactable",
+    "structural": false,
+    "interactable": true,
+    "room": "desk-collection",
+    "mount": {
+      "wall": "meeting-2-east",
+      "wallX": 695,
+      "face": "east",
+      "facesInto": "desk-collection",
+      "note": "Slim & menempel rata pada muka timur dinding Meeting Room 2; kedalaman 7 px, tidak menonjol ke lantai, dan bebas dari kursi samping."
+    },
+    "shape": "rect",
+    "rect": { "x1": 697, "y1": 250, "x2": 704, "y2": 292 }
+  },
+
+  "accessAisle": {
+    "id": "AISLE-DC-EAST",
+    "kind": "movement-annotation",
+    "label": "AKSES KE DERET BAWAH & SERVER",
+    "note": "Anotasi jalur gerak sahaja — BUKAN ruang dan BUKAN koridor. Tidak ada dinding/lantai/label ruang yang ditambah.",
+    "wall": "meeting-2-east",
+    "wallX": 695,
+    "wallFaceSourcePx": 696,
+    "lane": { "x1": 696, "y1": 248, "x2": 720, "y2": 491 },
+    "detours": [],
+    "actor": { "w": 18, "h": 12, "note": "18 px lateral (sumbu x) x 12 px searah jalan (sumbu y) — ukuran aktor sebenarnya pada app." },
+    "widths": {
+      "openSourcePx": 37.56,
+      "bankBandSourcePx": 24,
+      "sideChairBandSourcePx": 24,
+      "sideChairClearSourcePx": 29,
+      "targetSourcePx": 34,
+      "minSourcePx": 24,
+      "note": "Lebar bebas fisik diukur dari muka timur dinding (x=696; tebal dinding 2 px) ke rintangan terdekat: 37.56 px di pita terbuka (kursi baris bank x=733.56), 24 px di pita bank (ujung kiri bank x=720) dan tetap 24 px di pita kursi samping (rintangan terdekat = bank x=720; tepi kiri kursi samping x=725 -> 29 px bebas). Minimum 24 px >= 24 px; aktor 18x12 muat dengan sisa 6 px lateral."
+    },
+    "start": [712, 256],
+    "goal": [706, 448],
+    "route": [[712, 256], [706, 270], [706, 448]],
+    "labelAt": { "x": 726, "y": 380, "size": 7.4, "anchor": "start" },
+    "correction": "Pengguna (v4): kursi samping kiri harus digeser lebih jauh ke kanan (tepi kiri >= x=724; pusat x=738) karena lebar aktor sebenarnya 18 px (bukan 12). Jalur barat di samping dinding x=695 harus >=24 px bebas setelah tebal dinding, di pita bank dan pita kursi samping; rute/anotasi akses diperbarui dan divalidasi BFS dengan tapak aktor 18x12 dari celah C6/atas ke samping pintu Server & deret bawah."
+  },
+
+  "rooms": [
+    { "id": "meeting-2", "name": "Ruang Meeting 2", "kind": "room", "x1": 554, "y1": 243, "x2": 695, "y2": 381 },
+    { "id": "server", "name": "Ruang Server", "kind": "room", "x1": 591, "y1": 381, "x2": 695, "y2": 501 },
+    { "id": "desk-collection", "name": "Desk Collection", "kind": "open", "x1": 695, "y1": 244, "x2": 1156, "y2": 501 },
+    { "id": "tele-cs-ca", "name": "Tele / CS / CA", "kind": "open", "x1": 1156, "y1": 244, "x2": 1465, "y2": 501 }
+  ],
+
+  "walls": [
+    { "id": "W-MTG2-TOP", "x1": 554, "y1": 243, "x2": 695, "y2": 243, "type": "full" },
+    { "id": "W-CORRIDOR-P", "x1": 691, "y1": 189, "x2": 1388, "y2": 189, "type": "partition" },
+    { "id": "W-CORRIDOR-F", "x1": 1388, "y1": 189, "x2": 1465, "y2": 189, "type": "full" },
+    { "id": "W-MTG2-EAST", "x1": 695, "y1": 243, "x2": 695, "y2": 501, "type": "full" },
+    { "id": "W-DC-TOP-A", "x1": 695, "y1": 244, "x2": 704, "y2": 244, "type": "partition", "derived": true, "note": "Desk Collection top, kiri celah C6 (x=704..728)." },
+    { "id": "W-DC-TOP-B", "x1": 728, "y1": 244, "x2": 1156, "y2": 244, "type": "partition", "derived": true, "note": "Desk Collection top, kanan celah C6; berhenti di pemisah x=1156." },
+    { "id": "W-LEFT-SEP", "x1": 1156, "y1": 244, "x2": 1156, "y2": 501, "type": "partition" },
+    { "id": "W-BOTTOM", "x1": 695, "y1": 501, "x2": 1465, "y2": 501, "type": "partition" }
+  ],
+
+  "windows": [
+    { "id": "WD-RIGHT", "x1": 1465, "y1": 146, "x2": 1465, "y2": 501, "note": "Eksterior/jendela kanan Tele/CS/CA — tetap." }
+  ],
+
+  "doors": [
+    { "id": "D6", "room": "server", "label": "Ruang Server", "axis": "v", "x": 695, "y": 448, "len": 36, "hinge": "end", "swing": "right" }
+  ],
+
+  "openPaths": [
+    {
+      "id": "P-OPEN",
+      "label": "Terbuka langsung ke lorong",
+      "zone": "tele-cs-ca",
+      "x1": 1156,
+      "y1": 189,
+      "x2": 1465,
+      "y2": 244,
+      "arrow": { "x": 1200, "y1": 258, "y2": 200 },
+      "note": "Bidang x=1156..1465, y=189..244: tidak ada sekat; generator gagal bila ada wall melintasi interiornya."
+    }
+  ],
+
+  "furniture": [
+    { "id": "F-DC-BANK-TOP", "group": "dc-bank", "type": "bank", "room": "desk-collection", "shape": "rect", "rect": { "x1": 720, "y1": 290, "x2": 1145, "y2": 332 }, "bank": { "orientation": "h", "divider": true, "leftCap": true } },
+    { "id": "F-DC-BANK-BOTTOM", "group": "dc-bank", "type": "bank", "room": "desk-collection", "shape": "rect", "rect": { "x1": 720, "y1": 420, "x2": 1145, "y2": 462 }, "bank": { "orientation": "h", "divider": true, "leftCap": true } },
+
+    { "id": "F-DC-T-UP-1", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 746.56, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-2", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 799.69, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-3", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 852.81, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-4", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 905.94, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-5", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 959.06, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-6", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1012.19, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-7", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1065.31, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-UP-8", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1118.44, "y": 276 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-T-DN-1", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 746.56, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-2", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 799.69, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-3", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 852.81, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-4", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 905.94, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-5", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 959.06, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-6", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1012.19, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-7", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1065.31, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-DN-8", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1118.44, "y": 346 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-T-SIDE", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 738, "y": 311 }, "w": 26, "h": 24, "facing": "right", "note": "V4: digeser ke x=738 (dari 708 furniture-v1 / 722 v3); tepi kiri x=725, menempel cap pendek bank atas; jalur barat tetap >=24 px." },
+
+    { "id": "F-DC-B-UP-1", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 746.56, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-2", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 799.69, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-3", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 852.81, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-4", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 905.94, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-5", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 959.06, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-6", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1012.19, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-7", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1065.31, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-UP-8", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1118.44, "y": 406 }, "w": 26, "h": 24, "facing": "down" },
+    { "id": "F-DC-B-DN-1", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 746.56, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-2", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 799.69, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-3", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 852.81, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-4", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 905.94, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-5", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 959.06, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-6", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1012.19, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-7", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1065.31, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-DN-8", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 1118.44, "y": 476 }, "w": 26, "h": 24, "facing": "up" },
+    { "id": "F-DC-B-SIDE", "group": "dc-chair", "type": "chair", "room": "desk-collection", "shape": "point", "point": { "x": 738, "y": 441 }, "w": 26, "h": 24, "facing": "right", "note": "V4: digeser ke x=738 (dari 708 furniture-v1 / 722 v3); tepi kiri x=725, menempel cap pendek bank bawah; jalur barat tetap >=24 px." },
+
+    { "id": "F-TC-BANK-L", "group": "tc-bank", "type": "bank", "room": "tele-cs-ca", "shape": "rect", "rect": { "x1": 1200, "y1": 270, "x2": 1240, "y2": 470 }, "bank": { "orientation": "v", "divider": true } },
+    { "id": "F-TC-BANK-R", "group": "tc-bank", "type": "bank", "room": "tele-cs-ca", "shape": "rect", "rect": { "x1": 1380, "y1": 270, "x2": 1420, "y2": 470 }, "bank": { "orientation": "v", "divider": true } },
+    { "id": "F-TC-L-L1", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 286.67 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-L2", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 320 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-L3", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 353.33 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-L4", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 386.67 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-L5", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 420 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-L6", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1186, "y": 453.33 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-L-R1", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 286.67 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-L-R2", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 320 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-L-R3", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 353.33 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-L-R4", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 386.67 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-L-R5", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 420 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-L-R6", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1254, "y": 453.33 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-L1", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 286.67 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-L2", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 320 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-L3", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 353.33 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-L4", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 386.67 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-L5", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 420 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-L6", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1366, "y": 453.33 }, "w": 26, "h": 24, "facing": "right" },
+    { "id": "F-TC-R-R1", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 286.67 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-R2", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 320 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-R3", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 353.33 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-R4", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 386.67 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-R5", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 420 }, "w": 26, "h": 24, "facing": "left" },
+    { "id": "F-TC-R-R6", "group": "tc-chair", "type": "chair", "room": "tele-cs-ca", "shape": "point", "point": { "x": 1434, "y": 453.33 }, "w": 26, "h": 24, "facing": "left" },
+
+    { "id": "F-WA-BOARD-BAP", "group": "board", "type": "board", "room": "desk-collection", "shape": "rect", "rect": { "x1": 697, "y1": 250, "x2": 704, "y2": 292 }, "structural": false, "interactable": true, "label": "BEST AGENT PERFORMANCE", "note": "Slim, rata pada muka timur dinding x=695 (kedalaman 7 px), di segmen dinding atas, bebas dari kursi samping (bawah papan y=292 < atas kursi y=299). Tidak berubah dari v3." }
+  ],
+
+  "roomLabels": [
+    { "room": "desk-collection", "x": 925, "y": 258, "size": 10, "lines": ["Desk Collection"] },
+    { "room": "tele-cs-ca", "x": 1310, "y": 258, "size": 10, "lines": ["Tele / CS / CA"] }
+  ],
+
+  "callouts": [
+    { "id": "CO-BOARD", "text": ["BEST AGENT", "PERFORMANCE"], "lx": 699, "ly": 208, "anchor": "start", "size": 8, "lineStep": 10, "leader": [[712, 226], [712, 255]], "target": [700, 271] },
+    { "id": "CO-OPEN", "text": ["TERBUKA LANGSUNG", "KE LORONG"], "lx": 1310, "ly": 206, "anchor": "middle", "size": 9, "lineStep": 11, "leader": [[1310, 222], [1310, 242]], "target": [1310, 242] }
+  ],
+
+  "legend": [
+    { "kind": "wall", "label": "Dinding penuh" },
+    { "kind": "partition", "label": "Sekat / partisi" },
+    { "kind": "window", "label": "Jendela (eksterior)" },
+    { "kind": "door", "label": "Pintu (swing)" },
+    { "kind": "bank", "label": "Bank meja berhadapan" },
+    { "kind": "chair", "label": "Kursi (garis punggung)" },
+    { "kind": "board", "label": "Papan dinding (furniture)" },
+    { "kind": "open", "label": "Zona terbuka ke lorong" },
+    { "kind": "aisle", "label": "Jalur akses (anotasi, bukan ruang)" }
+  ]
+}

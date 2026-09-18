@@ -18,8 +18,8 @@ migrate(
         { name: "cid", type: "number", required: true, onlyInt: true, min: 1, max: 6 },
         { name: "name", type: "text", required: true, min: 1, max: 40 },
         { name: "sprite", type: "number", onlyInt: true, min: 0, max: 5 },
-        { name: "x", type: "number", min: 0, max: 960 },
-        { name: "y", type: "number", min: 0, max: 540 },
+        { name: "x", type: "number", min: 0, max: 1920 },
+        { name: "y", type: "number", min: 0, max: 960 },
         { name: "direction", type: "select", maxSelect: 1, values: ["up", "down", "left", "right"] },
         { name: "status", type: "text", max: 80 },
         { name: "active", type: "bool" },
@@ -77,14 +77,16 @@ migrate(
     });
     app.save(limits);
 
-    // Exactly six characters. Positions match the seats defined in app/page.tsx.
+    // Exactly six characters. cid/name/sprite/x/y/direction match the assigned
+    // seats in lib/office-map.json (the single source of truth for the 1920x960
+    // world), all inside Bilik Geng Kami. sprite is the app's cid-1 convention.
     const seats = [
-      { cid: 1, name: "Farkhan", sprite: 0, x: 250, y: 365, direction: "up" },
-      { cid: 2, name: "Surya", sprite: 1, x: 865, y: 258, direction: "left" },
-      { cid: 3, name: "Imam", sprite: 2, x: 250, y: 142, direction: "down" },
-      { cid: 4, name: "Malla", sprite: 3, x: 600, y: 258, direction: "left" },
-      { cid: 5, name: "Siska", sprite: 4, x: 390, y: 365, direction: "up" },
-      { cid: 6, name: "Mona", sprite: 5, x: 390, y: 142, direction: "down" },
+      { cid: 1, name: "Farkhan", sprite: 0, x: 1542.5, y: 88.75, direction: "down" },
+      { cid: 2, name: "Surya", sprite: 1, x: 1621.25, y: 88.75, direction: "down" },
+      { cid: 3, name: "Imam", sprite: 2, x: 1542.5, y: 186.25, direction: "up" },
+      { cid: 4, name: "Malla", sprite: 3, x: 1621.25, y: 186.25, direction: "up" },
+      { cid: 5, name: "Siska", sprite: 4, x: 1697.5, y: 128.75, direction: "right" },
+      { cid: 6, name: "Mona", sprite: 5, x: 1811.25, y: 128.75, direction: "left" },
     ];
     for (const seat of seats) {
       const record = new Record(characters);

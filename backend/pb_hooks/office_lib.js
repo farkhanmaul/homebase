@@ -19,8 +19,8 @@ const MAX_TEST_LEASE_MS = 90000;
 // are pruned so a client rotating IPs cannot grow office_limits without bound.
 const RATE_PRUNE_MS = 10 * 60 * 1000;
 
-const MAP_W = 960;
-const MAP_H = 540;
+const MAP_W = 1920;
+const MAP_H = 960;
 const MAX_TEXT = 500;
 const MAX_STATUS = 80;
 const KEEP_MESSAGES = 200;
