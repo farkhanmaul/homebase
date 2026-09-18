@@ -6,7 +6,8 @@
 // graphics library, no per-frame geometry rebuild.
 
 import type { Direction, OfficeManifest, Point } from './office-map.ts';
-import { PREVIEW_COLORS, buildWorldOps, type Op } from './office-render-ops.ts';
+import { PREVIEW_COLORS, type Op } from './office-render-ops.ts';
+import { buildGameWorldOps } from './office-game-ops.ts';
 
 export type CanvasView = { w: number; h: number };
 
@@ -25,6 +26,11 @@ export type RenderActor = {
 /** Paints a manifest-derived op list into a 2D context at world coordinates. */
 export function paintOps(ctx: CanvasRenderingContext2D, ops: readonly Op[]): void {
   for (const op of ops) {
+    if (op.t === 'group') {
+      // Groups are metadata around a layered visual; only their ops paint.
+      paintOps(ctx, op.ops);
+      continue;
+    }
     if (op.t === 'rect') {
       ctx.globalAlpha = op.opacity ?? 1;
       ctx.fillStyle = op.fill;
@@ -87,7 +93,7 @@ export function createWorldCanvas(manifest: OfficeManifest): HTMLCanvasElement {
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.imageSmoothingEnabled = false;
-    paintOps(ctx, buildWorldOps(manifest));
+    paintOps(ctx, buildGameWorldOps(manifest));
   }
   return canvas;
 }

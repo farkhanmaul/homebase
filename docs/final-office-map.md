@@ -69,16 +69,19 @@ rect extents derived from the transformed endpoints so no gaps appear.
 | Selection | `docs/reviews/approved-map-selection.json` | Selected sources + hashes + superseded history. |
 | Manifest | `lib/office-map.json` | **The only place world coordinates exist.** Generated. |
 | Helpers | `lib/office-map.ts` | Types, strict validation, pure geometry. Imports the JSON and validates it at import time. |
-| Draw list | `lib/office-render-ops.ts` | Manifest → op list (rects/circles/text). Shared by the canvas and the preview so both look identical. |
-| Canvas | `lib/office-renderer.ts` | Pre-renders the op list to an offscreen canvas once; blits the camera crop and draws avatars per frame. |
+| Review draw list | `lib/office-render-ops.ts` | Manifest → labelled technical-review ops, including QA markers and legend. Never used by the runtime canvas. |
+| Game draw list | `lib/office-game-ops.ts` | Manifest → layered pixel-art ops. Contains no room labels, seat numbers, hotspot initials or internal ids. |
+| Canvas | `lib/office-renderer.ts` | Pre-renders only the game op list to an offscreen canvas once; blits the camera crop and draws avatars per frame. |
 | Input | `lib/office-interaction.ts` | Pure pointer→world mapping, avatar hit test, and the hotspot interaction reducer. |
+| Spawn policy | `lib/office-spawn.ts` | Manifest-seat reset and active-only remote position merge; stale inactive coordinates are ignored. |
 | Page | `app/page.tsx` | Wires the manifest into the existing UI. No map coordinates. |
-| Tests | `tests/office-map.test.ts`, `tests/office-map-sources.test.ts`, `tests/office-interaction.test.ts`, `tests/office-render-ops.test.ts`, `tests/office-renderer.test.ts`, `tests/office-viewport.test.ts` | Geometry, source/generator, interaction/pointer and preview invariants. |
-| Preview | `scripts/generate-map-preview.ts` | Deterministic SVG/PNG review artifact from the shared op list. |
+| Tests | `tests/office-map.test.ts`, `tests/office-map-sources.test.ts`, `tests/office-interaction.test.ts`, `tests/office-render-game.test.ts`, `tests/office-render-ops.test.ts`, `tests/office-renderer.test.ts`, `tests/office-spawn.test.ts`, `tests/office-viewport.test.ts` | Geometry, source/generator, interaction, game/review separation, spawn recovery and preview invariants. |
+| Preview | `scripts/generate-map-preview.ts` | Deterministic technical-review and game-art SVG/PNG artifacts from their respective op lists. |
 
-Nothing else may declare map coordinates. The page and the generator both consume
-`officeMap` and the same op list, so a geometry edit can never drift from the
-review artifact. `lib/office-map.json` is 52,510 bytes (4,983 bytes gzip).
+Nothing else may declare map coordinates. Both render modes consume `officeMap`;
+the game canvas and game-art preview consume the exact same game op list, while the
+technical preview remains deliberately separate. A geometry edit therefore cannot
+drift from either artifact. `lib/office-map.json` is 52,510 bytes (4,983 bytes gzip).
 
 ## World
 
@@ -86,6 +89,10 @@ review artifact. `lib/office-map.json` is 52,510 bytes (4,983 bytes gzip).
   (5 and 3 source px × 1.25).
 - Actor footprint: `halfWidth` 9, `feet` 12 — an **18 wide × 12 deep** foot box.
 - Spawn is the assigned seat of character 1 (seat-1), inside Bilik Geng Kami.
+- A successful claim always resets that character to its assigned manifest seat
+  and immediately heartbeats the reset position. Inactive availability rows never
+  overwrite a seat; active remote rows still update normally. `Reset posisi` and
+  the `R` shortcut share the same reset path and immediately persist it.
 - The building footprint is L-shaped: the notch left of the top row and above the
   lobby is *outside* the leased office, rendered as background and kept
   non-walkable by `void` blocks.
@@ -312,8 +319,13 @@ idempotent/restart-safe behaviour.
 npm run preview:map
 ```
 
-- Primary artifact: `docs/previews/final-office-map.svg` (1920x1052).
-- PNG `docs/previews/final-office-map.png` is produced when a rasterizer is
+- Technical review: `docs/previews/final-office-map.svg` and `.png` (1920x1052),
+  with room labels, markers and legend for geometry QA only.
+- Runtime game art: `docs/previews/final-office-game.svg` and `.png` (1920x960),
+  generated from the same `buildGameWorldOps()` used by the canvas. It has layered
+  pixel-art surfaces, walls, windows and furniture, but no debug labels, codes,
+  hotspot badges or seat numbers.
+- PNG artifacts are produced when a rasterizer is
   available: first a real SVG rasterizer (`rsvg-convert`, `resvg`, `inkscape`,
   ImageMagick), otherwise the bundled Pillow backend
   `scripts/rasterize-map-preview.py`, which paints the **exact same op list** the
@@ -323,7 +335,10 @@ npm run preview:map
 
 ### Label placement
 
-Labels are drawn last, in warm off-white (`#f4efdf`) at 16 px on an opaque dark
+The following label rules apply only to the technical review artifact. Labels are
+never painted into the runtime game world; the DOM caption and aria-live output
+report the active zone instead. Review labels are drawn last, in warm off-white
+(`#f4efdf`) at 16 px on an opaque dark
 band (`#0b1720`, warm border). A band goes in the first clear corner of the room.
 The obstacle test now treats a hotspot marker as an obstacle when its box
 **overlaps** the room (not only when its centre is inside), so a door marker that
@@ -358,7 +373,8 @@ two toilet labels) are set unlabelled; every real room keeps its label.
   axis-aligned window rects (`win-top`, `win-chamfer`, `win-right`).
 - **Lifts are non-transition hotspots** that report "Lift/transisi belum aktif di
   preview."
-- **Sealed interiors.** Gudang, both toilets and the Server are sealed blocks;
+- **Sealed interiors.** Gudang, both toilets and the Server are sealed collision
+  blocks, but game art does not cover them with an opaque debug overlay;
   their doors are hotspots/thresholds only, and there is no invented furniture in
   them. Gudang stays locked; the Server is restricted and reached from the Desk
   Collection side.
@@ -408,6 +424,25 @@ door approach. The generator suite (`tests/office-map-sources.test.ts`) covers t
 transform anchors/extents, source-hash selection and drift rejection,
 determinism, and that the shipped manifest is exactly the generated output.
 
+Quality-pass RED reproduced the production bug exactly: an inactive Farkhan row at
+`139,211` replaced the manifest seat at `1542.5,88.75`; the first policy tests also
+failed because the runtime draw list still contained review labels/markers and each
+furniture item was one flat rectangle. GREEN after the split and recovery fix:
+
+```
+npm run test:frontend  ->  # tests 125  # pass 125  # fail 0
+npm run backend:test   ->  # tests 58   # pass 58   # fail 0
+npm run backend:setup:test -> PASS
+npm run lint           ->  Found 0 warnings and 0 errors
+npx tsc --noEmit       ->  (no output, exit 0)
+npm run build:pages    ->  built
+git diff --check       ->  clean
+```
+
+Browser tests at 1440x1000, 320x480, 368x603 and 414x720 inject the stale
+`139,211` coordinate, assert the first claim heartbeat is the manifest seat, and
+assert `Reset posisi` sends an immediate second heartbeat to that same seat.
+
 Earlier slices (unchanged behaviour): slice A/B/C RED/GREEN evidence and the
 viewport/rotation fixes are recorded in git history of this file.
 
@@ -417,17 +452,24 @@ viewport/rotation fixes are recorded in git history of this file.
 | --- | --- | --- | --- |
 | `docs/previews/final-office-map.svg` | 1920x1052 | 33,576 | `23db5827…e2743d29` |
 | `docs/previews/final-office-map.png` | 1920x1052 | 73,637 | `5d749c6b…df4b0dc9` |
+| `docs/previews/final-office-game.svg` | 1920x960 | 260,688 | `b99e51ba…050b9ce8` |
+| `docs/previews/final-office-game.png` | 1920x960 | 48,242 | `9d98d32a…3b6339c` |
 | `lib/office-map.json` | — | 52,510 (4,983 gzip) | `28f553ed…54db90d9` |
 
 ## Bundle budget
 
 `npm run build:pages` (manifest + renderer + interactions in the app bundle):
 
-- JS: 301.97 kB raw / **94.51 kB gzip** (budget 105 kB).
-- CSS: 171.53 kB raw / **30.30 kB gzip** (budget 35 kB).
+- JS: 316.62 kB raw / **98.52 kB gzip** (budget 115 kB).
+- CSS: 171.59 kB raw / **30.31 kB gzip** (budget 35 kB).
 
 Both within budget; the manifest contributes ~5.0 kB gzip. The preview assets are
 separate from the app bundle.
+
+The quality pass adds `lib/office-game-ops.ts`, `lib/office-spawn.ts`, their tests,
+the game-art preview, runtime renderer separation, and accessible reset controls.
+It changes no approved geometry, backend hook, migration, dependency or runtime
+asset.
 
 ## Changed files (builder phase)
 
@@ -457,7 +499,7 @@ separate from the app bundle.
 
 - Serve the manifest to the client instead of bundling it (saves ~5 kB gzip).
 - Realtime movement (the client still polls every 2 s).
-- Browser QA pass at 320 px and on a real device.
+- Browser QA on a real physical phone (the automated 320/368/414 px passes are complete).
 
 ## Blockers
 

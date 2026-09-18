@@ -15,6 +15,7 @@ import {
 import { clampCamera, isBlocked, officeMap, zoneAt, type Direction } from '../lib/office-map';
 import { computeViewport, defaultViewport, type Viewport, type ViewportBox, type ViewportMode } from '../lib/office-viewport';
 import { playerAtPoint, resolveInteraction, screenToWorld } from '../lib/office-interaction';
+import { applyAvailability, resetActorToSeat } from '../lib/office-spawn';
 import { createWorldCanvas, drawActors, drawWorldCrop } from '../lib/office-renderer';
 import './office.css';
 
@@ -34,6 +35,7 @@ const INITIAL: Player[] = officeMap.seats.map(seat => ({
   sitting: false,
 }));
 const MOBILE_BREAKPOINT = 860;
+const HINT = 'WASD / panah · E interaksi · R reset';
 
 export default function Home() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -62,7 +64,7 @@ export default function Home() {
   const [messages, setMessages] = useState<OfficeMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [status, setStatus] = useState('Available');
-  const [hint, setHint] = useState('WASD / panah · E untuk interaksi');
+  const [hint, setHint] = useState(HINT);
   const [announcement, setAnnouncement] = useState('');
   const [zone, setZone] = useState('');
   const me = active ? INITIAL[active - 1] : undefined;
@@ -93,11 +95,10 @@ export default function Home() {
         const rows = await office.availability();
         if (disposed) return;
         setAvailable(rows);
-        rows.forEach(row => {
-          const p = players.current[row.id - 1]; if (!p) return;
-          p.online = row.active;
-          if (row.id !== activeId.current && Number.isFinite(row.x) && Number.isFinite(row.y)) { p.x = row.x!; p.y = row.y!; p.status = row.status || 'Available'; p.direction = (row.direction || 'down') as Direction; }
-        });
+        // Presence always syncs; backend coordinates only move an ACTIVE remote.
+        // An inactive row can never overwrite the manifest seat, and the local
+        // active player is never overwritten by its own availability echo.
+        players.current = applyAvailability(players.current, rows, activeId.current);
         if (office.api && office.id) {
           const p = players.current[office.id - 1];
           await office.heartbeat({ x: p.x, y: p.y, direction: p.direction, status: p.status });
@@ -123,7 +124,22 @@ export default function Home() {
 
   async function enter(id: number) {
     setPending(id); setError('');
-    try { await session.current.claim(id); activeId.current = id; players.current[id - 1].online = true; setActive(id); setStatus(players.current[id - 1].status); }
+    try {
+      await session.current.claim(id);
+      activeId.current = id;
+      // A claim always starts on the assigned seat, no matter what coordinates
+      // the backend last reported for this character.
+      players.current[id - 1] = resetActorToSeat(players.current[id - 1], officeMap, id);
+      players.current[id - 1].online = true;
+      setActive(id); setStatus(players.current[id - 1].status);
+      if (session.current.api) {
+        const p = players.current[id - 1];
+        try { await session.current.heartbeat({ x: p.x, y: p.y, direction: p.direction, status: p.status }); }
+        // The claim succeeded, so the local session is kept. The 2s sync loop
+        // retries the heartbeat; the claim is never replayed.
+        catch (e) { setError(e instanceof Error ? e.message : 'Posisi awal belum tersimpan; kantor akan mencoba lagi.'); }
+      }
+    }
     catch (e) { setError(e instanceof Error ? e.message : 'Gagal masuk.'); }
     finally { setPending(null); }
   }
@@ -144,6 +160,26 @@ export default function Home() {
     else if (outcome.kind === 'status-pulang') { p.status = 'Pulang'; setStatus('Pulang'); }
     setHint(outcome.hint);
     if ('announce' in outcome) setAnnouncement(outcome.announce);
+  }
+  // The single reset path shared by the Reset posisi button and the R shortcut:
+  // back to the assigned seat, standing and idle, keys cleared. An API-backed
+  // session heartbeats the exact reset position immediately so the server seat
+  // is authoritative at once; the local reset stands even if that fails because
+  // the 2s sync retries it. Only the active player can be reset.
+  async function resetPosition() {
+    const id = activeId.current;
+    if (!id) return;
+    keys.current.clear();
+    players.current[id - 1] = resetActorToSeat(players.current[id - 1], officeMap, id);
+    setHint(`Posisi direset ke kursimu · ${HINT}`);
+    setAnnouncement('Posisi direset ke kursimu.');
+    if (session.current.api) {
+      const p = players.current[id - 1];
+      try { await session.current.heartbeat({ x: p.x, y: p.y, direction: p.direction, status: p.status }); }
+      // The reset is kept locally and the 2s sync retries the heartbeat; the
+      // claim is never replayed.
+      catch (e) { setError(e instanceof Error ? e.message : 'Posisi reset belum tersimpan; kantor akan mencoba lagi.'); }
+    }
   }
   useEffect(() => {
     const sheet = new Image(); sheet.src = 'avatar/team-six.png';
@@ -187,6 +223,7 @@ export default function Home() {
       if (e.key === 'Enter') { e.preventDefault(); if (innerWidth < MOBILE_BREAKPOINT) setChatOpen(true); else chatInput.current?.focus(); clear(); return; }
       const key = e.key.toLowerCase();
       if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) { e.preventDefault(); keys.current.add(key); }
+      if (!e.repeat && key === 'r') { e.preventDefault(); void resetPosition(); return; }
       if (!e.repeat && ['e', 'x'].includes(key)) interact();
     }
     const onUp = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase());
@@ -241,10 +278,11 @@ export default function Home() {
     } catch (e) { setError(e instanceof Error ? e.message : 'Pesan gagal dikirim.'); }
   }
   const chat = <><header><small>SATU RUANG, SATU GENG</small><h2>Obrolan kantor</h2></header><div className="office-messages" aria-label="Riwayat obrolan">{!messages.length && <p className="empty-chat">Belum ada obrolan.<br />Mulai dengan menyapa geng 👋</p>}{messages.map(m => <article key={m.id}><b>{m.name}<time>{m.time}</time></b><p>{m.text}</p></article>)}</div><form onSubmit={send}><textarea ref={chatInput} aria-label="Pesan ke geng" disabled={!active} maxLength={500} value={draft} placeholder="Tulis pesan ke geng…" onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} /><button disabled={!active || !draft.trim()} aria-label="Kirim pesan"><Send size={20}/></button></form></>;
+  const presenceCount = available.filter(p => p.active).length || (active ? 1 : 0);
   return <main className="office-app">
     <output className="sr-only" aria-live="polite">{announcement}</output>
     <output className="sr-only" aria-live="polite">{zone ? `Zona aktif: ${zone}` : ''}</output>
-    <header className="office-header"><span className="office-logo">NK</span><div><strong>Nongkrong Kantor</strong><small>Bilik Geng Kami / Blugreen · Lt. 6</small></div><span className="office-presence">● {available.filter(p => p.active).length || (active ? 1 : 0)} di kantor</span>{active && <button onClick={() => void leave()}><LogOut size={16}/><span>Keluar</span></button>}</header>
+    <header className="office-header"><span className="office-logo">NK</span><div><strong>Nongkrong Kantor</strong><small>Bilik Geng Kami / Blugreen · Lt. 6</small></div><span className="office-presence" aria-label={`${presenceCount} di kantor`}><span aria-hidden="true">● {presenceCount}<span className="office-presence-label"> di kantor</span></span></span>{active && <button onClick={() => void leave()}><LogOut size={16}/><span>Keluar</span></button>}</header>
     <div className="office-layout"><section className="office-world"><div className="office-caption"><span>{zone || 'Ruang utama'}</span><small>{remote ? 'Kantor bersama' : 'Preview lokal · sesi antartab'}</small></div><div className="office-canvas-wrap"><canvas ref={canvas} aria-label="Peta kantor, kontrol WASD atau tombol arah" onClick={e => {
       const c = e.currentTarget, rect = c.getBoundingClientRect();
       const point = screenToWorld({ x: e.clientX, y: e.clientY }, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, { width: c.width, height: c.height }, camera.current);
@@ -260,7 +298,7 @@ export default function Home() {
       const busy = available.some(row => row.id === p.id && row.active);
       return <button disabled={!ready || busy || pending !== null} key={p.id} onClick={() => void enter(p.id)}><span className="entry-character" style={{ backgroundImage: "url('avatar/team-six.png')", backgroundPosition: `${p.sprite * 20}% 0%` }}/><strong>{p.name}</strong><small className={busy ? 'taken' : ''}>{pending === p.id ? 'Masuk…' : busy ? 'Sedang di kantor' : 'Tersedia'}</small></button>;
     })}</div><p className="entry-note">{remote ? 'Satu karakter untuk satu sesi. Karakter dilepas setelah keluar atau sesi berakhir.' : 'Preview: ketersediaan terkoordinasi antartab browser ini. Sesi bersama antarperangkat menunggu server kantor.'}</p></Dialog.Popup></Dialog.Portal></Dialog.Root>
-    <Dialog.Root open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="profile-popup"><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close><Dialog.Title>{selectedName}</Dialog.Title><Dialog.Description>{selectedStatus}</Dialog.Description>{selected === active && <label>Statusmu<input maxLength={80} value={status} onChange={e => setStatus(e.target.value)}/><button onClick={() => { if (activeId.current) players.current[activeId.current - 1].status = status.trim() || 'Available'; setSelected(null); }}>Simpan status</button></label>}</Dialog.Popup></Dialog.Portal></Dialog.Root>
+    <Dialog.Root open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="profile-popup"><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close><Dialog.Title>{selectedName}</Dialog.Title><Dialog.Description>{selectedStatus}</Dialog.Description>{selected === active && <label>Statusmu<input maxLength={80} value={status} onChange={e => setStatus(e.target.value)}/><button onClick={() => { if (activeId.current) players.current[activeId.current - 1].status = status.trim() || 'Available'; setSelected(null); }}>Simpan status</button></label>}{selected === active && <button type="button" className="reset-position" onClick={() => { void resetPosition(); setSelected(null); }}>Reset posisi</button>}</Dialog.Popup></Dialog.Portal></Dialog.Root>
     <Dialog.Root open={chatOpen} onOpenChange={setChatOpen}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="chat-popup"><Dialog.Title className="sr-only">Chat kantor</Dialog.Title><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close>{chat}</Dialog.Popup></Dialog.Portal></Dialog.Root>
   </main>;
 }

@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { officeMap, type Rect } from '../lib/office-map.ts';
-import { LABEL_SIZE, LEGEND_HEIGHT, PREVIEW_COLORS, buildPreviewOps, buildWorldOps, type Op } from '../lib/office-render-ops.ts';
+import { LABEL_SIZE, LEGEND_HEIGHT, PREVIEW_COLORS, buildReviewPreviewOps, buildReviewWorldOps, type Op } from '../lib/office-render-ops.ts';
 
 function overlap(a: Rect, b: Rect): boolean {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -29,12 +29,12 @@ function texts(ops: readonly Op[]): Extract<Op, { t: 'text' }>[] {
 }
 
 void test('the op builder is deterministic', () => {
-  assert.equal(JSON.stringify(buildWorldOps(officeMap)), JSON.stringify(buildWorldOps(officeMap)));
-  assert.equal(JSON.stringify(buildPreviewOps(officeMap)), JSON.stringify(buildPreviewOps(officeMap)));
+  assert.equal(JSON.stringify(buildReviewWorldOps(officeMap)), JSON.stringify(buildReviewWorldOps(officeMap)));
+  assert.equal(JSON.stringify(buildReviewPreviewOps(officeMap)), JSON.stringify(buildReviewPreviewOps(officeMap)));
 });
 
 void test('no label band overlaps a hotspot or seat marker', () => {
-  const ops = buildWorldOps(officeMap);
+  const ops = buildReviewWorldOps(officeMap);
   const bands = rects(ops).filter((op) => op.fill === PREVIEW_COLORS.labelBand);
   const markers = circles(ops);
 
@@ -51,7 +51,7 @@ void test('no label band overlaps a hotspot or seat marker', () => {
 });
 
 void test('zones marked unlabelled emit no room label band, while real rooms do', () => {
-  const bands = rects(buildWorldOps(officeMap)).filter((op) => op.fill === PREVIEW_COLORS.labelBand);
+  const bands = rects(buildReviewWorldOps(officeMap)).filter((op) => op.fill === PREVIEW_COLORS.labelBand);
   const bandCentreInside = (rect: Rect): boolean =>
     bands.some((band) => {
       const cx = band.x + band.w / 2;
@@ -74,7 +74,7 @@ void test('zones marked unlabelled emit no room label band, while real rooms do'
 
 void test('the pantry label clears the pantry hotspot markers', () => {
   const pantry = officeMap.zones.find((zone) => zone.id === 'pantry')!;
-  const band = rects(buildWorldOps(officeMap))
+  const band = rects(buildReviewWorldOps(officeMap))
     .filter((op) => op.fill === PREVIEW_COLORS.labelBand)
     .find((op) => op.x >= pantry.rect.x && op.x <= pantry.rect.x + pantry.rect.w && op.y >= pantry.rect.y && op.y <= pantry.rect.y + pantry.rect.h);
   assert.ok(band, 'the pantry has a label band');
@@ -88,7 +88,7 @@ void test('the pantry label clears the pantry hotspot markers', () => {
 });
 
 void test('footer title and subtitle never overlap the legend swatches', () => {
-  const preview = buildPreviewOps(officeMap);
+  const preview = buildReviewPreviewOps(officeMap);
   const footer = preview.ops.filter((op) => op.t !== 'text' || op.y >= officeMap.height);
   const title = texts(footer).find((op) => op.text.startsWith('DENAH KANTOR'))!;
   const subtitle = texts(footer).find((op) => op.text.startsWith('Preview vektor'))!;

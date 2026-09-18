@@ -1,10 +1,10 @@
-// Manifest-derived draw list, shared by the in-app canvas renderer
-// (lib/office-renderer.ts) and the offline preview generator
-// (scripts/generate-map-preview.ts).
+// Manifest-derived draw list for the technical review layer, plus the shared op
+// types. The in-app canvas paints the GAME ops from lib/office-game-ops.ts; the
+// offline preview generator (scripts/generate-map-preview.ts) renders both the
+// review artifact and the game artifact from their respective op lists.
 //
-// Kept in `lib/` so there is exactly one description of how the world is painted:
-// the SVG preview, the PNG preview and the canvas all consume this same op list.
-// The op list is pure data (rects, circles, text) so it is trivially testable.
+// Kept in `lib/` so the SVG preview, the PNG preview and the canvas all consume
+// pure data (rects, circles, text, groups) that is trivially testable.
 
 import { type FurnitureKind, type OfficeManifest, type Rect, type SurfaceKind } from './office-map.ts';
 
@@ -72,12 +72,32 @@ export type TextOp = {
   rotate?: number;
 };
 
-export type Op =
-  | { t: 'rect'; x: number; y: number; w: number; h: number; fill: string; opacity?: number; stroke?: string; strokeWidth?: number }
-  | { t: 'circle'; cx: number; cy: number; r: number; fill: string; stroke?: string; strokeWidth?: number; opacity?: number }
-  | TextOp;
+export type RectOp = { t: 'rect'; x: number; y: number; w: number; h: number; fill: string; opacity?: number; stroke?: string; strokeWidth?: number };
+export type CircleOp = { t: 'circle'; cx: number; cy: number; r: number; fill: string; stroke?: string; strokeWidth?: number; opacity?: number };
+
+// A layered visual group. `sourceId` is the stable manifest id of the thing
+// being drawn (a furniture item) and `semantic` names what it is
+// ("furniture:desk"). Both are metadata: they let tests and the QA preview
+// associate painted layers with approved geometry without ever painting a code
+// on the playfield. Only the nested ops are drawn.
+export type GroupOp = { t: 'group'; sourceId: string; semantic: string; ops: Op[] };
+
+export type Op = RectOp | CircleOp | TextOp | GroupOp;
+
+// Everything that actually paints: rect/circle/text, with groups flattened away.
+export type PaintedOp = RectOp | CircleOp | TextOp;
 
 export type PreviewOps = { width: number; height: number; ops: Op[] };
+
+/** Depth-first flatten of group ops into the painted ops they contain. */
+export function flattenOps(ops: readonly Op[]): PaintedOp[] {
+  const out: PaintedOp[] = [];
+  for (const op of ops) {
+    if (op.t === 'group') out.push(...flattenOps(op.ops));
+    else out.push(op);
+  }
+  return out;
+}
 
 function rectOp(rect: Rect, fill: string, extra: Partial<Extract<Op, { t: 'rect' }>> = {}): Op {
   return { t: 'rect', x: rect.x, y: rect.y, w: rect.w, h: rect.h, fill, ...extra };
@@ -213,7 +233,11 @@ function placeMarker(rect: Rect, bands: readonly Rect[]): { cx: number; cy: numb
   return { cx, cy };
 }
 
-export function buildWorldOps(manifest: OfficeManifest): Op[] {
+// Technical review layer: floors, walls, furniture blocks plus the diagnostic
+// overlays an engineer needs (room labels, hotspot badges, seat numbers). It is
+// what the SVG/PNG preview and QA reviews consume. The game layer lives in
+// lib/office-game-ops.ts and never paints these overlays.
+export function buildReviewWorldOps(manifest: OfficeManifest): Op[] {
   const ops: Op[] = [];
 
   ops.push(rectOp({ x: 0, y: 0, w: manifest.width, h: manifest.height }, PREVIEW_COLORS.world));
@@ -348,6 +372,6 @@ export function buildLegendOps(manifest: OfficeManifest): Op[] {
   return ops;
 }
 
-export function buildPreviewOps(manifest: OfficeManifest): PreviewOps {
-  return { width: manifest.width, height: manifest.height + LEGEND_HEIGHT, ops: [...buildWorldOps(manifest), ...buildLegendOps(manifest)] };
+export function buildReviewPreviewOps(manifest: OfficeManifest): PreviewOps {
+  return { width: manifest.width, height: manifest.height + LEGEND_HEIGHT, ops: [...buildReviewWorldOps(manifest), ...buildLegendOps(manifest)] };
 }
