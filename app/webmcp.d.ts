@@ -9,7 +9,7 @@ declare global {
         description: string;
         inputSchema: object;
         annotations?: { readOnlyHint?: boolean; untrustedContentHint?: boolean };
-        execute: (input: unknown) => unknown | Promise<unknown>;
+        execute: (input: unknown) => unknown;
       }, options?: { signal?: AbortSignal }) => void | Promise<void>;
     };
   }

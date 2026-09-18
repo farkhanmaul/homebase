@@ -22,6 +22,7 @@ import tempfile
 import time
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -774,6 +775,157 @@ class MessageOrderingTests(ServerTestCase):
         self.assertEqual(count, 200)
         self.assertEqual(lowest, 7)
         self.assertEqual(highest, 206)
+
+
+class MessageSequencingTests(ServerTestCase):
+    """Incremental retrieval: every message carries a monotonic `seq` and
+    `afterSeq` returns only messages strictly newer than it."""
+
+    env = {"OFFICE_MESSAGE_LIMIT": "100000", "OFFICE_MESSAGE_WINDOW_MS": "1000", "OFFICE_CLAIM_LIMIT": "100000"}
+
+    def setUp(self):
+        super().setUp()
+        self.clear_messages()
+
+    def post_messages(self, texts):
+        token = self.claim_with_cleanup(1)
+        for text in texts:
+            response = self.server.request("POST", "/api/office/messages", {"text": text}, token=token)
+            self.assertEqual(response.status, 200, response.text)
+
+    def messages_after(self, after_seq):
+        query = urllib.parse.urlencode({"afterSeq": after_seq})
+        response = self.server.request("GET", f"/api/office/messages?{query}")
+        self.assertEqual(response.status, 200, response.text)
+        return response.json()["messages"]
+
+    def test_every_message_has_a_strictly_increasing_integer_seq(self):
+        self.post_messages([f"seq-{index}" for index in range(4)])
+
+        messages = self.messages()
+        self.assertEqual(len(messages), 4)
+        seqs = [message["seq"] for message in messages]
+        for seq in seqs:
+            self.assertIsInstance(seq, int)
+        self.assertEqual(seqs, sorted(seqs))
+        self.assertEqual(len(set(seqs)), len(seqs))
+        # Existing clients ignore seq; the older fields must still be present.
+        for message in messages:
+            self.assertEqual(
+                sorted(message.keys()),
+                ["id", "name", "seq", "sprite", "text", "time"],
+            )
+
+    def test_after_seq_returns_only_newer_messages(self):
+        self.post_messages(["one", "two", "three"])
+        retained = self.messages()
+        cutoff = retained[1]["seq"]
+
+        newer = self.messages_after(cutoff)
+        self.assertEqual([message["text"] for message in newer], ["three"])
+        self.assertTrue(all(message["seq"] > cutoff for message in newer))
+
+    def test_after_seq_zero_returns_the_retained_history(self):
+        self.post_messages(["alpha", "beta"])
+        self.assertEqual(
+            [message["text"] for message in self.messages_after(0)],
+            ["alpha", "beta"],
+        )
+
+    def test_after_seq_past_the_newest_returns_empty(self):
+        self.post_messages(["only"])
+        newest = self.messages()[-1]["seq"]
+        self.assertEqual(self.messages_after(newest), [])
+
+    def test_after_seq_stays_monotonic_across_retention_eviction(self):
+        token = self.claim_with_cleanup(1)
+        for index in range(205):
+            response = self.server.request("POST", "/api/office/messages", {"text": f"inc-{index}"}, token=token)
+            self.assertEqual(response.status, 200, response.text)
+
+        retained = self.messages()
+        self.assertEqual(len(retained), 200)
+        # 205 writes evict seq 1..5, so the oldest retained seq is 6; asking for
+        # everything after it yields exactly the newest tail.
+        oldest = retained[0]["seq"]
+        self.assertEqual(oldest, 6)
+        self.assertEqual(
+            [message["seq"] for message in self.messages_after(oldest)],
+            [message["seq"] for message in retained[1:]],
+        )
+
+
+class AfterSeqValidationTests(ServerTestCase):
+    env = {"OFFICE_CLAIM_LIMIT": "100000"}
+
+    def test_invalid_after_seq_is_rejected(self):
+        for bad in ["-1", "1.5", "abc", "", "1e3", "0x2", " 5", "5 ", "null"]:
+            query = urllib.parse.urlencode({"afterSeq": bad})
+            response = self.server.request("GET", f"/api/office/messages?{query}")
+            self.assertEqual(response.status, 400, f"afterSeq={bad!r} -> {response.text}")
+
+    def test_absent_after_seq_is_valid_full_history(self):
+        response = self.server.request("GET", "/api/office/messages")
+        self.assertEqual(response.status, 200, response.text)
+        self.assertIn("messages", response.json())
+
+
+class CharactersReadRateLimitTests(ServerTestCase):
+    env = {"OFFICE_CHARACTERS_LIMIT": "3", "OFFICE_CHARACTERS_WINDOW_MS": "60000"}
+
+    def test_characters_read_is_rate_limited(self):
+        statuses = [self.server.request("GET", "/api/office/characters").status for _ in range(4)]
+        self.assertEqual(statuses[:3], [200, 200, 200], statuses)
+        self.assertEqual(statuses[3], 429, statuses)
+        self.assertEqual(self.rate_count(f"characters:{CLIENT_IP}"), 4)
+
+
+class MessagesReadRateLimitTests(ServerTestCase):
+    env = {"OFFICE_MESSAGES_READ_LIMIT": "3", "OFFICE_MESSAGES_READ_WINDOW_MS": "60000", "OFFICE_CLAIM_LIMIT": "100000"}
+
+    def test_messages_read_is_rate_limited(self):
+        statuses = [self.server.request("GET", "/api/office/messages").status for _ in range(4)]
+        self.assertEqual(statuses[:3], [200, 200, 200], statuses)
+        self.assertEqual(statuses[3], 429, statuses)
+        self.assertEqual(self.rate_count(f"messages-read:{CLIENT_IP}"), 4)
+
+
+class ReadRouteBucketIsolationTests(ServerTestCase):
+    env = {
+        "OFFICE_CHARACTERS_LIMIT": "1",
+        "OFFICE_CHARACTERS_WINDOW_MS": "60000",
+        "OFFICE_MESSAGES_READ_LIMIT": "100000",
+        "OFFICE_CLAIM_LIMIT": "100000",
+    }
+
+    def test_exhausting_characters_does_not_throttle_messages(self):
+        self.assertEqual(self.server.request("GET", "/api/office/characters").status, 200)
+        self.assertEqual(self.server.request("GET", "/api/office/characters").status, 429)
+        self.assertEqual(self.server.request("GET", "/api/office/messages").status, 200)
+
+
+class ReadCapacityTests(ServerTestCase):
+    # Default read budgets only, so this proves the shipped limits clear normal
+    # six-user polling behind a single IP.
+    env = {"OFFICE_CLAIM_LIMIT": "100000"}
+
+    def test_six_users_polling_reads_are_not_throttled(self):
+        for path in ["/api/office/characters", "/api/office/messages"]:
+            statuses = [self.server.request("GET", path).status for _ in range(30)]
+            self.assertEqual(statuses, [200] * 30, (path, statuses))
+
+
+class ReadRoutePruningTests(ServerTestCase):
+    env = {"OFFICE_CHARACTERS_LIMIT": "100000"}
+
+    def test_read_requests_prune_stale_limit_rows(self):
+        stale_bucket = "stale:read-prune"
+        day_ago_ms = int(time.time() * 1000) - 24 * 60 * 60 * 1000
+        self.insert_limit_row(stale_bucket, day_ago_ms, count=9)
+        self.assertEqual(self.rate_count(stale_bucket), 9)
+
+        self.assertEqual(self.server.request("GET", "/api/office/characters").status, 200)
+        self.assertIsNone(self.rate_count(stale_bucket))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
-name: Deploy GitHub Pages
+name: Verify and deploy GitHub Pages
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -10,15 +11,14 @@ permissions:
   pages: write
   id-token: write
 
+# Scope cancellation to a single workflow + ref so a PR run can never cancel an
+# in-progress main deployment. Same-ref pushes still supersede one another.
 concurrency:
-  group: pages
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,11 +27,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build:pages
+      - run: npm run lint
+      - run: npm run test:frontend
+      - run: npm run backend:test
       - uses: actions/configure-pages@v5
+      - run: npm run build:pages
+      # Only the main branch publishes the Pages artifact; PRs validate the
+      # build but never upload or deploy.
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           path: dist-pages
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

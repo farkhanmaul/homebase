@@ -1,6 +1,6 @@
 # Nongkrong Kantor
 
-Prototipe interaktif ruang virtual pixel-art untuk geng kantor kecil. Fokus versi ini: ruangan, delapan avatar, status, perpindahan spot, chat lokal, editor avatar, dan tampilan responsif.
+Prototipe interaktif ruang virtual pixel-art untuk geng kantor kecil. Fokus versi ini: ruangan, enam avatar tetap, status, perpindahan spot, chat lokal, dan tampilan responsif.
 
 ## Menjalankan lokal
 

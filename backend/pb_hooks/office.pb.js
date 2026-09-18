@@ -13,6 +13,12 @@
 
 routerAdd("GET", "/api/office/characters", (e) => {
   const lib = require(__hooks + "/office_lib.js");
+
+  // Anonymous read budget, separate from every write bucket. Counted first so
+  // even failed/duplicate polls share the caller's window.
+  const read = lib.rateConfig().characters;
+  lib.consumeRate(e.app, "characters:" + (e.remoteIP() || "unknown"), read.limit, read.window);
+
   const now = Date.now();
   const records = e.app.findRecordsByFilter("office_characters", "", "cid", 6, 0);
   const characters = [];
@@ -118,10 +124,19 @@ routerAdd("POST", "/api/office/heartbeat", (e) => {
 
 routerAdd("GET", "/api/office/messages", (e) => {
   const lib = require(__hooks + "/office_lib.js");
-  const records = e.app.findRecordsByFilter("office_messages", "", "-seq", lib.KEEP_MESSAGES, 0);
+
+  // Separate anonymous read bucket from the message *write* bucket.
+  const read = lib.rateConfig().messageRead;
+  lib.consumeRate(e.app, "messages-read:" + (e.remoteIP() || "unknown"), read.limit, read.window);
+
+  // Incremental retrieval: absent afterSeq yields the retained history (cursor
+  // 0), a valid cursor yields only messages strictly newer than it. The cursor
+  // is validated to a non-negative integer before it reaches the filter.
+  const afterSeq = lib.parseAfterSeq(e.requestInfo().query);
+  const records = e.app.findRecordsByFilter("office_messages", "seq > " + afterSeq, "seq", lib.KEEP_MESSAGES, 0);
   const messages = [];
-  for (let i = records.length - 1; i >= 0; i--) {
-    messages.push(lib.messagePayload(records[i]));
+  for (const record of records) {
+    messages.push(lib.messagePayload(record));
   }
   return e.json(200, { messages: messages });
 });

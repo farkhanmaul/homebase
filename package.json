@@ -11,6 +11,7 @@
     "build:pages": "vite build --config vite.pages.config.ts",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
+    "test:frontend": "node --experimental-strip-types --test tests/*.test.ts",
     "format": "oxfmt",
     "backend:setup": "bash scripts/setup-pocketbase.sh",
     "backend:setup:test": "bash scripts/test-setup-pocketbase.sh",
@@ -55,6 +56,9 @@
     "typescript": "5.9.3",
     "vite": "8.0.13",
     "wrangler": "4.92.0"
+  },
+  "overrides": {
+    "undici": "^7.29.1"
   },
   "type": "module"
 }

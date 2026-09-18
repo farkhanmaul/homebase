@@ -51,6 +51,12 @@ function rateConfig() {
     // sharing one address: 6 users x 5 beats / 10s = 30, plus generous headroom.
     heartbeat: { limit: intEnv("OFFICE_HEARTBEAT_LIMIT", 120), window: intEnv("OFFICE_HEARTBEAT_WINDOW_MS", 10000) },
     message: { limit: intEnv("OFFICE_MESSAGE_LIMIT", 12), window: intEnv("OFFICE_MESSAGE_WINDOW_MS", 10000) },
+    // Anonymous reads are keyed by IP too, so they must also clear six users
+    // polling every 2s (6 x 5 = 30 / 10s) with headroom. Read buckets are kept
+    // separate from the message *write* bucket so POSTing cannot throttle reads
+    // and vice versa.
+    characters: { limit: intEnv("OFFICE_CHARACTERS_LIMIT", 120), window: intEnv("OFFICE_CHARACTERS_WINDOW_MS", 10000) },
+    messageRead: { limit: intEnv("OFFICE_MESSAGES_READ_LIMIT", 120), window: intEnv("OFFICE_MESSAGES_READ_WINDOW_MS", 10000) },
   };
 }
 
@@ -103,6 +109,24 @@ function parseText(value) {
   if (!text) throw new BadRequestError("Pesan tidak boleh kosong.");
   if (text.length > MAX_TEXT) throw new BadRequestError("Pesan terlalu panjang (maks 500).");
   return text;
+}
+
+// Validates the optional `afterSeq` query used for incremental message
+// retrieval. An absent key means "full retained history" (cursor 0). A present
+// key must be a non-negative base-10 integer; anything else, including an empty
+// value, is rejected so a malformed cursor cannot silently return the wrong
+// slice of history.
+function parseAfterSeq(query) {
+  if (!query || !Object.prototype.hasOwnProperty.call(query, "afterSeq")) return 0;
+  const raw = query.afterSeq;
+  if (typeof raw !== "string" || !/^\d+$/.test(raw)) {
+    throw new BadRequestError("afterSeq tidak valid.");
+  }
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value)) {
+    throw new BadRequestError("afterSeq tidak valid.");
+  }
+  return value;
 }
 
 // Resolves the character bound to the X-Office-Session bearer token. Never
@@ -201,6 +225,7 @@ function characterPayload(record, now) {
 function messagePayload(record) {
   return {
     id: record.id,
+    seq: record.getInt("seq"),
     name: record.getString("name"),
     text: record.getString("text"),
     time: record.getString("time"),
@@ -231,6 +256,7 @@ module.exports = {
   parseDirection: parseDirection,
   parseStatus: parseStatus,
   parseText: parseText,
+  parseAfterSeq: parseAfterSeq,
   requireCharacter: requireCharacter,
   consumeRate: consumeRate,
   nextMessageSeq: nextMessageSeq,

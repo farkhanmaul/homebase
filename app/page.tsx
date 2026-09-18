@@ -1,14 +1,21 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { SyntheticEvent } from 'react';
 import { LogOut, MessageCircle, Send, X } from 'lucide-react';
 import { Dialog } from '@base-ui/react/dialog';
-import { OfficeSession, type Occupant } from '../lib/office-session';
+import {
+  OfficeSession,
+  mergeMessages,
+  reduceChatPoll,
+  type ChatPollState,
+  type Occupant,
+  type OfficeMessage,
+} from '../lib/office-session';
 import './office.css';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 type Player = { id: number; name: string; sprite: number; x: number; y: number; direction: Direction; walking: boolean; status: string; online: boolean; sitting: boolean };
-type Message = { id: string | number; name: string; text: string; time: string; sprite: number };
 const SEATS = [{ x: 250, y: 365 }, { x: 865, y: 258 }, { x: 250, y: 142 }, { x: 600, y: 258 }, { x: 390, y: 365 }, { x: 390, y: 142 }];
 const NAMES = ['Farkhan', 'Surya', 'Imam', 'Malla', 'Siska', 'Mona'];
 const INITIAL: Player[] = NAMES.map((name, i) => ({ id: i + 1, name, sprite: i, ...SEATS[i], direction: i === 0 || i === 4 ? 'up' : i === 1 || i === 3 ? 'left' : 'down', walking: false, status: 'Available', online: false, sitting: false }));
@@ -24,6 +31,7 @@ export default function Home() {
   const activeId = useRef<number | null>(null);
   const chatInput = useRef<HTMLTextAreaElement>(null);
   const blockedInput = useRef(false);
+  const chatPoll = useRef<ChatPollState>({ initialized: false, seq: 0 });
   const [active, setActive] = useState<number | null>(null);
   const [available, setAvailable] = useState<Occupant[]>([]);
   const [ready, setReady] = useState(false);
@@ -32,19 +40,37 @@ export default function Home() {
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<number | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<OfficeMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [status, setStatus] = useState('Available');
   const [hint, setHint] = useState('WASD / panah · E untuk duduk');
-  const me = active ? players.current[active - 1] : undefined;
-  blockedInput.current = selected !== null || chatOpen;
+  const [announcement, setAnnouncement] = useState('');
+  const me = active ? INITIAL[active - 1] : undefined;
+  const selectedName = selected !== null ? INITIAL[selected - 1].name : 'Profil';
+  const selectedStatus = selected !== null
+    ? (selected === active ? status : available.find(row => row.id === selected)?.status || 'Available')
+    : '';
+
+  useEffect(() => { blockedInput.current = selected !== null || chatOpen; }, [selected, chatOpen]);
 
   useEffect(() => {
     let disposed = false, busy = false;
+    const office = session.current;
+    // One recovery path for every dead session: the session notifies on any 401
+    // or explicit release, so send()/leave()/heartbeat all reset the same UI
+    // state without each call site re-implementing it.
+    const unsubscribe = office.onSessionCleared(() => {
+      if (disposed) return;
+      activeId.current = null;
+      setActive(null);
+      setSelected(null);
+      setChatOpen(false);
+      setDraft('');
+    });
     async function sync() {
       if (busy) return; busy = true;
       try {
-        const rows = await session.current.availability();
+        const rows = await office.availability();
         if (disposed) return;
         setAvailable(rows);
         rows.forEach(row => {
@@ -52,19 +78,27 @@ export default function Home() {
           p.online = row.active;
           if (row.id !== activeId.current && Number.isFinite(row.x) && Number.isFinite(row.y)) { p.x = row.x!; p.y = row.y!; p.status = row.status || 'Available'; p.direction = (row.direction || 'down') as Direction; }
         });
-        if (session.current.api && session.current.id) {
-          const p = players.current[session.current.id - 1];
-          await session.current.request('heartbeat', { x: p.x, y: p.y, direction: p.direction, status: p.status });
-          const data = await session.current.request('messages');
-          if (!disposed) setMessages(data.messages);
+        if (office.api && office.id) {
+          const p = players.current[office.id - 1];
+          await office.heartbeat({ x: p.x, y: p.y, direction: p.direction, status: p.status });
+          const incoming = await office.messages(chatPoll.current.seq);
+          if (!disposed) {
+            const result = reduceChatPoll(chatPoll.current, incoming);
+            chatPoll.current = result.state;
+            if (incoming.length) setMessages(prev => mergeMessages(prev, incoming));
+            if (result.announcement) setAnnouncement(result.announcement);
+          }
         }
         if (!disposed) setError('');
-      } catch (e) { if (!disposed) setError(e instanceof Error ? e.message : 'Koneksi terputus.'); }
+      } catch (e) {
+        if (disposed) return;
+        setError(e instanceof Error ? e.message : 'Koneksi terputus.');
+      }
       finally { busy = false; }
     }
-    void session.current.configure().then(() => { if (!disposed) { setRemote(!!session.current.api); setReady(true); void sync(); } }).catch(() => setError('Konfigurasi kantor tidak dapat dimuat. Muat ulang halaman.'));
+    void office.configure().then(() => { if (!disposed) { setRemote(!!office.api); setReady(true); void sync(); } }).catch(() => setError('Konfigurasi kantor tidak dapat dimuat. Muat ulang halaman.'));
     const timer = setInterval(() => { if (!document.hidden) void sync(); }, 2000);
-    return () => { disposed = true; clearInterval(timer); session.current.releaseLock?.(); };
+    return () => { disposed = true; unsubscribe(); clearInterval(timer); office.releaseLock?.(); };
   }, []);
 
   async function enter(id: number) {
@@ -75,7 +109,8 @@ export default function Home() {
   }
   async function leave() {
     keys.current.clear();
-    try { await session.current.release(); if (activeId.current) players.current[activeId.current - 1].online = false; activeId.current = null; setActive(null); setSelected(null); }
+    const id = activeId.current;
+    try { await session.current.release(); if (id) players.current[id - 1].online = false; }
     catch { setError('Belum dapat melepas sesi. Coba lagi; sesi server juga kedaluwarsa otomatis.'); }
   }
   function interact() {
@@ -140,29 +175,39 @@ export default function Home() {
     return () => { cancelAnimationFrame(handle); removeEventListener('keydown', onDown); removeEventListener('keyup', onUp); removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear); };
   }, []);
 
-  async function send(e: FormEvent) {
+  async function send(e: SyntheticEvent) {
     e.preventDefault(); const text = draft.trim(); if (!text || text.length > 500 || !activeId.current) return;
     const p = players.current[activeId.current - 1];
     try {
-      if (session.current.api) { await session.current.request('messages', { text }); setMessages((await session.current.request('messages')).messages); }
-      else setMessages(rows => [...rows, { id: Date.now(), name: p.name, sprite: p.sprite, text, time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }].slice(-200));
+      if (session.current.api) {
+        await session.current.sendMessage(text);
+        const incoming = await session.current.messages(chatPoll.current.seq);
+        if (incoming.length) { setMessages(prev => mergeMessages(prev, incoming)); chatPoll.current = reduceChatPoll(chatPoll.current, incoming).state; }
+      }
+      else setMessages(rows => [...rows, { id: Date.now(), seq: rows.length + 1, name: p.name, sprite: p.sprite, text, time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }].slice(-200));
       setDraft('');
     } catch (e) { setError(e instanceof Error ? e.message : 'Pesan gagal dikirim.'); }
   }
-  const chat = <><header><small>SATU RUANG, SATU GENG</small><h2>Obrolan kantor</h2></header><div className="office-messages">{!messages.length && <p className="empty-chat">Belum ada obrolan.<br />Mulai dengan menyapa geng 👋</p>}{messages.map(m => <article key={m.id}><b>{m.name}<time>{m.time}</time></b><p>{m.text}</p></article>)}</div><form onSubmit={send}><textarea ref={chatInput} aria-label="Pesan ke geng" disabled={!active} maxLength={500} value={draft} placeholder="Tulis pesan ke geng…" onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} /><button disabled={!active || !draft.trim()} aria-label="Kirim pesan"><Send size={20}/></button></form></>;
+  const chat = <><header><small>SATU RUANG, SATU GENG</small><h2>Obrolan kantor</h2></header><div className="office-messages" aria-label="Riwayat obrolan">{!messages.length && <p className="empty-chat">Belum ada obrolan.<br />Mulai dengan menyapa geng 👋</p>}{messages.map(m => <article key={m.id}><b>{m.name}<time>{m.time}</time></b><p>{m.text}</p></article>)}</div><form onSubmit={send}><textarea ref={chatInput} aria-label="Pesan ke geng" disabled={!active} maxLength={500} value={draft} placeholder="Tulis pesan ke geng…" onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} /><button disabled={!active || !draft.trim()} aria-label="Kirim pesan"><Send size={20}/></button></form></>;
   return <main className="office-app">
+    <output className="sr-only" aria-live="polite">{announcement}</output>
     <header className="office-header"><span className="office-logo">NK</span><div><strong>Nongkrong Kantor</strong><small>Bilik Geng Kami / Blugreen · Lt. 6</small></div><span className="office-presence">● {available.filter(p => p.active).length || (active ? 1 : 0)} di kantor</span>{active && <button onClick={() => void leave()}><LogOut size={16}/><span>Keluar</span></button>}</header>
     <div className="office-layout"><section className="office-world"><div className="office-caption"><span>RUANG UTAMA</span><small>{remote ? 'Kantor bersama' : 'Preview lokal · sesi antartab'}</small></div><div className="office-canvas-wrap"><canvas ref={canvas} aria-label="Peta kantor, kontrol WASD atau tombol arah" onClick={e => {
       const c = e.currentTarget, rect = c.getBoundingClientRect(), scale = Math.min(rect.width / c.width, rect.height / c.height);
       const x = (e.clientX - rect.left - (rect.width - c.width * scale) / 2) / scale + camera.current.x, y = (e.clientY - rect.top - (rect.height - c.height * scale) / 2) / scale + camera.current.y;
       const found = players.current.find(p => p.online && Math.abs(p.x - x) < 25 && y > p.y - 65 && y < p.y + 20); if (found) { keys.current.clear(); setSelected(found.id); }
-    }}/></div><footer className="office-controls"><div><small>KARAKTERMU</small><strong>{me?.name || 'Pilih karakter untuk masuk'}</strong></div><span>{hint}</span><button disabled={!active} onClick={() => { keys.current.clear(); setSelected(active); }}>Status</button><button disabled={!active} onClick={interact}>Duduk <kbd>E</kbd></button><button className="open-mobile-chat" onClick={() => setChatOpen(true)}><MessageCircle size={18}/></button></footer><div className="office-dpad">{[['w','↑'],['a','←'],['s','↓'],['d','→']].map(([key,label]) => <button key={key} aria-label={`Gerak ${label}`} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); if (active) keys.current.add(key); }} onPointerUp={() => keys.current.delete(key)} onPointerCancel={() => keys.current.delete(key)}>{label}</button>)}<button onClick={interact}>E</button></div></section><aside className="office-chat">{chat}</aside></div>
+    }}/></div>
+    <ul className="office-roster" aria-label="Daftar penghuni kantor">{INITIAL.map(p => {
+      const row = available.find(entry => entry.id === p.id);
+      return <li key={p.id}><button type="button" onClick={() => setSelected(p.id)}>{p.name} · {row?.status || 'Available'} · {row?.active ? 'Online' : 'Offline'}</button></li>;
+    })}</ul>
+    <footer className="office-controls"><div><small>KARAKTERMU</small><strong>{me?.name || 'Pilih karakter untuk masuk'}</strong></div><span>{hint}</span><button disabled={!active} onClick={() => { keys.current.clear(); setSelected(active); }}>Status</button><button disabled={!active} onClick={interact}>Duduk <kbd>E</kbd></button><button className="open-mobile-chat" aria-label="Buka obrolan kantor" onClick={() => setChatOpen(true)}><MessageCircle size={18}/></button></footer><div className="office-dpad">{[['w','↑'],['a','←'],['s','↓'],['d','→']].map(([key,label]) => <button key={key} aria-label={`Gerak ${label}`} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); if (active) keys.current.add(key); }} onPointerUp={() => keys.current.delete(key)} onPointerCancel={() => keys.current.delete(key)}>{label}</button>)}<button aria-label="Interaksi (E)" onClick={interact}>E</button></div></section><aside className="office-chat">{chat}</aside></div>
     {error && <div className="office-error" role="alert">{error}</div>}
     <Dialog.Root open={!active} disablePointerDismissal><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="entry-popup"><small className="entry-eyebrow">BLUGREEN / LANTAI 6</small><Dialog.Title className="entry-title">Selamat datang di bilik.</Dialog.Title><Dialog.Description className="entry-description">Siapa yang datang hari ini? Pilih karaktermu dan langsung bergabung.</Dialog.Description><div className="character-grid">{INITIAL.map(p => {
       const busy = available.some(row => row.id === p.id && row.active);
       return <button disabled={!ready || busy || pending !== null} key={p.id} onClick={() => void enter(p.id)}><span className="entry-character" style={{ backgroundImage: "url('avatar/team-six.png')", backgroundPosition: `${p.sprite * 20}% 0%` }}/><strong>{p.name}</strong><small className={busy ? 'taken' : ''}>{pending === p.id ? 'Masuk…' : busy ? 'Sedang di kantor' : 'Tersedia'}</small></button>;
     })}</div><p className="entry-note">{remote ? 'Satu karakter untuk satu sesi. Karakter dilepas setelah keluar atau sesi berakhir.' : 'Preview: ketersediaan terkoordinasi antartab browser ini. Sesi bersama antarperangkat menunggu server kantor.'}</p></Dialog.Popup></Dialog.Portal></Dialog.Root>
-    <Dialog.Root open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="profile-popup"><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close><Dialog.Title>{selected ? players.current[selected - 1].name : 'Profil'}</Dialog.Title><Dialog.Description>{selected ? players.current[selected - 1].status : ''}</Dialog.Description>{selected === active && <label>Statusmu<input maxLength={80} value={status} onChange={e => setStatus(e.target.value)}/><button onClick={() => { if (activeId.current) players.current[activeId.current - 1].status = status.trim() || 'Available'; setSelected(null); }}>Simpan status</button></label>}</Dialog.Popup></Dialog.Portal></Dialog.Root>
+    <Dialog.Root open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="profile-popup"><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close><Dialog.Title>{selectedName}</Dialog.Title><Dialog.Description>{selectedStatus}</Dialog.Description>{selected === active && <label>Statusmu<input maxLength={80} value={status} onChange={e => setStatus(e.target.value)}/><button onClick={() => { if (activeId.current) players.current[activeId.current - 1].status = status.trim() || 'Available'; setSelected(null); }}>Simpan status</button></label>}</Dialog.Popup></Dialog.Portal></Dialog.Root>
     <Dialog.Root open={chatOpen} onOpenChange={setChatOpen}><Dialog.Portal><Dialog.Backdrop className="entry-backdrop"/><Dialog.Popup className="chat-popup"><Dialog.Title className="sr-only">Chat kantor</Dialog.Title><Dialog.Close className="close-panel" aria-label="Tutup"><X/></Dialog.Close>{chat}</Dialog.Popup></Dialog.Portal></Dialog.Root>
   </main>;
 }
