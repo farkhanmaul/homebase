@@ -18,7 +18,7 @@ import type { ViewportBox, ViewportMode } from '../lib/office-viewport';
 import { resolveCamera } from '../lib/office-camera';
 import { playerAtPoint, resolveInteraction, screenToWorld } from '../lib/office-interaction';
 import { applyAvailability, resetActorToSeat } from '../lib/office-spawn';
-import { actorPresentationScale, createWorldCanvas, drawActors, drawWorldCrop, assetUrl } from '../lib/office-renderer';
+import { actorPresentationScale, assetUrl, canvasBackingSize, createWorldCanvas, drawActors, drawWorldCrop, worldRenderScale } from '../lib/office-renderer';
 import { BILIK_ZONE_IMAGE_SRC } from '../lib/office-game-ops';
 import './office.css';
 
@@ -46,6 +46,9 @@ export default function Home() {
   const session = useRef(new OfficeSession());
   const keys = useRef(new Set<string>());
   const camera = useRef({ x: 0, y: 0 });
+  // The current camera crop in world units, mirrored for the pointer mapping so
+  // the canvas backing store can be DPR-sized without affecting hit tests.
+  const cameraView = useRef({ width: 0, height: 0 });
   const activeId = useRef<number | null>(null);
   const chatInput = useRef<HTMLTextAreaElement>(null);
   const blockedInput = useRef(false);
@@ -253,16 +256,23 @@ export default function Home() {
         }
       }
       // The backing size matches the container aspect, so CSS 100% x 100% fills
-      // the box without object-fit letterboxing.
+      // the box without object-fit letterboxing. It is DPR-aware: the bitmap is
+      // sized to the CSS box in device pixels, so the browser never upscales it
+      // (the source of the previously soft actors/world). One world->device
+      // transform lets every op keep drawing in world units.
       const mode: ViewportMode = innerWidth < MOBILE_BREAKPOINT ? 'mobile' : 'desktop';
-      const { camera: cam, view: cameraView } = resolveCamera(officeMap, canvasBox.current, mode, p ? { x: p.x, y: p.y } : { x: 0, y: 0 });
-      if (target.width !== cameraView.w || target.height !== cameraView.h) { target.width = cameraView.w; target.height = cameraView.h; }
+      const { camera: cam, view: camView } = resolveCamera(officeMap, canvasBox.current, mode, p ? { x: p.x, y: p.y } : { x: 0, y: 0 });
+      const backing = canvasBackingSize(camView, canvasBox.current, window.devicePixelRatio || 1);
+      if (target.width !== backing.w || target.height !== backing.h) { target.width = backing.w; target.height = backing.h; }
+      cameraView.current = { width: camView.w, height: camView.h };
+      const renderScale = worldRenderScale(camView, backing);
+      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
       camera.current = cam;
       // Hold the avatars/labels/ring at a constant CSS size: the camera crop
-      // maps cameraView.w world px onto the box's CSS width, so this factor
+      // maps camView.w world px onto the box's CSS width, so this factor
       // converts the authored CSS sizes into world px for the current zoom.
-      const actorScale = actorPresentationScale(cameraView.w, canvasBox.current.width);
-      drawWorldCrop(ctx, world, cam, cameraView);
+      const actorScale = actorPresentationScale(camView.w, canvasBox.current.width);
+      drawWorldCrop(ctx, world, cam, camView);
       drawActors(ctx, players.current, { camera: cam, activeId: activeId.current, sheet, now, reducedMotion: reduced, scale: actorScale });
       // Only touch React state when the zone actually changes.
       const zoneName = p ? zoneAt(officeMap, p.x, p.y)?.name ?? '' : '';
@@ -294,7 +304,7 @@ export default function Home() {
     <header className="office-header"><span className="office-logo">NK</span><div><strong>Nongkrong Kantor</strong><small>Bilik Geng Kami / Blugreen · Lt. 6</small></div><span className="office-presence" aria-label={`${presenceCount} di kantor`}><span aria-hidden="true">● {presenceCount}<span className="office-presence-label"> di kantor</span></span></span>{active && <button onClick={() => void leave()}><LogOut size={16}/><span>Keluar</span></button>}</header>
     <div className="office-layout"><section className="office-world"><div className="office-caption"><span>{zone || 'Ruang utama'}</span><small>{remote ? 'Kantor bersama' : 'Preview lokal · sesi antartab'}</small></div><div className="office-canvas-wrap"><canvas ref={canvas} aria-label="Peta kantor, kontrol WASD atau tombol arah" onClick={e => {
       const c = e.currentTarget, rect = c.getBoundingClientRect();
-      const point = screenToWorld({ x: e.clientX, y: e.clientY }, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, { width: c.width, height: c.height }, camera.current);
+      const point = screenToWorld({ x: e.clientX, y: e.clientY }, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, cameraView.current, camera.current);
       const found = playerAtPoint(players.current, point); if (found !== null) { keys.current.clear(); setSelected(found); }
     }}/></div>
     <ul className="office-roster" aria-label="Daftar penghuni kantor">{INITIAL.map(p => {

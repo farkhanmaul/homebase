@@ -258,6 +258,167 @@ function shadow(rect: Rect, dx = 3, dy = 4, opacity = 0.22): Op {
   return rectOp(rect.x + dx, rect.y + dy, rect.w, rect.h, GAME_PALETTE.shadow, opacity);
 }
 
+// ---------------------------------------------------------------------------
+// Perspective primitives
+//
+// One light direction (from the north-west) and one camera (looking from the
+// south) give the whole office the same solid read as the approved Bilik Geng
+// Kami raster: every form shows a contact shadow, a visible south front face and
+// a lit top lip. Each primitive derives from the approved rect and stays inside
+// a small skirt, so none of it is a collider and no footprint moves.
+// ---------------------------------------------------------------------------
+
+// Wall front-face depth in world px. Deeper than the wall thickness so the
+// extrusion reads as a solid block rather than a thick outline.
+export const WALL_FACE_DEPTH = 7;
+
+/**
+ * The visible front face of a wall: an extruded band on the room-facing side
+ * (south for a horizontal wall, east for a vertical one) with a lit top cap, a
+ * baseboard and a tight ground shadow. Walls paint before openings, so a doorway
+ * still cuts the face.
+ */
+export function wallFaceOps(wall: Wall): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(wall.rect);
+  const full = wall.kind === 'full';
+  const face = full ? F.wallFace : F.partitionFace;
+  const cap = full ? F.wallCap : F.partitionCap;
+  const edge = full ? F.wallEdge : F.partitionEdge;
+  const d = WALL_FACE_DEPTH;
+  if (r.w >= r.h) {
+    const x = r.x;
+    const y = r.y + r.h;
+    const w = r.w;
+    return [
+      rectOp(x, y, w, d, F.ink),
+      rectOp(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, d - 2), face),
+      rectOp(x + 1, y + 1, Math.max(1, w - 2), 1, cap),
+      rectOp(x + 1, y + d - 2, Math.max(1, w - 2), 1, edge, 0.9),
+      rectOp(x, y + d, w, 1, F.shadow, 0.22),
+    ];
+  }
+  const x = r.x + r.w;
+  const y = r.y;
+  const h = r.h;
+  return [
+    rectOp(x, y, d, h, F.ink),
+    rectOp(x + 1, y + 1, Math.max(1, d - 2), Math.max(1, h - 2), face),
+    rectOp(x + 1, y + 1, 1, Math.max(1, h - 2), cap),
+    rectOp(x + d - 2, y + 1, 1, Math.max(1, h - 2), edge, 0.9),
+    rectOp(x + d, y, 1, h, F.shadow, 0.22),
+  ];
+}
+
+// Per-kind front-face depth. Wood desks/counters are the deepest so their
+// massing reads at gameplay scale; thin wall-mounted pieces stay shallow.
+export const FURNITURE_DEPTH: Record<FurnitureKind, number> = {
+  desk: 5,
+  table: 4,
+  counter: 5,
+  cabinet: 4,
+  chair: 2,
+  fridge: 4,
+  dispenser: 3,
+  screen: 2,
+  sink: 3,
+  sofa: 4,
+  board: 2,
+};
+
+const FURNITURE_FACE: Record<FurnitureKind, { face: string; hi: string }> = {
+  desk: { face: GAME_PALETTE.woodSide, hi: GAME_PALETTE.woodTopHi },
+  table: { face: GAME_PALETTE.woodSide, hi: GAME_PALETTE.woodTopHi },
+  counter: { face: GAME_PALETTE.woodSide, hi: GAME_PALETTE.woodTopHi },
+  cabinet: { face: GAME_PALETTE.cabinetDark, hi: GAME_PALETTE.cabinetHi },
+  chair: { face: GAME_PALETTE.chairBase, hi: GAME_PALETTE.chairSeatHi },
+  fridge: { face: GAME_PALETTE.fridgeDark, hi: GAME_PALETTE.fridgeDoor },
+  dispenser: { face: GAME_PALETTE.dispenserDark, hi: GAME_PALETTE.dispenserBody },
+  screen: { face: GAME_PALETTE.metalDark, hi: GAME_PALETTE.screenHi },
+  sink: { face: GAME_PALETTE.sinkRim, hi: GAME_PALETTE.metalHi },
+  sofa: { face: GAME_PALETTE.sofaPiping, hi: GAME_PALETTE.sofaCushionHi },
+  board: { face: GAME_PALETTE.boardFrame, hi: GAME_PALETTE.wallHi },
+};
+
+/**
+ * The depth kit for one approved item: a tight contact shadow under the south
+ * edge, a visible front face with a lit lip and a ground line. Authored wholly
+ * inside the item's own rect plus a 2px skirt, so it never moves a footprint.
+ */
+export function furnitureDepthOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const d = FURNITURE_DEPTH[item.kind];
+  const tone = FURNITURE_FACE[item.kind];
+  const innerW = Math.max(1, r.w - 2);
+  return [
+    rectOp(r.x + 2, r.y + r.h, Math.max(1, r.w - 4), 2, F.shadow, 0.3),
+    rectOp(r.x, r.y + r.h - d, r.w, d, F.ink),
+    rectOp(r.x + 1, r.y + r.h - d + 1, innerW, Math.max(1, d - 1), tone.face),
+    rectOp(r.x + 1, r.y + r.h - d + 1, innerW, 1, tone.hi),
+    rectOp(r.x + 1, r.y + r.h - 1, innerW, 1, F.ink, 0.45),
+  ];
+}
+
+// Door-frame jamb width in world px.
+export const OPENING_FRAME = 2;
+
+/**
+ * A door/gap frame drawn inside the approved opening: two jambs, their lit inner
+ * edges and a header, so a doorway reads as a framed threshold rather than a
+ * bare notch. It never widens or narrows the collision gap.
+ */
+export function openingFrameOps(opening: Opening): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(opening.rect);
+  const span = opening.orientation === 'horizontal' ? r.h : r.w;
+  const f = Math.min(OPENING_FRAME, Math.max(1, Math.floor(span / 3)));
+  if (opening.orientation === 'horizontal') {
+    const inner = Math.max(1, r.w - f * 2);
+    return [
+      rectOp(r.x, r.y, f, r.h, F.ink),
+      rectOp(r.x + r.w - f, r.y, f, r.h, F.ink),
+      rectOp(r.x + 1, r.y + 1, 1, Math.max(1, r.h - 2), F.thresholdHi, 0.85),
+      rectOp(r.x + r.w - 2, r.y + 1, 1, Math.max(1, r.h - 2), F.thresholdHi, 0.85),
+      rectOp(r.x + f, r.y, inner, f, F.wallCap, 0.9),
+    ];
+  }
+  const inner = Math.max(1, r.h - f * 2);
+  return [
+    rectOp(r.x, r.y, r.w, f, F.ink),
+    rectOp(r.x, r.y + r.h - f, r.w, f, F.ink),
+    rectOp(r.x + 1, r.y + 1, Math.max(1, r.w - 2), 1, F.thresholdHi, 0.85),
+    rectOp(r.x + 1, r.y + r.h - 2, Math.max(1, r.w - 2), 1, F.thresholdHi, 0.85),
+    rectOp(r.x, r.y + f, f, inner, F.wallCap, 0.9),
+  ];
+}
+
+// Window sill / return depth in world px.
+export const WINDOW_SILL_DEPTH = 3;
+
+/**
+ * A sill band on the room-facing side of a window, so the glass reads as set
+ * into a wall with a ledge and a shadow rather than floating on the plane.
+ */
+export function windowSillOps(win: WindowRect): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(win.rect);
+  if (win.side === 'top' || win.side === 'bottom') {
+    const y = win.side === 'top' ? r.y + r.h + 2 : r.y - WINDOW_SILL_DEPTH - 2;
+    return [
+      rectOp(r.x, y, r.w, WINDOW_SILL_DEPTH, F.ink),
+      rectOp(r.x + 1, y + 1, Math.max(1, r.w - 2), 1, F.wallCap),
+      rectOp(r.x, y + WINDOW_SILL_DEPTH, r.w, 1, F.shadow, 0.25),
+    ];
+  }
+  const x = win.side === 'right' ? r.x + r.w + 2 : r.x - WINDOW_SILL_DEPTH - 2;
+  return [
+    rectOp(x, r.y, WINDOW_SILL_DEPTH, r.h, F.ink),
+    rectOp(x + 1, r.y + 1, 1, Math.max(1, r.h - 2), F.wallCap),
+    rectOp(x + WINDOW_SILL_DEPTH, r.y, 1, r.h, F.shadow, 0.25),
+  ];
+}
+
 function hashString(value: string): number {
   let hash = 2166136261;
   for (let i = 0; i < value.length; i += 1) {
@@ -639,8 +800,9 @@ function wallOps(wall: Wall): Op[] {
     if (inner.w >= 3) ops.push(rectOp(inner.x + inner.w - 2, inner.y, 1, inner.h, GAME_PALETTE.baseboard, 0.55));
     ops.push(rectOp(inner.x, inner.y, inner.w, Math.min(2, inner.h), GAME_PALETTE.wallHi, 0.6));
   }
-  // A foot shadow just outside the south/east face grounds the wall.
-  ops.push(rectOp(r.x + 1, r.y + r.h, Math.max(1, r.w - 2), 1, GAME_PALETTE.shadow, 0.16));
+  // A visible extruded face on the room-facing side grounds the wall and gives
+  // it real thickness instead of a flat outline.
+  ops.push(...wallFaceOps(wall));
   return ops;
 }
 
@@ -690,6 +852,8 @@ function openingOps(opening: Opening): Op[] {
     ops.push(rectOp(sx, r.y + 1, 1, Math.max(1, r.h - 2), GAME_PALETTE.thresholdHi, 0.9));
     ops.push(rectOp(r.x, r.y + 1, 1, Math.max(1, r.h - 2), GAME_PALETTE.wallHi, 0.28));
   }
+  // A framed threshold: jambs, lit inner edges and a header inside the gap.
+  ops.push(...openingFrameOps(opening));
   return ops;
 }
 
@@ -739,6 +903,7 @@ function windowOps(win: WindowRect): Op[] {
     ops.push(rectOp(r.x + 1, r.y, Math.max(1, r.w - 2), 1, GAME_PALETTE.windowGlassHi));
     for (let mx = r.x + 60; mx < r.x + r.w - 10; mx += 60) ops.push(rectOp(mx, r.y - 2, 1, r.h + 4, GAME_PALETTE.windowFrame));
     ops.push(rectOp(r.x, top ? r.y + r.h + 2 : r.y - 3, r.w, 1, GAME_PALETTE.wallHi, 0.5));
+    ops.push(...windowSillOps(win));
     return ops;
   }
 
@@ -761,6 +926,7 @@ function windowOps(win: WindowRect): Op[] {
   ops.push(rectOp(r.x, r.y, Math.max(1, r.w), Math.max(1, r.h), GAME_PALETTE.windowGlass));
   ops.push(rectOp(r.x, r.y, 1, Math.max(1, r.h), GAME_PALETTE.windowGlassHi));
   for (let my = r.y + 60; my < r.y + r.h - 10; my += 60) ops.push(rectOp(r.x - 2, my, r.w + 4, 1, GAME_PALETTE.windowFrame));
+  ops.push(...windowSillOps(win));
   return ops;
 }
 
@@ -1808,6 +1974,11 @@ export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'nort
   if (item.kind === 'chair') ops = chairArt(item, facing, upholsteryFor(item.zone));
   else if (item.kind === 'desk') ops = deskArt(item, kits);
   else ops = FURNITURE_ART[item.kind](item);
+  // Bilik Geng Kami keeps its raster-only look: the depth kit is skipped there so
+  // no vector layer competes with the approved bitmap underlay.
+  if (item.zone !== BILIK_GENG_ZONE_ID) {
+    ops.push({ t: 'group', sourceId: `${item.id}:depth`, semantic: 'furniture:depth', ops: furnitureDepthOps(item) });
+  }
   return { t: 'group', sourceId: item.id, semantic: `furniture:${item.kind}`, ops };
 }
 

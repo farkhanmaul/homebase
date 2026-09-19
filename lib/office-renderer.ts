@@ -10,6 +10,43 @@ import { PREVIEW_COLORS, type Op } from './office-render-ops.ts';
 import { buildGameWorldOps } from './office-game-ops.ts';
 
 export type CanvasView = { w: number; h: number };
+export type CssBox = { width: number; height: number };
+
+// The devicePixelRatio is clamped so a 3x phone cannot allocate an enormous
+// backing store; 1 is the floor (a fractional ratio would only blur).
+export const MAX_DEVICE_PIXEL_RATIO = 3;
+
+/** A sane, finite devicePixelRatio in [1, MAX]; junk falls back to 1. */
+export function clampDevicePixelRatio(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  return Math.min(Math.max(value, 1), MAX_DEVICE_PIXEL_RATIO);
+}
+
+/**
+ * The canvas backing-store size in device px. It matches the CSS box times the
+ * clamped DPR, so the browser blits the bitmap 1:1 to physical pixels instead of
+ * upscaling a low-res canvas with its own smoothing — the single fix for the
+ * previously blurry world and actors on HiDPI screens. Falls back to the camera
+ * view when the box is unmeasured, and never returns a zero-sized bitmap.
+ */
+export function canvasBackingSize(view: CanvasView, box: CssBox, dpr: number): CanvasView {
+  const ratio = clampDevicePixelRatio(dpr);
+  if (!(box.width > 0) || !(box.height > 0)) {
+    return { w: Math.max(1, Math.round(view.w * ratio)), h: Math.max(1, Math.round(view.h * ratio)) };
+  }
+  return { w: Math.max(1, Math.round(box.width * ratio)), h: Math.max(1, Math.round(box.height * ratio)) };
+}
+
+/**
+ * World px per device px of the backing store. Applying it as one context
+ * transform lets every op keep drawing in world units while the bitmap carries
+ * the extra device pixels.
+ */
+export function worldRenderScale(view: CanvasView, backing: CanvasView): number {
+  if (!(view.w > 0) || !(backing.w > 0)) return 1;
+  const scale = backing.w / view.w;
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
 
 // Preloaded bitmaps keyed by the op's `src`. An image op is skipped until its
 // asset is present, so the vector art underneath is the natural fallback while
@@ -168,6 +205,11 @@ export function drawActors(ctx: CanvasRenderingContext2D, actors: readonly Rende
   const cw = sheet.naturalWidth / 6;
   const ch = sheet.naturalHeight / 2;
   const ordered = actors.filter((actor) => actor.online).sort((a, b) => a.y - b.y);
+
+  // Keep sprite sampling nearest-neighbour. The DPR-aware backing store above
+  // provides the missing physical pixels; interpolation would soften the hard
+  // pixel edges the art direction relies on.
+  ctx.imageSmoothingEnabled = false;
 
   for (const person of ordered) {
     const frame = person.walking && !options.reducedMotion ? Math.floor(options.now / 180) % 2 : 0;
