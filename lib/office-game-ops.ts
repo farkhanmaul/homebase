@@ -489,6 +489,25 @@ export function partitionFor(zoneId: string): PartitionStyle {
   return PARTITION_FABRIC[zoneIdentity(zoneId).partition];
 }
 
+export type RoomDetailProfile = 'conference' | 'hr-document' | 'executive' | 'planning' | 'technical' | 'finance';
+
+// Batch 1 deliberately has no generic fallback. Extending room-aware furniture
+// detail to another zone requires an explicit art-direction decision and test.
+const ROOM_DETAIL_PROFILE: Readonly<Record<string, RoomDetailProfile>> = {
+  'meeting-1': 'conference',
+  hrga: 'hr-document',
+  komisaris: 'executive',
+  'product-manager': 'planning',
+  it: 'technical',
+  'direktur-finance': 'finance',
+};
+
+export function roomDetailProfile(zoneId: string): RoomDetailProfile {
+  const profile = ROOM_DETAIL_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown room detail profile: ${zoneId}`);
+  return profile;
+}
+
 // ---------------------------------------------------------------------------
 // Floors
 // ---------------------------------------------------------------------------
@@ -1842,6 +1861,137 @@ function boardArt(item: Furniture): Op[] {
   return ops;
 }
 
+function detailGroup(item: Furniture, suffix: string, semantic: string, ops: Op[]): GroupOp {
+  return { t: 'group', sourceId: `${item.id}:${suffix}`, semantic, ops };
+}
+
+// Batch 1 details are nested paint in the approved furniture group. Coordinates
+// derive only from the snapped item rect and stay on its inner top plane.
+function roomDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-MTG1-TABLE') {
+    const midY = q.y + Math.round(q.h / 2) - 2;
+    add('conference-supports', 'room-detail:table-support', [
+      rectOp(q.x + 3, midY, q.w - 6, 4, F.ink),
+      rectOp(q.x + 4, midY + 1, q.w - 8, 2, F.woodDark),
+      rectOp(q.x + 4, q.y + 3, 7, q.h - 6, F.woodDark, 0.75),
+      rectOp(q.x + 5, q.y + 4, 2, q.h - 8, F.woodTopHi, 0.55),
+      rectOp(q.x + q.w - 11, q.y + 3, 7, q.h - 6, F.woodDark, 0.75),
+      rectOp(q.x + q.w - 7, q.y + 4, 2, q.h - 8, F.woodTopHi, 0.55),
+      rectOp(q.x + 2, q.y + q.h - 3, q.w - 4, 2, F.woodEdge),
+    ]);
+    const xs = [q.x + 19, q.x + Math.round(q.w / 2), q.x + q.w - 19];
+    add('meeting-kit-notepad', 'room-detail:meeting-kit', [
+      rectOp(xs[0]! - 7, q.y + 7, 14, 10, F.ink), rectOp(xs[0]! - 6, q.y + 8, 12, 8, F.paper),
+      rectOp(xs[0]! - 5, q.y + 11, 9, 1, F.paperLine), rectOp(xs[0]! + 6, q.y + 8, 1, 10, F.pen),
+    ]);
+    add('meeting-kit-drink', 'room-detail:meeting-kit', [
+      rectOp(xs[1]! - 4, q.y + q.h - 18, 8, 10, F.ink), rectOp(xs[1]! - 3, q.y + q.h - 17, 6, 8, F.dispenserBottle),
+      rectOp(xs[1]! - 2, q.y + q.h - 16, 4, 2, F.dispenserWater), rectOp(xs[1]! + 3, q.y + q.h - 15, 3, 5, F.mug),
+    ]);
+    add('meeting-kit-papers', 'room-detail:meeting-kit', [
+      rectOp(xs[2]! - 8, q.y + 9, 16, 10, F.paperShadow), rectOp(xs[2]! - 7, q.y + 7, 15, 10, F.ink),
+      rectOp(xs[2]! - 6, q.y + 8, 13, 8, F.paper), rectOp(xs[2]! - 5, q.y + 11, 10, 1, F.paperLine),
+      rectOp(xs[2]! - 5, q.y + 14, 8, 1, F.paperLine),
+    ]);
+  }
+
+  if (item.zone === 'hrga' && item.kind === 'desk') {
+    const x = q.x + 4; const y = q.y + q.h - 10;
+    add('hr-files', 'room-detail:hr-files', [
+      rectOp(x, y, 20, 8, F.ink), rectOp(x + 1, y + 1, 18, 6, F.tray),
+      rectOp(x + 2, y, 15, 2, F.paper), rectOp(x + 3, y + 2, 14, 2, F.bookAlt),
+      rectOp(x + 4, y + 4, 13, 2, F.book), rectOp(x + 2, y + 1, 1, 5, F.paperLine),
+    ]);
+  }
+  if (item.id === 'F-HRGA-CABINET') {
+    const shelf = q.y + Math.round(q.h * 0.48);
+    const binders: Op[] = [rectOp(q.x + 1, shelf, q.w - 2, 2, F.cabinetDark), rectOp(q.x + Math.round(q.w / 2), q.y + 1, 2, q.h - 3, F.cabinetDark)];
+    const tones = [F.book, F.bookAlt, F.penCup, F.pot];
+    for (let i = 0; i < 7; i += 1) {
+      const x = q.x + 4 + i * 8; if (x + 5 >= q.x + q.w) break;
+      const h = 6 + i % 3;
+      binders.push(rectOp(x, shelf - h, 5, h, F.ink), rectOp(x + 1, shelf - h + 1, 3, h - 2, tones[i % tones.length]!), rectOp(x + 2, shelf - 2, 1, 1, F.paper));
+    }
+    binders.push(rectOp(q.x + Math.round(q.w / 2) - 5, q.y + q.h - 7, 3, 5, F.metalHi), rectOp(q.x + Math.round(q.w / 2) + 3, q.y + q.h - 7, 3, 5, F.metalHi));
+    add('storage-binders', 'room-detail:storage-binders', binders);
+  }
+
+  if (item.id === 'F-KOM-DESK') {
+    add('executive-folio', 'room-detail:executive-folio', [
+      rectOp(q.x + 5, q.y + q.h - 18, 20, 13, F.ink), rectOp(q.x + 6, q.y + q.h - 17, 18, 11, F.bookAlt),
+      rectOp(q.x + 8, q.y + q.h - 15, 14, 1, F.metalHi), rectOp(q.x + 15, q.y + q.h - 17, 2, 11, F.bookPage),
+      rectOp(q.x + 4, q.y + q.h - 5, q.w - 8, 2, F.woodDark),
+    ]);
+    const x = q.x + q.w - 17;
+    add('phone', 'room-detail:phone', [
+      rectOp(x, q.y + 6, 12, 9, F.ink), rectOp(x + 1, q.y + 7, 10, 7, F.phoneShell),
+      rectOp(x + 2, q.y + 7, 8, 2, F.phoneShellHi), rectOp(x + 3, q.y + 10, 6, 3, F.metalDark),
+      rectOp(x + 4, q.y + 11, 1, 1, F.metalHi), rectOp(x + 7, q.y + 11, 1, 1, F.metalHi),
+    ]);
+  }
+
+  if (item.id === 'F-PM-DESK') {
+    add('planning-kit', 'room-detail:planning-kit', [
+      rectOp(q.x + 5, q.y + q.h - 17, 24, 12, F.ink), rectOp(q.x + 6, q.y + q.h - 16, 22, 10, F.paper),
+      rectOp(q.x + 8, q.y + q.h - 13, 5, 4, F.bookAlt), rectOp(q.x + 15, q.y + q.h - 13, 5, 4, F.book),
+      rectOp(q.x + 22, q.y + q.h - 13, 4, 4, F.pen), rectOp(q.x + 7, q.y + q.h - 7, 18, 1, F.paperLine),
+    ]);
+    const x = q.x + q.w - 28;
+    add('sticky-strip', 'room-detail:sticky-strip', [
+      rectOp(x, q.y + 4, 24, 7, F.ink), rectOp(x + 1, q.y + 5, 6, 5, F.pen),
+      rectOp(x + 9, q.y + 5, 6, 5, F.mugAccent), rectOp(x + 17, q.y + 5, 6, 5, F.leafHi),
+    ]);
+  }
+
+  if (item.zone === 'it' && item.kind === 'desk') {
+    const wide = q.w >= q.h; const w = wide ? 16 : q.w - 8; const h = wide ? q.h - 12 : 13;
+    const x = q.x + 4; const y = q.y + 4;
+    const device: Op[] = [
+      rectOp(x, y, w, h, F.ink), rectOp(x + 1, y + 1, w - 2, h - 2, F.monitorBezel),
+      rectOp(x + 2, y + 2, w - 4, h - 4, F.screen), rectOp(x + 2, y + 2, w - 4, 1, F.screenHi),
+      rectOp(x + 4, y + h, Math.max(3, w - 8), 2, F.metalDark),
+    ];
+    if (wide) device.push(rectOp(x + w + 4, y + 2, 12, h - 2, F.ink), rectOp(x + w + 5, y + 3, 10, h - 4, F.screen));
+    add('it-device', 'room-detail:it-device', device);
+    add('cable-tray', 'room-detail:cable-tray', wide ? [
+      rectOp(q.x + 5, q.y + q.h - 6, q.w - 10, 2, F.ink), rectOp(q.x + 7, q.y + q.h - 5, q.w - 14, 1, F.metalDark), rectOp(q.x + q.w - 12, q.y + q.h - 9, 3, 5, F.ink),
+    ] : [
+      rectOp(q.x + q.w - 6, q.y + 5, 2, q.h - 10, F.ink), rectOp(q.x + q.w - 5, q.y + 7, 1, q.h - 14, F.metalDark), rectOp(q.x + q.w - 9, q.y + q.h - 12, 5, 3, F.ink),
+    ]);
+  }
+
+  if (item.zone === 'direktur-finance' && item.kind === 'desk') {
+    const ledgerW = Math.max(10, Math.min(20, q.w - 7));
+    add('ledger', 'room-detail:ledger', [
+      rectOp(q.x + 3, q.y + 4, ledgerW, 12, F.ink), rectOp(q.x + 4, q.y + 5, ledgerW - 2, 10, F.paper),
+      rectOp(q.x + 6, q.y + 8, ledgerW - 6, 1, F.paperLine), rectOp(q.x + 6, q.y + 11, ledgerW - 8, 1, F.paperLine),
+    ]);
+    const x = q.x + Math.max(3, q.w - 15);
+    add('calculator', 'room-detail:calculator', [
+      rectOp(x, q.y + q.h - 17, 11, 13, F.ink), rectOp(x + 1, q.y + q.h - 16, 9, 11, F.phoneShell),
+      rectOp(x + 2, q.y + q.h - 15, 7, 3, F.screen), rectOp(x + 2, q.y + q.h - 10, 2, 2, F.metalHi),
+      rectOp(x + 5, q.y + q.h - 10, 2, 2, F.metalHi), rectOp(x + 8, q.y + q.h - 10, 1, 2, F.mugAccent),
+      rectOp(x + 2, q.y + q.h - 7, 2, 1, F.metalHi), rectOp(x + 5, q.y + q.h - 7, 2, 1, F.metalHi),
+    ]);
+  }
+  if (item.id === 'F-FIN-COUNTER') {
+    const mid = q.x + Math.round(q.w / 2);
+    add('counter-panel', 'room-detail:counter-panel', [
+      rectOp(q.x + 1, q.y + 3, q.w - 2, 3, F.woodTopHi), rectOp(q.x + 1, q.y + 6, q.w - 2, 2, F.woodEdge),
+      rectOp(mid - 1, q.y + 8, 2, q.h - 10, F.woodDark), rectOp(q.x + 3, q.y + 9, mid - q.x - 6, q.h - 12, F.woodSeam),
+      rectOp(mid + 3, q.y + 9, q.x + q.w - mid - 6, q.h - 12, F.woodSeam),
+      rectOp(mid - 6, q.y + Math.round(q.h * 0.62), 4, 2, F.metalHi), rectOp(mid + 3, q.y + Math.round(q.h * 0.62), 4, 2, F.metalHi),
+    ]);
+  }
+  return out;
+}
+
 const FURNITURE_ART: Record<FurnitureKind, (item: Furniture) => Op[]> = {
   desk: (item) => deskArt(item, []),
   table: tableArt,
@@ -1861,6 +2011,7 @@ export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'nort
   if (item.kind === 'chair') ops = chairArt(item, facing, upholsteryFor(item.zone));
   else if (item.kind === 'desk') ops = deskArt(item, kits);
   else ops = FURNITURE_ART[item.kind](item);
+  ops.push(...roomDetailOps(item));
   // Bilik Geng Kami keeps its raster-only look: the depth kit is skipped there so
   // no vector layer competes with the approved bitmap underlay.
   if (item.zone !== BILIK_GENG_ZONE_ID) {
