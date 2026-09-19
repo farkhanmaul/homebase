@@ -485,10 +485,10 @@ void test('the dependency set is unchanged (zero new packages)', () => {
   ]);
 });
 
-void test('the game renderer paints under the 9000 painted-op budget with fast generation', () => {
+void test('the game renderer paints under the 12000 painted-op budget with fast generation', () => {
   const ops = buildGameWorldOps(officeMap);
   const count = painted(ops).length;
-  assert.ok(count < 9000, `painted ops ${count} must stay under the 9000 budget`);
+  assert.ok(count <= 12000, `painted ops ${count} must stay within the 12000 budget`);
 
   const start = performance.now();
   for (let i = 0; i < 20; i += 1) buildGameWorldOps(officeMap);

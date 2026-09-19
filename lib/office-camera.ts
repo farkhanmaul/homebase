@@ -12,7 +12,7 @@
 // a small enclosed room is framed on the zone, everything else keeps the
 // normal actor-follow viewport. It is pure: no DOM, no canvas, no state.
 
-import { clampCamera, zoneAt, type OfficeManifest, type Point, type Zone } from './office-map.ts';
+import { clampCamera, zoneAt, type OfficeManifest, type Point, type Rect, type Zone } from './office-map.ts';
 import { computeViewport, defaultViewport, type Viewport, type ViewportBox, type ViewportMode } from './office-viewport.ts';
 
 // The world-px breathing room kept around a framed zone. 40 sits inside the
@@ -38,14 +38,15 @@ function validBox(box: ViewportBox): boolean {
 }
 
 /**
- * A view that contains `zone.rect` with `ZONE_PADDING` on every side and keeps
- * the container aspect, clamped to the world. Dimensions are rounded up so
- * rounding can never crop a hair off the padded room.
+ * A view that contains `rect` with `padding` on every side and keeps the
+ * container aspect, clamped to the world. Dimensions are rounded up so rounding
+ * can never crop a hair off the padded rect. Used both for a single zone and for
+ * a multi-zone approval crop (a union rectangle of the rooms it must show).
  */
-export function frameZoneView(manifest: OfficeManifest, zone: Zone, box: ViewportBox): Viewport {
+export function frameRectView(manifest: OfficeManifest, rect: Rect, box: ViewportBox, padding = ZONE_PADDING): Viewport {
   const aspect = validBox(box) ? box.width / box.height : manifest.width / manifest.height;
-  const needW = zone.rect.w + ZONE_PADDING * 2;
-  const needH = zone.rect.h + ZONE_PADDING * 2;
+  const needW = rect.w + padding * 2;
+  const needH = rect.h + padding * 2;
 
   let w = Math.max(needW, needH * aspect);
   let h = w / aspect;
@@ -64,6 +65,15 @@ export function frameZoneView(manifest: OfficeManifest, zone: Zone, box: Viewpor
   if (w > manifest.width) w = manifest.width;
 
   return { w: Math.max(1, Math.ceil(w)), h: Math.max(1, Math.ceil(h)) };
+}
+
+/**
+ * A view that contains `zone.rect` with `ZONE_PADDING` on every side and keeps
+ * the container aspect, clamped to the world. Dimensions are rounded up so
+ * rounding can never crop a hair off the padded room.
+ */
+export function frameZoneView(manifest: OfficeManifest, zone: Zone, box: ViewportBox): Viewport {
+  return frameRectView(manifest, zone.rect, box, ZONE_PADDING);
 }
 
 /** World centre of a zone. */

@@ -21,7 +21,7 @@
 // and deterministic, so the canvas and the standalone preview are identical.
 
 import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type SurfaceKind, type Wall, type WindowRect } from './office-map.ts';
-import { type GroupOp, type Op, type PaintedOp, type PreviewOps } from './office-render-ops.ts';
+import { type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
 
 // The raster art underlay for the Bilik Geng Kami zone. It is painted as one
 // image op over the zone's own vector art, at the exact approved zone rect; the
@@ -181,6 +181,43 @@ export const GAME_PALETTE = {
   artInk: '#5a7a9c',
   clockFace: '#f6f1e2',
   clockRim: '#4a3b2c',
+
+  // Area identity: fabric partitions, warm baseboards, per-room rug families
+  // and the restrained lamp pools that light the corridors and the lobby.
+  partitionFabric: '#2f7580',
+  partitionFabricHi: '#56a7ac',
+  partitionFabricDark: '#1d4d55',
+  baseboard: '#b59c6e',
+  baseboardHi: '#d9c69a',
+  lampPool: '#ffdca0',
+  lampPoolEdge: '#e6b877',
+
+  // Cooler Tele/CS/CA upholstery, distinct from the V1 work-area teal.
+  coolBack: '#2f6f9c',
+  coolBackHi: '#5b9cc4',
+  coolSeat: '#4a8aa6',
+  coolSeatHi: '#7fbcd0',
+  coolFrame: '#152b3a',
+  coolBase: '#23455c',
+
+  // Executive rooms share a deeper teal.
+  execBack: '#256a6f',
+  execBackHi: '#469aa0',
+  execSeat: '#358086',
+  execSeatHi: '#63b0b4',
+  execFrame: '#123033',
+  execBase: '#1e4449',
+
+  // Reception / pantry equipment.
+  phoneShell: '#3b4652',
+  phoneShellHi: '#5b6a78',
+  cup: '#eef2f4',
+  cupAccent: '#c96a52',
+  bell: '#d9b96a',
+  bellHi: '#f0dca0',
+  tray: '#8f9ba3',
+  trayHi: '#c3ccd1',
+  screenGlyph: '#6f93ad',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -199,7 +236,7 @@ function inset(rect: Rect, n: number): Rect {
   return { x: rect.x + dx, y: rect.y + dy, w: Math.max(1, rect.w - dx * 2), h: Math.max(1, rect.h - dy * 2) };
 }
 
-function rectOp(x: number, y: number, w: number, h: number, fill: string, opacity?: number): PaintedOp {
+function rectOp(x: number, y: number, w: number, h: number, fill: string, opacity?: number): RectOp {
   return opacity === undefined ? { t: 'rect', x, y, w, h, fill } : { t: 'rect', x, y, w, h, fill, opacity };
 }
 
@@ -231,6 +268,81 @@ function hashString(value: string): number {
 }
 
 // ---------------------------------------------------------------------------
+// Area identity: deterministic per-zone materials and upholstery
+// ---------------------------------------------------------------------------
+
+type RugStyle = { edge: string; base: string; hi: string; seam: string };
+
+const RUG_STYLES = {
+  warm: { edge: GAME_PALETTE.rugEdge, base: GAME_PALETTE.rug, hi: GAME_PALETTE.rugHi, seam: GAME_PALETTE.rugSeam },
+  sand: { edge: '#7d6a4a', base: '#b9a276', hi: '#d8c69c', seam: '#9a8460' },
+  cool: { edge: '#22414a', base: '#3f6f7a', hi: '#5f96a0', seam: '#2e545d' },
+  slate: { edge: '#39444f', base: '#5f6f80', hi: '#8294a4', seam: '#4a5766' },
+  burgundy: { edge: '#54222c', base: '#8f3f4f', hi: '#b0606f', seam: '#6f2f3d' },
+} as const satisfies Record<string, RugStyle>;
+
+type RugVariant = keyof typeof RUG_STYLES;
+
+// Chair upholstery families: every family keeps the V1 teal-and-navy
+// construction, so a room's seating reads as its own set without leaving the
+// shared material language.
+type Upholstery = {
+  back: string;
+  backHi: string;
+  seat: string;
+  seatHi: string;
+  frame: string;
+  base: string;
+  arm: string;
+};
+
+const UPHOLSTERY: Record<'v1' | 'exec' | 'cool', Upholstery> = {
+  v1: { back: GAME_PALETTE.chairBack, backHi: GAME_PALETTE.chairBackHi, seat: GAME_PALETTE.chairSeat, seatHi: GAME_PALETTE.chairSeatHi, frame: GAME_PALETTE.chairFrame, base: GAME_PALETTE.chairBase, arm: GAME_PALETTE.chairArm },
+  exec: { back: GAME_PALETTE.execBack, backHi: GAME_PALETTE.execBackHi, seat: GAME_PALETTE.execSeat, seatHi: GAME_PALETTE.execSeatHi, frame: GAME_PALETTE.execFrame, base: GAME_PALETTE.execBase, arm: GAME_PALETTE.execFrame },
+  cool: { back: GAME_PALETTE.coolBack, backHi: GAME_PALETTE.coolBackHi, seat: GAME_PALETTE.coolSeat, seatHi: GAME_PALETTE.coolSeatHi, frame: GAME_PALETTE.coolFrame, base: GAME_PALETTE.coolBase, arm: GAME_PALETTE.coolFrame },
+};
+
+type PartitionStyle = { base: string; hi: string; dark: string };
+
+const PARTITION_FABRIC: Record<'warm' | 'cool', PartitionStyle> = {
+  warm: { base: GAME_PALETTE.partitionFabric, hi: GAME_PALETTE.partitionFabricHi, dark: GAME_PALETTE.partitionFabricDark },
+  cool: { base: '#376f9c', hi: '#63a3c8', dark: '#21496b' },
+};
+
+export type ZoneIdentity = { rug?: RugVariant; upholstery: keyof typeof UPHOLSTERY; partition: keyof typeof PARTITION_FABRIC };
+
+const DEFAULT_IDENTITY: ZoneIdentity = { upholstery: 'v1', partition: 'warm' };
+
+// Rooms get a material identity derived from the approved zone id, never an
+// arbitrary coordinate: the top row each carries its own rug, the executive and
+// the IT rooms a distinct upholstery, and Tele/CS/CA switches to the cooler
+// partition fabric that separates it from Desk Collection at a glance.
+const ZONE_IDENTITY: Record<string, ZoneIdentity> = {
+  'meeting-1': { rug: 'warm', upholstery: 'v1', partition: 'warm' },
+  hrga: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
+  komisaris: { rug: 'cool', upholstery: 'exec', partition: 'cool' },
+  'product-manager': { rug: 'sand', upholstery: 'exec', partition: 'warm' },
+  it: { rug: 'slate', upholstery: 'cool', partition: 'cool' },
+  'direktur-finance': { rug: 'burgundy', upholstery: 'exec', partition: 'warm' },
+  resepsionis: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
+  'meeting-2': { rug: 'cool', upholstery: 'v1', partition: 'cool' },
+  'desk-collection': { upholstery: 'v1', partition: 'warm' },
+  'tele-cs-ca': { upholstery: 'cool', partition: 'cool' },
+};
+
+export function zoneIdentity(zoneId: string): ZoneIdentity {
+  return ZONE_IDENTITY[zoneId] ?? DEFAULT_IDENTITY;
+}
+
+export function upholsteryFor(zoneId: string): Upholstery {
+  return UPHOLSTERY[zoneIdentity(zoneId).upholstery];
+}
+
+export function partitionFor(zoneId: string): PartitionStyle {
+  return PARTITION_FABRIC[zoneIdentity(zoneId).partition];
+}
+
+// ---------------------------------------------------------------------------
 // Floors
 // ---------------------------------------------------------------------------
 
@@ -244,27 +356,84 @@ const FLOOR: Record<SurfaceKind, FloorStyle> = {
   rug: { base: GAME_PALETTE.rug, seam: GAME_PALETTE.rugSeam, hi: GAME_PALETTE.rugHi, edge: GAME_PALETTE.rugEdge, tile: 0, grain: 'plain' },
 };
 
-function floorOps(rect: Rect, kind: SurfaceKind, phase: number): Op[] {
-  const r = snap(rect);
-  if (kind === 'rug') return rugOps(r);
-
-  const style = FLOOR[kind];
-  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.base)];
-  const t = style.tile;
-
-  if (style.grain === 'plank') {
-    // Vertical planks: a seam every tile plus a soft highlight on every other.
-    let col = 0;
-    for (let x = r.x + t; x < r.x + r.w - 1; x += t, col += 1) {
-      ops.push(rectOp(x, r.y, 1, r.h, style.seam, 0.85));
-      if (col % 2 === 0) ops.push(rectOp(x + 1, r.y, 1, r.h, style.hi, 0.35));
+// Lamp pools: the restrained warm glow the corridors and the lobby read by. They
+// are translucent floor paint (never a collider) whose positions derive from the
+// surface rect, so a corridor always lights along its own length. Kept inside the
+// rect and off its 8px edges so no pool implies a route edge.
+function lampPoolOps(r: Rect, phase: number): Op[] {
+  const ops: Op[] = [];
+  const horizontal = r.w >= r.h;
+  const step = 220;
+  const offset = 40 + (phase % 2) * 30;
+  if (horizontal) {
+    const w = Math.min(150, Math.max(36, Math.round(r.w * 0.16)));
+    const h = Math.max(6, r.h - 18);
+    for (let x = r.x + offset + w / 2; x + w / 2 < r.x + r.w - 8; x += step) {
+      ops.push(rectOp(Math.round(x - w / 2), r.y + 9, w, h, GAME_PALETTE.lampPool, 0.1));
+      ops.push(rectOp(Math.round(x - w / 2), r.y + 9, w, 1, GAME_PALETTE.lampPoolEdge, 0.12));
     }
-    for (let y = r.y + t * 2; y < r.y + r.h - 2; y += t * 2) ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.35));
   } else {
-    for (let x = r.x + t; x < r.x + r.w - 1; x += t) ops.push(rectOp(x, r.y, 1, r.h, style.seam, 0.85));
-    for (let y = r.y + t; y < r.y + r.h - 1; y += t) ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.85));
+    const w = Math.max(6, r.w - 18);
+    const h = Math.min(150, Math.max(36, Math.round(r.h * 0.16)));
+    for (let y = r.y + offset + h / 2; y + h / 2 < r.y + r.h - 8; y += step) {
+      ops.push(rectOp(r.x + 9, Math.round(y - h / 2), w, h, GAME_PALETTE.lampPool, 0.1));
+      ops.push(rectOp(r.x + 9, Math.round(y - h / 2), 1, h, GAME_PALETTE.lampPoolEdge, 0.12));
+    }
   }
+  return ops;
+}
 
+// A thin inner frame shared by every floor material: warm light on the top/left
+// lip, material edge on the bottom/right, so the surface reads as a slab.
+function edgeFrameOps(r: Rect, style: FloorStyle): Op[] {
+  return [
+    rectOp(r.x, r.y, r.w, 1, style.hi, 0.4),
+    rectOp(r.x, r.y, 1, r.h, style.hi, 0.25),
+    rectOp(r.x, r.y + r.h - 1, r.w, 1, style.edge, 0.5),
+    rectOp(r.x + r.w - 1, r.y, 1, r.h, style.edge, 0.5),
+  ];
+}
+
+// Office wood: horizontal boards, never a square tile grid. Board rows are
+// 10-16px tall, each carrying a dark seam plus an alternating warm highlight, a
+// staggered run of 48-80px end joints and a couple of short grain dashes. Every
+// number is derived from the zone/surface id hash, so the floor is identical on
+// every build but each room gets its own board pitch and joint stagger.
+function plankFloorOps(r: Rect, style: FloorStyle, zoneId: string): Op[] {
+  const ops: Op[] = [];
+  const seed = hashString(zoneId);
+  const board = clamp(10 + (seed % 7), 10, 16);
+  const joint = clamp(48 + ((seed >>> 4) % 33), 48, 80);
+  let row = 0;
+  for (let y = r.y; y < r.y + r.h - 1; y += board, row += 1) {
+    const h = Math.min(board, r.y + r.h - y);
+    if (h < 3) break;
+    ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.5));
+    if (row % 2 === 0) ops.push(rectOp(r.x, y + 1, r.w, 1, style.hi, 0.26));
+    const shift = (seed + row * 29) % joint;
+    for (let x = r.x + shift + joint; x < r.x + r.w - 4; x += joint) {
+      ops.push(rectOp(Math.round(x), y + 1, 1, Math.max(1, h - 1), style.seam, 0.45));
+    }
+    const grain = hashString(`${zoneId}#${row}`);
+    const dashes = 1 + (grain % 2);
+    for (let i = 0; i < dashes; i += 1) {
+      const span = Math.max(1, r.w - 14);
+      const gx = r.x + 5 + ((grain >>> (i * 5)) % span);
+      const gw = clamp(2 + ((grain >>> (i * 3 + 2)) % 7), 2, 8);
+      const gy = y + 2 + ((grain >>> (i * 2)) % Math.max(1, Math.min(h - 3, board - 3)));
+      if (gx + gw >= r.x + r.w - 1) continue;
+      ops.push(rectOp(Math.round(gx), Math.round(gy), gw, 1, style.edge, 0.34));
+    }
+  }
+  ops.push(...edgeFrameOps(r, style));
+  return ops;
+}
+
+function gridFloorOps(r: Rect, style: FloorStyle, phase: number): Op[] {
+  const ops: Op[] = [];
+  const t = style.tile;
+  for (let x = r.x + t; x < r.x + r.w - 1; x += t) ops.push(rectOp(x, r.y, 1, r.h, style.seam, 0.85));
+  for (let y = r.y + t; y < r.y + r.h - 1; y += t) ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.85));
   // Sparse tufts on alternating tiles: a cheap texture, not per-pixel noise.
   let col = 0;
   for (let x = r.x + 2; x < r.x + r.w - 3; x += t, col += 1) {
@@ -273,40 +442,164 @@ function floorOps(rect: Rect, kind: SurfaceKind, phase: number): Op[] {
       if ((col + row + phase) % 2 === 0) ops.push(rectOp(x, y, Math.min(3, Math.max(1, t - 4)), 1, style.hi, 0.5));
     }
   }
-
-  ops.push(rectOp(r.x, r.y, r.w, 1, style.hi, 0.4));
-  ops.push(rectOp(r.x, r.y, 1, r.h, style.hi, 0.25));
-  ops.push(rectOp(r.x, r.y + r.h - 1, r.w, 1, style.edge, 0.5));
-  ops.push(rectOp(r.x + r.w - 1, r.y, 1, r.h, style.edge, 0.5));
+  ops.push(...edgeFrameOps(r, style));
   return ops;
 }
 
-function rugOps(r: Rect): Op[] {
-  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, GAME_PALETTE.rugEdge)];
+// Lobby material bands: a polished inset frame plus two long runner stripes in
+// the lobby's own slate tones, so the big room reads as a finished floor rather
+// than one flat colour. Pure paint, derived from the zone rect.
+function lobbyBandOps(r: Rect): Op[] {
+  const band = inset(r, 10);
+  if (band.w < 60 || band.h < 80) return [];
+  const insetX = r.x + 16;
+  const bandW = Math.max(1, r.w - 32);
+  return [
+    rectOp(band.x, band.y, band.w, 1, GAME_PALETTE.lobbyHi, 0.3),
+    rectOp(band.x, band.y + band.h - 1, band.w, 1, GAME_PALETTE.lobbyEdge, 0.35),
+    rectOp(band.x, band.y, 1, band.h, GAME_PALETTE.lobbyHi, 0.24),
+    rectOp(band.x + band.w - 1, band.y, 1, band.h, GAME_PALETTE.lobbyEdge, 0.28),
+    rectOp(insetX, Math.round(r.y + r.h * 0.3), bandW, 4, GAME_PALETTE.lobbyHi, 0.16),
+    rectOp(insetX, Math.round(r.y + r.h * 0.3) + 4, bandW, 1, GAME_PALETTE.lobbyEdge, 0.2),
+    rectOp(insetX, Math.round(r.y + r.h * 0.68), bandW, 4, GAME_PALETTE.lobbySeam, 0.18),
+  ];
+}
+
+function floorOps(rect: Rect, kind: SurfaceKind, phase: number, zoneId: string): Op[] {
+  const r = snap(rect);
+  if (kind === 'rug') return rugOps(r, RUG_STYLES.warm);
+
+  const style = FLOOR[kind];
+  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.base)];
+
+  if (style.grain === 'plank') ops.push(...plankFloorOps(r, style, zoneId));
+  else if (style.grain === 'grid') ops.push(...gridFloorOps(r, style, phase));
+
+  // Restrained lighting pools along the corridors and across the lobby.
+  if (kind === 'corridor' || kind === 'lobby') ops.push(...lampPoolOps(r, phase));
+  if (kind === 'lobby') ops.push(...lobbyBandOps(r));
+
+  return ops;
+}
+
+// Furniture-centred rugs: instead of a room-wide inset panel, a rug is the union
+// of the room's approved tables/desks plus the chairs that sit at them, padded
+// 8-16px, clipped inside the zone and clear of every opening. Sealed rooms and
+// the long Desk Collection / Tele banks never get one (they have no rug identity
+// and stay legible as work floors), and the manifest rug surfaces are untouched.
+function furnitureRugOps(manifest: OfficeManifest): Op[] {
+  const ops: Op[] = [];
+  for (const zone of manifest.zones) {
+    const identity = zoneIdentity(zone.id);
+    if (!identity.rug || zone.kind === 'service') continue;
+    if (zone.id === 'desk-collection' || zone.id === 'tele-cs-ca') continue;
+
+    const items = manifest.furniture.filter((item) => item.zone === zone.id);
+    const tops = items.filter((item) => item.kind === 'table' || item.kind === 'desk');
+    if (!tops.length) continue;
+    const cluster = [...tops];
+    for (const chair of items) {
+      if (chair.kind !== 'chair') continue;
+      const cx = chair.rect.x + chair.rect.w / 2;
+      const cy = chair.rect.y + chair.rect.h / 2;
+      const seated = tops.some((top) => {
+        const dx = top.rect.x + top.rect.w / 2 - cx;
+        const dy = top.rect.y + top.rect.h / 2 - cy;
+        return Math.hypot(dx, dy) <= Math.max(top.rect.w, top.rect.h) / 2 + 44;
+      });
+      if (seated) cluster.push(chair);
+    }
+
+    const pad = 8 + (hashString(zone.id) % 9);
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const item of cluster) {
+      minX = Math.min(minX, item.rect.x);
+      minY = Math.min(minY, item.rect.y);
+      maxX = Math.max(maxX, item.rect.x + item.rect.w);
+      maxY = Math.max(maxY, item.rect.y + item.rect.h);
+    }
+    const zx = zone.rect.x + 5;
+    const zy = zone.rect.y + 5;
+    const zr = zone.rect.x + zone.rect.w - 5;
+    const zb = zone.rect.y + zone.rect.h - 5;
+    const rect: Rect = {
+      x: Math.max(Math.floor(minX - pad), Math.round(zx)),
+      y: Math.max(Math.floor(minY - pad), Math.round(zy)),
+      w: 0,
+      h: 0,
+    };
+    rect.w = Math.min(Math.ceil(maxX + pad), Math.round(zr)) - rect.x;
+    rect.h = Math.min(Math.ceil(maxY + pad), Math.round(zb)) - rect.y;
+    if (rect.w < 44 || rect.h < 44) continue;
+
+    // Clip away any opening that bites into the rug, then re-check the size.
+    const clipped = clearOpenings(rect, manifest.openings.map((opening) => opening.rect));
+    if (!clipped) continue;
+    ops.push(...rugOps(clipped, RUG_STYLES[identity.rug]));
+  }
+  return ops;
+}
+
+// Shrinks a rug away from any opening it overlaps, along the opening's dominant
+// axis, and returns null if the rug would collapse below a usable size.
+function clearOpenings(rect: Rect, openings: readonly Rect[]): Rect | null {
+  const r = { ...rect };
+  for (const opening of openings) {
+    if (!overlaps(r, opening)) continue;
+    const horizontal = opening.w >= opening.h;
+    const openingCx = opening.x + opening.w / 2;
+    const openingCy = opening.y + opening.h / 2;
+    const centreX = r.x + r.w / 2;
+    const centreY = r.y + r.h / 2;
+    if (horizontal) {
+      if (openingCy <= centreY) {
+        const next = Math.round(opening.y + opening.h + 2);
+        r.h -= next - r.y;
+        r.y = next;
+      } else {
+        r.h = Math.round(opening.y - 2) - r.y;
+      }
+    } else if (openingCx <= centreX) {
+      const next = Math.round(opening.x + opening.w + 2);
+      r.w -= next - r.x;
+      r.x = next;
+    } else {
+      r.w = Math.round(opening.x - 2) - r.x;
+    }
+    if (r.w < 44 || r.h < 44) return null;
+  }
+  return r;
+}
+
+function rugOps(r: Rect, style: RugStyle): Op[] {
+  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.edge)];
   const o = inset(r, 3);
-  ops.push(rectOf(o, GAME_PALETTE.rug));
-  ops.push(rectOp(o.x, o.y, o.w, 1, GAME_PALETTE.rugHi, 0.85));
-  ops.push(rectOp(o.x, o.y, 1, o.h, GAME_PALETTE.rugHi, 0.5));
+  ops.push(rectOf(o, style.base));
+  ops.push(rectOp(o.x, o.y, o.w, 1, style.hi, 0.85));
+  ops.push(rectOp(o.x, o.y, 1, o.h, style.hi, 0.5));
   ops.push(rectOp(o.x, o.y + o.h - 2, o.w, 2, GAME_PALETTE.shadow, 0.16));
   ops.push(rectOp(o.x + o.w - 2, o.y, 2, o.h, GAME_PALETTE.shadow, 0.1));
   const f = inset(o, 6);
-  ops.push(rectOp(f.x, f.y, f.w, 1, GAME_PALETTE.rugHi, 0.5));
-  ops.push(rectOp(f.x, f.y + f.h - 1, f.w, 1, GAME_PALETTE.rugHi, 0.5));
-  ops.push(rectOp(f.x, f.y, 1, f.h, GAME_PALETTE.rugHi, 0.5));
-  ops.push(rectOp(f.x + f.w - 1, f.y, 1, f.h, GAME_PALETTE.rugHi, 0.5));
+  ops.push(rectOp(f.x, f.y, f.w, 1, style.hi, 0.5));
+  ops.push(rectOp(f.x, f.y + f.h - 1, f.w, 1, style.hi, 0.5));
+  ops.push(rectOp(f.x, f.y, 1, f.h, style.hi, 0.5));
+  ops.push(rectOp(f.x + f.w - 1, f.y, 1, f.h, style.hi, 0.5));
   const cx = o.x + o.w / 2;
   const cy = o.y + o.h / 2;
-  ops.push(circleOp(cx, cy, Math.min(14, o.h * 0.3), GAME_PALETTE.rugSeam, 0.9));
-  ops.push(circleOp(cx, cy, Math.min(9, o.h * 0.2), GAME_PALETTE.rug, 1));
-  ops.push(circleOp(cx, cy, 4, GAME_PALETTE.rugHi, 0.6));
+  ops.push(circleOp(cx, cy, Math.min(14, o.h * 0.3), style.seam, 0.9));
+  ops.push(circleOp(cx, cy, Math.min(9, o.h * 0.2), style.base, 1));
+  ops.push(circleOp(cx, cy, 4, style.hi, 0.6));
   const corners: Array<[number, number]> = [[f.x, f.y], [f.x + f.w - 5, f.y], [f.x, f.y + f.h - 5], [f.x + f.w - 5, f.y + f.h - 5]];
   for (const [mx, my] of corners) {
-    ops.push(rectOp(mx, my, 5, 5, GAME_PALETTE.rugSeam, 0.7));
-    ops.push(rectOp(mx + 1, my + 1, 3, 3, GAME_PALETTE.rugHi, 0.5));
+    ops.push(rectOp(mx, my, 5, 5, style.seam, 0.7));
+    ops.push(rectOp(mx + 1, my + 1, 3, 3, style.hi, 0.5));
   }
   for (let i = 12; i < o.w - 12; i += 16) {
-    ops.push(rectOp(o.x + i, o.y + 5, 2, 3, GAME_PALETTE.rugHi, 0.45));
-    ops.push(rectOp(o.x + i, o.y + o.h - 8, 2, 3, GAME_PALETTE.rugHi, 0.45));
+    ops.push(rectOp(o.x + i, o.y + 5, 2, 3, style.hi, 0.45));
+    ops.push(rectOp(o.x + i, o.y + o.h - 8, 2, 3, style.hi, 0.45));
   }
   return ops;
 }
@@ -335,11 +628,15 @@ function wallOps(wall: Wall): Op[] {
   if (inner.w >= inner.h) {
     ops.push(rectOp(inner.x, inner.y, inner.w, Math.min(2, inner.h), cap));
     ops.push(rectOp(inner.x, inner.y + inner.h - 1, inner.w, 1, edge, 0.85));
+    // Baseboard trim along the room-facing (south) edge of a horizontal wall.
+    if (inner.h >= 3) ops.push(rectOp(inner.x, inner.y + inner.h - 2, inner.w, 1, GAME_PALETTE.baseboard, 0.55));
     if (full) ops.push(rectOp(inner.x, inner.y, Math.min(2, inner.w), inner.h, GAME_PALETTE.wallHi, 0.6));
     else ops.push(rectOp(inner.x, inner.y, inner.w, 1, GAME_PALETTE.wallHi, 0.7));
   } else {
     ops.push(rectOp(inner.x, inner.y, Math.min(2, inner.w), inner.h, cap));
     ops.push(rectOp(inner.x + inner.w - 1, inner.y, 1, inner.h, edge, 0.85));
+    // Baseboard trim along the room-facing (east) edge of a vertical wall.
+    if (inner.w >= 3) ops.push(rectOp(inner.x + inner.w - 2, inner.y, 1, inner.h, GAME_PALETTE.baseboard, 0.55));
     ops.push(rectOp(inner.x, inner.y, inner.w, Math.min(2, inner.h), GAME_PALETTE.wallHi, 0.6));
   }
   // A foot shadow just outside the south/east face grounds the wall.
@@ -370,6 +667,11 @@ function openingOps(opening: Opening): Op[] {
   if (opening.orientation === 'horizontal') {
     ops.push(rectOp(r.x, r.y, 1, r.h, GAME_PALETTE.ink));
     ops.push(rectOp(r.x + r.w - 1, r.y, 1, r.h, GAME_PALETTE.ink));
+    // Wooden jamb depth one pixel in from each dark end, then the saddle.
+    if (r.h >= 4) {
+      ops.push(rectOp(r.x + 1, r.y, 1, r.h, GAME_PALETTE.baseboard, 0.8));
+      ops.push(rectOp(r.x + r.w - 2, r.y, 1, r.h, GAME_PALETTE.baseboard, 0.8));
+    }
     const saddleH = Math.min(3, r.h);
     const sy = r.y + Math.floor((r.h - saddleH) / 2);
     ops.push(rectOp(r.x + 1, sy, Math.max(1, r.w - 2), saddleH, GAME_PALETTE.doorSaddle));
@@ -378,6 +680,10 @@ function openingOps(opening: Opening): Op[] {
   } else {
     ops.push(rectOp(r.x, r.y, r.w, 1, GAME_PALETTE.ink));
     ops.push(rectOp(r.x, r.y + r.h - 1, r.w, 1, GAME_PALETTE.ink));
+    if (r.w >= 4) {
+      ops.push(rectOp(r.x, r.y + 1, r.w, 1, GAME_PALETTE.baseboard, 0.8));
+      ops.push(rectOp(r.x, r.y + r.h - 2, r.w, 1, GAME_PALETTE.baseboard, 0.8));
+    }
     const saddleW = Math.min(3, r.w);
     const sx = r.x + Math.floor((r.w - saddleW) / 2);
     ops.push(rectOp(sx, r.y + 1, saddleW, Math.max(1, r.h - 2), GAME_PALETTE.doorSaddle));
@@ -655,11 +961,28 @@ function kitBox(facing: ChairFacing, inner: Rect, l0: number, l1: number, d0: nu
 const PROP_KINDS = ['plant', 'mug', 'books', 'pens', 'papers'] as const;
 type PropKind = (typeof PROP_KINDS)[number];
 
+// Workstation material variants. Every pick is derived from the kit's own id, so
+// a long bank never reads as exact clones while every choice stays inside the
+// shared office material language (muted screens, veneer mats, warm props).
+const SCREEN_TINTS = [
+  { screen: GAME_PALETTE.screen, hi: GAME_PALETTE.screenHi, glyph: GAME_PALETTE.screenGlyph },
+  { screen: '#9dc2b3', hi: '#d0e7dd', glyph: '#6f9c8a' },
+  { screen: '#b3a9cd', hi: '#dcd4ec', glyph: '#8879ad' },
+  { screen: '#c8b7a1', hi: '#ecdfc8', glyph: '#a2866a' },
+] as const;
+const MAT_TONES = ['#8a6a44', '#6f7f7a', '#5f7486', '#7a6a5a'] as const;
+const PROP_TONES = [
+  { leaf: '#4f8f43', leafHi: '#79b566', accent: '#c05a48', book: '#a8503f', bookAlt: '#3f6f8f', paper: '#f7f0dc' },
+  { leaf: '#5f9a56', leafHi: '#8cc47a', accent: '#3f7a8f', book: '#3f6f8f', bookAlt: '#7a5f9f', paper: '#f2ecd8' },
+  { leaf: '#437c50', leafHi: '#6fae72', accent: '#b0742f', book: '#7a5f3f', bookAlt: '#4f8f6a', paper: '#efe6d0' },
+] as const;
+
 // A prop is a compact object cluster, never a long bar: every mark comes from a
 // single square-ish footprint inside the kit box, so a mug reads as a mug and a
-// stack of papers as a stack.
-function propArt(kind: PropKind, box: Rect): Op[] {
+// stack of papers as a stack. `variant` shifts the accent tones only.
+function propArt(kind: PropKind, box: Rect, variant = 0): Op[] {
   const F = GAME_PALETTE;
+  const T = PROP_TONES[variant % PROP_TONES.length]!;
   const size = Math.max(6, Math.min(box.w, box.h, 14));
   const cluster: Rect = {
     x: Math.round(box.x + (box.w - size) / 2),
@@ -674,8 +997,8 @@ function propArt(kind: PropKind, box: Rect): Op[] {
       rectOp(cluster.x + 1, cluster.y + cluster.h - potH, Math.max(1, cluster.w - 2), Math.max(1, potH - 1), F.pot),
       rectOp(cluster.x + 1, cluster.y + cluster.h - potH, Math.max(1, cluster.w - 2), 1, F.potHi),
       rectOp(cluster.x + 1, cluster.y + 1, Math.max(1, cluster.w - 2), Math.max(2, cluster.h - potH - 1), F.leafDark),
-      rectOp(cluster.x + 2, cluster.y, Math.max(1, cluster.w - 4), Math.max(2, cluster.h - potH - 2), F.leaf),
-      rectOp(cluster.x + Math.round(cluster.w / 2) - 1, cluster.y, 2, Math.max(2, cluster.h - potH - 2), F.leafHi),
+      rectOp(cluster.x + 2, cluster.y, Math.max(1, cluster.w - 4), Math.max(2, cluster.h - potH - 2), T.leaf),
+      rectOp(cluster.x + Math.round(cluster.w / 2) - 1, cluster.y, 2, Math.max(2, cluster.h - potH - 2), T.leafHi),
     ];
   }
   if (kind === 'mug') {
@@ -684,13 +1007,13 @@ function propArt(kind: PropKind, box: Rect): Op[] {
       rectOp(cluster.x + 1, cluster.y + 1, Math.max(1, cluster.w - 3), Math.max(1, cluster.h - 2), F.mug),
       rectOp(cluster.x + 1, cluster.y + 1, Math.max(1, cluster.w - 3), 1, F.mugHi),
       rectOp(cluster.x + Math.max(2, cluster.w - 2), cluster.y + 2, 2, Math.max(1, cluster.h - 4), F.mug),
-      rectOp(cluster.x + 1, cluster.y + Math.round(cluster.h / 2), Math.max(1, cluster.w - 3), 1, F.mugAccent, 0.8),
+      rectOp(cluster.x + 1, cluster.y + Math.round(cluster.h / 2), Math.max(1, cluster.w - 3), 1, T.accent, 0.8),
     ];
   }
   if (kind === 'books') {
     const rows = 3;
     const rowH = Math.max(1, Math.floor((cluster.h - 2) / rows));
-    const cols = [F.book, F.bookAlt, F.book];
+    const cols = [T.book, T.bookAlt, T.book];
     const out: Op[] = [];
     for (let i = 0; i < rows; i += 1) {
       const y = cluster.y + 1 + i * rowH;
@@ -707,12 +1030,12 @@ function propArt(kind: PropKind, box: Rect): Op[] {
       rectOp(cluster.x + 1, cupY + 1, Math.max(1, cluster.w - 2), Math.max(1, cupH - 2), F.penCup),
       rectOp(cluster.x + 1, cupY + 1, Math.max(1, cluster.w - 2), 1, F.metalHi, 0.7),
       rectOp(cluster.x + 2, cluster.y, 1, Math.max(2, cupY - cluster.y + 1), F.pen),
-      rectOp(cluster.x + 4, cluster.y, 1, Math.max(2, cupY - cluster.y), F.mugAccent),
+      rectOp(cluster.x + 4, cluster.y, 1, Math.max(2, cupY - cluster.y), T.accent),
     ];
   }
   return [
     rectOp(cluster.x, cluster.y + 1, cluster.w, Math.max(3, cluster.h - 2), F.ink),
-    rectOp(cluster.x + 1, cluster.y + 2, Math.max(2, cluster.w - 2), Math.max(2, cluster.h - 4), F.paper),
+    rectOp(cluster.x + 1, cluster.y + 2, Math.max(2, cluster.w - 2), Math.max(2, cluster.h - 4), T.paper),
     rectOp(cluster.x + 2, cluster.y + 3, Math.max(1, cluster.w - 4), 1, F.paperLine),
     rectOp(cluster.x + 2, cluster.y + 5, Math.max(1, cluster.w - 5), 1, F.paperLine),
     rectOp(cluster.x + 1, cluster.y + 2, Math.max(2, cluster.w - 2), 1, F.paperShadow),
@@ -729,10 +1052,13 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
   const kw = clamp(latLen * 0.6, 12, 30);
   const kd = clamp(depLen * 0.22, 3, 6);
   const kLat = latStart + (latLen - kw) / 2;
+  const seed = hashString(base);
+  const tint = SCREEN_TINTS[seed % SCREEN_TINTS.length]!;
+  const matTone = MAT_TONES[(seed >>> 4) % MAT_TONES.length]!;
 
-  // Desk mat grounds the workstation on the veneer.
+  // Desk mat grounds the workstation on the veneer, tinted per kit.
   const mat = box(kLat - 1, kLat + kw + 1, dep(0.04), dep(0.04) + kd + 3);
-  const matOps: Op[] = [rectOp(mat.x, mat.y, mat.w, mat.h, F.woodSide, 0.5)];
+  const matOps: Op[] = [rectOp(mat.x, mat.y, mat.w, mat.h, matTone, 0.5)];
 
   // Keyboard: dark outline, light deck and key rows.
   const keyboard = box(kLat, kLat + kw, dep(0.08), dep(0.08) + kd);
@@ -742,11 +1068,14 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
     rectOf(deck, F.metalHi),
     rectOp(deck.x, deck.y, deck.w, 1, F.paper),
   ];
-  const ticks = Math.max(2, Math.min(4, Math.floor(deck.w / 5)));
+  const ticks = Math.max(3, Math.min(5, Math.floor(deck.w / 5)));
+  const keyRow = Math.max(1, Math.floor((deck.h - 1) / 2));
   for (let i = 0; i < ticks; i += 1) {
     const tx = deck.x + 1 + Math.round((i * (deck.w - 2)) / ticks);
-    keyboardOps.push(rectOp(tx, deck.y + (deck.h > 2 ? 1 : 0), 2, Math.max(1, deck.h - 2), F.metalDark, 0.75));
+    keyboardOps.push(rectOp(tx, deck.y + (deck.h > 2 ? 1 : 0), 2, keyRow, F.metalDark, 0.75));
+    if (deck.h >= 4) keyboardOps.push(rectOp(tx, deck.y + 1 + keyRow, 2, Math.max(1, deck.h - 2 - keyRow), F.metalDark, 0.5));
   }
+  if (deck.w >= 12 && deck.h >= 4) keyboardOps.push(rectOp(deck.x + Math.round(deck.w * 0.28), deck.y + deck.h - 2, Math.max(2, Math.round(deck.w * 0.44)), 1, F.paper, 0.75));
 
   // Mouse beside the keyboard.
   const mouseX = clamp(latStart + latLen * 0.86, latStart, Math.max(latStart, latStart + latLen - 4));
@@ -766,12 +1095,22 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
   const monitorOps: Op[] = [
     rectOp(monitor.x, monitor.y, monitor.w, monitor.h, F.ink),
     rectOp(monitor.x + 1, monitor.y + 1, Math.max(1, monitor.w - 2), Math.max(1, monitor.h - 2), F.monitorBezel),
-    rectOp(monitor.x + 2, monitor.y + 2, Math.max(1, monitor.w - 4), Math.max(1, monitor.h - 4), F.screen),
-    rectOp(monitor.x + 2, monitor.y + 2, Math.max(1, monitor.w - 4), 1, F.screenHi),
+    rectOp(monitor.x + 2, monitor.y + 2, Math.max(1, monitor.w - 4), Math.max(1, monitor.h - 4), tint.screen),
+    rectOp(monitor.x + 2, monitor.y + 2, Math.max(1, monitor.w - 4), 1, tint.hi),
     rectOp(monitor.x + 1, monitor.y + 1, Math.max(1, monitor.w - 2), 1, F.monitorBezelHi, 0.8),
     rectOp(stand.x, stand.y, stand.w, stand.h, F.monitorStand),
     rectOp(foot.x, foot.y, foot.w, foot.h, F.ink, 0.85),
   ];
+  // Deterministic on-screen content: two or three short glyph bars whose widths
+  // come from the kit's own id, so adjacent workstations never look cloned.
+  const glyphRows = 2 + (seed % 2);
+  for (let i = 0; i < glyphRows; i += 1) {
+    const gy = monitor.y + 3 + i * 3;
+    if (gy + 1 > monitor.y + monitor.h - 3) break;
+    const gw = clamp(Math.round((monitor.w - 6) * (0.4 + ((seed >>> (i * 3)) % 5) / 10)), 2, Math.max(2, monitor.w - 6));
+    monitorOps.push(rectOp(monitor.x + 3, gy, gw, 1, tint.glyph, 0.75));
+  }
+  if (monitor.w >= 10) monitorOps.push(rectOp(monitor.x + Math.round(monitor.w / 2) - 1, monitor.y + monitor.h - 2, 2, 1, F.monitorBezelHi, 0.9));
 
   // One deterministic prop per workstation, sized to a compact cluster.
   const propKind = PROP_KINDS[hashString(base) % PROP_KINDS.length]!;
@@ -779,7 +1118,7 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
   const propD = clamp(depLen * 0.34, 6, 14);
   const propLat = clamp(latStart + latLen * 0.04, latStart, Math.max(latStart, latStart + latLen - propW));
   const propBox = box(propLat, propLat + propW, dep(0.5), dep(0.5) + propD);
-  const propOps = propArt(propKind, propBox);
+  const propOps = propArt(propKind, propBox, seed >>> 6);
 
   return [
     ...matOps,
@@ -827,6 +1166,10 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
   }
   body.push(rectOp(inner.x + 1, inner.y + 1, Math.max(1, inner.w - 2), Math.max(1, inner.h - 2), F.woodDark, 0.12));
   body.push(rectOp(inner.x + 2, inner.y + 2, 2, 2, F.metalDark, 0.7));
+  // A grounded apron: a dark contact band just inside the front edge plus a
+  // bright lip above it, so a desk reads with thickness at gameplay scale.
+  body.push(rectOp(inner.x + 1, inner.y + inner.h - 1, Math.max(1, inner.w - 2), 1, F.ink, 0.3));
+  body.push(rectOp(inner.x + 1, inner.y + 2, Math.max(1, inner.w - 2), 1, F.woodTopHi, 0.28));
 
   // Drawer pedestal: body, inset drawer panels, handles and seams.
   const drawerW = wide ? Math.min(34, Math.max(18, Math.round(inner.w * 0.16))) : Math.max(8, inner.w - 4);
@@ -860,47 +1203,64 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
 
   const ops: Op[] = [...body];
 
-  // Two-sided banks get a central spine — the cubicle divider the V1 four-person
-  // cluster reads by — and every bay boundary gets a cross divider. Both are
-  // derived from the kit rhythm, never a duplicated map coordinate.
   const splitNS = kits.some((kit) => kit.facing === 'north') && kits.some((kit) => kit.facing === 'south');
   const splitEW = kits.some((kit) => kit.facing === 'east') && kits.some((kit) => kit.facing === 'west');
-  if (splitNS || splitEW) {
-    const spine: Op[] = [];
-    if (splitNS) {
-      const sy = inner.y + Math.round(inner.h / 2) - 1;
-      spine.push(rectOp(inner.x + 1, sy, Math.max(1, inner.w - 2), 3, F.woodDark));
-      spine.push(rectOp(inner.x + 1, sy, Math.max(1, inner.w - 2), 1, F.woodTopHi, 0.55));
-    } else {
-      const sx = inner.x + Math.round(inner.w / 2) - 1;
-      spine.push(rectOp(sx, inner.y + 1, 3, Math.max(1, inner.h - 2), F.woodDark));
-      spine.push(rectOp(sx, inner.y + 1, 1, Math.max(1, inner.h - 2), F.woodTopHi, 0.55));
-    }
-    ops.push({ t: 'group', sourceId: `${item.id}:spine`, semantic: 'desk:spine', ops: spine });
-  }
-
   const lateralIsX = kits.length ? kits[0]!.facing === 'north' || kits[0]!.facing === 'south' : wide;
   const slots = [...new Set(kits
     .filter((kit) => (kit.facing === 'north' || kit.facing === 'south') === lateralIsX)
     .map((kit) => Math.round(kit.latStart + kit.latLen / 2)))].sort((a, b) => a - b);
+
+  for (const kit of kits) {
+    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id) });
+  }
+
+  // Two-sided banks get a central partition — the cubicle divider the V1
+  // four-person cluster reads by — and every bay boundary gets a cross divider.
+  // Both are fabric over a dark frame, tinted by the zone's partition family and
+  // derived from the kit rhythm, never a duplicated map coordinate. They paint
+  // after the kits so the divider always sits between neighbouring workstations.
+  const fabric = partitionFor(item.zone);
+  if (splitNS || splitEW) {
+    const spine: Op[] = [];
+    if (splitNS) {
+      const band = Math.min(5, Math.max(3, Math.round(inner.h * 0.12)));
+      const sy = inner.y + Math.round(inner.h / 2) - Math.floor(band / 2);
+      spine.push(rectOp(inner.x + 1, sy + 1, Math.max(1, inner.w - 2), band, F.shadow, 0.16));
+      spine.push(rectOp(inner.x + 1, sy, Math.max(1, inner.w - 2), band, F.ink));
+      spine.push(rectOp(inner.x + 2, sy + 1, Math.max(1, inner.w - 4), Math.max(1, band - 2), fabric.base));
+      spine.push(rectOp(inner.x + 2, sy + 1, Math.max(1, inner.w - 4), 1, fabric.hi, 0.85));
+      spine.push(rectOp(inner.x + 2, sy + band - 2, Math.max(1, inner.w - 4), 1, fabric.dark, 0.85));
+    } else {
+      const band = Math.min(5, Math.max(3, Math.round(inner.w * 0.12)));
+      const sx = inner.x + Math.round(inner.w / 2) - Math.floor(band / 2);
+      spine.push(rectOp(sx + 1, inner.y + 1, band, Math.max(1, inner.h - 2), F.shadow, 0.16));
+      spine.push(rectOp(sx, inner.y + 1, band, Math.max(1, inner.h - 2), F.ink));
+      spine.push(rectOp(sx + 1, inner.y + 2, Math.max(1, band - 2), Math.max(1, inner.h - 4), fabric.base));
+      spine.push(rectOp(sx + 1, inner.y + 2, 1, Math.max(1, inner.h - 4), fabric.hi, 0.85));
+      spine.push(rectOp(sx + band - 2, inner.y + 2, 1, Math.max(1, inner.h - 4), fabric.dark, 0.85));
+    }
+    ops.push({ t: 'group', sourceId: `${item.id}:spine`, semantic: 'desk:spine', ops: spine });
+  }
+
   if (slots.length > 1) {
     const dividers: Op[] = [];
     for (let i = 1; i < slots.length; i += 1) {
       const boundary = Math.round((slots[i - 1]! + slots[i]!) / 2);
       if (lateralIsX) {
-        dividers.push(rectOp(inner.x + boundary, inner.y + 1, 2, Math.max(1, inner.h - 2), F.woodDark, 0.85));
-        dividers.push(rectOp(inner.x + boundary, inner.y + 1, 1, Math.max(1, inner.h - 2), F.woodTopHi, 0.4));
+        const x = inner.x + clamp(boundary - 1, 1, Math.max(1, inner.w - 3));
+        dividers.push(rectOp(x, inner.y + 1, 3, Math.max(1, inner.h - 2), F.ink));
+        dividers.push(rectOp(x + 1, inner.y + 2, 1, Math.max(1, inner.h - 4), fabric.base));
+        dividers.push(rectOp(x + 1, inner.y + 2, 1, 1, fabric.hi, 0.85));
       } else {
-        dividers.push(rectOp(inner.x + 1, inner.y + boundary, Math.max(1, inner.w - 2), 2, F.woodDark, 0.85));
-        dividers.push(rectOp(inner.x + 1, inner.y + boundary, Math.max(1, inner.w - 2), 1, F.woodTopHi, 0.4));
+        const y = inner.y + clamp(boundary - 1, 1, Math.max(1, inner.h - 3));
+        dividers.push(rectOp(inner.x + 1, y, Math.max(1, inner.w - 2), 3, F.ink));
+        dividers.push(rectOp(inner.x + 2, y + 1, Math.max(1, inner.w - 4), 1, fabric.base));
+        dividers.push(rectOp(inner.x + 2, y + 1, 1, 1, fabric.hi, 0.85));
       }
     }
     ops.push({ t: 'group', sourceId: `${item.id}:divider`, semantic: 'desk:divider', ops: dividers });
   }
 
-  for (const kit of kits) {
-    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id) });
-  }
   return ops;
 }
 
@@ -976,14 +1336,81 @@ function tableArt(item: Furniture): Op[] {
   return ops;
 }
 
+// Counter equipment: a compact, zone-specific cluster derived from the counter's
+// own rect. Reception gets a monitor, a phone and a bell; the pantry a tray of
+// cups; the executive counter a tidy tray. Always inside the counter's inner
+// rect, so no fixture can be invented off the approved footprint.
+function counterEquipment(item: Furniture, inner: Rect): PaintedOp[] {
+  const F = GAME_PALETTE;
+  const ops: PaintedOp[] = [];
+  if (inner.w < 24 || inner.h < 12) return ops;
+  const x0 = inner.x + 4;
+  const y0 = inner.y + 2;
+  const zone = item.zone;
+  if (zone === 'resepsionis') {
+    ops.push(rectOp(x0, y0, 10, 7, F.ink));
+    ops.push(rectOp(x0 + 1, y0 + 1, 8, 5, F.monitorBezel));
+    ops.push(rectOp(x0 + 2, y0 + 2, 6, 3, F.screen));
+    ops.push(rectOp(x0 + 2, y0 + 2, 6, 1, F.screenHi));
+    const px = x0 + 15;
+    if (px + 9 < inner.x + inner.w) {
+      ops.push(rectOp(px, y0 + 2, 9, 5, F.ink));
+      ops.push(rectOp(px + 1, y0 + 3, 7, 3, F.phoneShell));
+      ops.push(rectOp(px + 1, y0 + 3, 7, 1, F.phoneShellHi, 0.8));
+    }
+    const bx = x0 + 28;
+    if (bx + 6 < inner.x + inner.w) {
+      ops.push(rectOp(bx, y0 + 3, 6, 4, F.ink));
+      ops.push(rectOp(bx + 1, y0 + 4, 4, 2, F.bell));
+      ops.push(rectOp(bx + 1, y0 + 4, 4, 1, F.bellHi));
+    }
+    return ops;
+  }
+  if (zone === 'pantry') {
+    ops.push(rectOp(x0, y0 + 1, 12, 6, F.ink));
+    ops.push(rectOp(x0 + 1, y0 + 2, 10, 4, F.tray));
+    ops.push(rectOp(x0 + 1, y0 + 2, 10, 1, F.trayHi, 0.8));
+    for (let i = 0; i < 3; i += 1) {
+      const cx = x0 + 2 + i * 3;
+      ops.push(rectOp(cx, y0 + 2, 2, 3, F.cup));
+      ops.push(rectOp(cx, y0 + 2, 2, 1, F.cupAccent));
+    }
+    // A coffee pot and a small fruit bowl complete the pantry worktop props.
+    const kx = x0 + 15;
+    if (kx + 8 < inner.x + inner.w) {
+      ops.push(rectOp(kx, y0, 8, 7, F.ink));
+      ops.push(rectOp(kx + 1, y0 + 1, 6, 5, F.metal));
+      ops.push(rectOp(kx + 1, y0 + 1, 6, 1, F.metalHi));
+      ops.push(rectOp(kx + 2, y0 + 2, 4, 2, F.broth, 0.85));
+      ops.push(rectOp(kx + 1, y0 + 6, 6, 1, F.metalDark));
+    }
+    const fx = x0 + 25;
+    if (fx + 6 < inner.x + inner.w) {
+      ops.push(rectOp(fx, y0 + 3, 6, 4, F.ink));
+      ops.push(rectOp(fx + 1, y0 + 4, 4, 2, F.bowl));
+      ops.push(rectOp(fx + 2, y0 + 2, 2, 2, F.pot));
+      ops.push(rectOp(fx + 4, y0 + 2, 1, 2, F.leaf));
+    }
+    return ops;
+  }
+  if (zone === 'direktur-finance') {
+    ops.push(rectOp(x0, y0 + 1, 11, 6, F.ink));
+    ops.push(rectOp(x0 + 1, y0 + 2, 9, 4, F.tray));
+    ops.push(rectOp(x0 + 1, y0 + 2, 9, 1, F.trayHi, 0.8));
+    ops.push(rectOp(x0 + 2, y0 + 2, 3, 4, F.cup, 0.9));
+    ops.push(rectOp(x0 + 6, y0 + 2, 2, 4, F.cupAccent, 0.8));
+  }
+  return ops;
+}
+
 function counterArt(item: Furniture): Op[] {
   const F = GAME_PALETTE;
+  const zone = item.zone;
   const r = snap(item.rect);
   const inner = inset(r, 1);
   const wide = inner.w >= inner.h;
   const ops: Op[] = [shadow(r), rectOp(r.x, r.y, r.w, r.h, F.ink), rectOf(inner, F.woodTop)];
   ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.woodTopHi));
-  ops.push(rectOp(inner.x, inner.y + 1, inner.w, 1, F.woodDark, 0.35)); // counter-top overhang
   // Inset front seam and a soft inner top highlight: even a short one-panel
   // counter reads as layered joinery rather than a flat slab. Both layers stay
   // inside the inner rect, so the approved footprint is untouched.
@@ -1010,15 +1437,23 @@ function counterArt(item: Furniture): Op[] {
     }
   }
   if (wide) {
+    // Backsplash band behind the top — tiled in the pantry, plain elsewhere —
+    // then a lip above the worktop and a recessed plinth below it, so the
+    // counter reads with real depth instead of a flat slab.
+    const splashH = zone === 'pantry' ? 3 : 2;
+    ops.push(rectOp(inner.x, inner.y, inner.w, splashH, F.serviceSeam, 0.9));
+    ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.serviceHi, 0.85));
+    if (zone === 'pantry') {
+      for (let x = inner.x + 6; x < inner.x + inner.w - 2; x += 8) ops.push(rectOp(x, inner.y + 1, 1, splashH - 1, F.serviceEdge, 0.7));
+    }
+    ops.push(rectOp(inner.x, inner.y + splashH, inner.w, 1, F.woodTopHi, 0.5));
     ops.push(rectOp(inner.x, inner.y + inner.h - 3, inner.w, 3, F.woodEdge));
     ops.push(rectOp(inner.x, inner.y + inner.h - 1, inner.w, 1, F.woodDark, 0.85));
-    // Restrained serveware: a mug and a small stack on the counter top.
-    ops.push(rectOp(r.x + 8, r.y + 4, 6, 6, F.ink));
-    ops.push(rectOp(r.x + 9, r.y + 5, 4, 4, F.mug));
-    ops.push(rectOp(r.x + 9, r.y + 5, 4, 1, F.mugHi));
-    ops.push(rectOp(r.x + 9, r.y + 7, 4, 1, F.mugAccent, 0.8));
+    ops.push(rectOp(inner.x + 1, inner.y + inner.h - 2, Math.max(1, inner.w - 2), 1, F.ink, 0.4));
+    ops.push(...counterEquipment(item, inner));
   } else {
     ops.push(rectOp(inner.x + inner.w - 3, inner.y, 3, inner.h, F.woodEdge));
+    ops.push(rectOp(inner.x + inner.w - 1, inner.y + 1, 1, Math.max(1, inner.h - 2), F.ink, 0.4));
   }
   return ops;
 }
@@ -1032,6 +1467,9 @@ function cabinetArt(item: Furniture): Op[] {
   ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.cabinetHi));
   ops.push(rectOp(inner.x, inner.y, 1, inner.h, F.cabinetHi, 0.6));
   ops.push(rectOp(inner.x, inner.y + inner.h - 2, inner.w, 2, F.cabinetDark, 0.8));
+  // A top lip and a recessed plinth ground the cabinet and read as real depth.
+  ops.push(rectOp(inner.x, inner.y + 1, inner.w, 1, F.cabinetDark, 0.35));
+  ops.push(rectOp(inner.x + 1, inner.y + inner.h - 1, Math.max(1, inner.w - 2), 1, F.ink, 0.5));
   const span = wide ? inner.w : inner.h;
   const leaves = Math.max(1, Math.round(span / 36));
   for (let i = 0; i < leaves; i += 1) {
@@ -1043,6 +1481,7 @@ function cabinetArt(item: Furniture): Op[] {
       if (i > 0) ops.push(rectOp(lx, inner.y + 1, 1, Math.max(1, inner.h - 2), F.cabinetDark));
       const hx = i === 0 ? lx + lw - 5 : lx + 3;
       ops.push(rectOp(hx, inner.y + Math.max(2, Math.round(inner.h / 2) - 3), 2, 6, F.metalHi));
+      ops.push(rectOp(lx + 1, inner.y + Math.max(2, Math.round(inner.h * 0.72)), Math.max(1, lw - 2), 1, F.cabinetDark, 0.35));
     } else {
       const ly = inner.y + Math.round((inner.h * i) / leaves);
       const lh = Math.round((inner.h * (i + 1)) / leaves) - Math.round((inner.h * i) / leaves);
@@ -1069,6 +1508,10 @@ function fridgeArt(item: Furniture): Op[] {
     ops.push(rectOp(mid, inner.y, 1, inner.h, F.fridgeGasket));
     ops.push(rectOp(mid - 4, inner.y + 4, 2, Math.max(4, inner.h - 10), F.fridgeDark));
     ops.push(rectOp(mid + 2, inner.y + 4, 2, Math.max(4, inner.h - 10), F.fridgeDark));
+    // Handle highlights and a door-split shadow read the two-door depth.
+    ops.push(rectOp(mid - 3, inner.y + 4, 1, Math.max(4, inner.h - 10), F.metalHi, 0.7));
+    ops.push(rectOp(mid + 4, inner.y + 4, 1, Math.max(4, inner.h - 10), F.metalHi, 0.7));
+    ops.push(rectOp(mid + 1, inner.y + 1, 1, Math.max(1, inner.h - 2), F.fridgeGasket, 0.7));
     ops.push(rectOp(inner.x + 2, inner.y + 2, Math.max(1, mid - inner.x - 5), 1, F.fridgeDoor, 1));
   } else {
     const mid = inner.y + Math.round(inner.h / 2);
@@ -1080,6 +1523,9 @@ function fridgeArt(item: Furniture): Op[] {
   // A magnet note keeps it from reading as a plain box.
   ops.push(rectOp(inner.x + inner.w - 7, inner.y + 4, 4, 4, F.paper));
   ops.push(rectOp(inner.x + inner.w - 6, inner.y + 5, 2, 1, F.paperLine));
+  // Top cap and a recessed kick plinth: real cabinet depth, front and back.
+  ops.push(rectOp(inner.x + 1, inner.y + 1, Math.max(1, inner.w - 2), 1, F.fridgeDoor, 0.95));
+  ops.push(rectOp(inner.x + 1, inner.y + inner.h - 2, Math.max(1, inner.w - 2), 2, F.ink, 0.45));
   return ops;
 }
 
@@ -1107,6 +1553,17 @@ function dispenserArt(item: Furniture): Op[] {
   ops.push(rectOp(inner.x + 2, bodyY + 2, Math.max(1, inner.w - 4), 2, F.dispenserTray));
   ops.push(rectOp(inner.x + 2, bodyY + 2, Math.max(1, inner.w - 4), 1, F.metalHi, 0.8));
   ops.push(rectOp(inner.x + 3, bodyY + bodyH - 3, Math.max(1, inner.w - 6), 2, F.metal));
+  // A control panel and a bottle highlight give the dispenser a real face.
+  ops.push(rectOp(inner.x + 2, bodyY + bodyH - 6, Math.max(3, Math.round(inner.w * 0.28)), 2, F.metalDark, 0.75));
+  ops.push(rectOp(inner.x + 3, bodyY + bodyH - 6, Math.max(2, Math.round(inner.w * 0.28) - 2), 1, F.metalHi, 0.7));
+  ops.push(rectOp(inner.x + Math.round(inner.w / 2) + 4, bodyY + 1, 2, 2, F.dispenserWater, 0.9));
+  // A stack of paper cups beside the bottle and a base plinth.
+  if (inner.w >= 24 && inner.h >= 16) {
+    ops.push(rectOp(inner.x + 2, inner.y + 3, 5, 6, F.ink));
+    ops.push(rectOp(inner.x + 3, inner.y + 4, 3, 4, F.cup));
+    ops.push(rectOp(inner.x + 3, inner.y + 4, 3, 1, F.cupAccent));
+  }
+  ops.push(rectOp(inner.x + 1, inner.y + inner.h - 1, Math.max(1, inner.w - 2), 1, F.ink, 0.5));
   return ops;
 }
 
@@ -1124,6 +1581,11 @@ function sinkArt(item: Furniture): Op[] {
   ops.push(rectOp(spoutX, inner.y + 1, 2, Math.max(3, Math.round(inner.h * 0.3)), F.sinkTap));
   ops.push(rectOp(spoutX - 3, inner.y + 1, 8, 2, F.sinkTap));
   ops.push(rectOp(spoutX - 2, inner.y + 3, 6, 1, F.metalHi, 0.6));
+  // A soap bottle and a cup on the rim.
+  if (inner.w >= 20 && inner.h >= 16) {
+    ops.push(rectOp(inner.x + 2, inner.y + 2, 3, 5, F.ink));
+    ops.push(rectOp(inner.x + 3, inner.y + 3, 1, 3, F.cup, 0.9));
+  }
   return ops;
 }
 
@@ -1147,6 +1609,13 @@ function sofaArt(item: Furniture): Op[] {
     ops.push(rectOp(sx + 1, seatY + 1, Math.max(1, sw - 2), 1, F.sofaCushionHi, 0.4));
   }
   ops.push(rectOp(inner.x, inner.y + inner.h - 1, inner.w, 1, F.sofaPiping, 0.6));
+  // Armrests and a shadowed skirt complete the V1 sofa silhouette.
+  const armW = Math.max(2, Math.min(4, Math.round(inner.w * 0.1)));
+  ops.push(rectOp(inner.x, inner.y, armW, inner.h, F.sofaPiping, 0.85));
+  ops.push(rectOp(inner.x + inner.w - armW, inner.y, armW, inner.h, F.sofaPiping, 0.85));
+  ops.push(rectOp(inner.x, inner.y, armW, 1, F.sofaCushionHi, 0.5));
+  ops.push(rectOp(inner.x + inner.w - armW, inner.y, armW, 1, F.sofaCushionHi, 0.5));
+  ops.push(rectOp(inner.x + 1, inner.y + inner.h - 1, Math.max(1, inner.w - 2), 1, F.ink, 0.4));
   return ops;
 }
 
@@ -1170,7 +1639,7 @@ function expand(rect: Rect, n: number): Rect {
 
 type Side = 'top' | 'bottom' | 'left' | 'right';
 
-function edgeBand(rect: Rect, side: Side, thickness: number, fill: string, opacity?: number): PaintedOp {
+function edgeBand(rect: Rect, side: Side, thickness: number, fill: string, opacity?: number): RectOp {
   if (side === 'top') return rectOp(rect.x, rect.y, rect.w, thickness, fill, opacity);
   if (side === 'bottom') return rectOp(rect.x, rect.y + rect.h - thickness, rect.w, thickness, fill, opacity);
   if (side === 'left') return rectOp(rect.x, rect.y, thickness, rect.h, fill, opacity);
@@ -1206,51 +1675,66 @@ const sideAway = (facing: ChairFacing): Side =>
 // Chairs keep the V1 silhouette: a pixel-rounded cushion and backrest built from
 // stepped rectangles, visible armrests, a five-star base with casters and a
 // central post, and an orientation that is readable from the backrest side.
-function chairArt(item: Furniture, facing: ChairFacing = 'north'): Op[] {
+function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Upholstery = UPHOLSTERY.v1): Op[] {
   const F = GAME_PALETTE;
-  void item;
+  const U = upholstery;
   const r = snap(item.rect);
   const W = r.w;
   const H = r.h;
   const cx = r.x + W / 2;
   const cy = r.y + H / 2;
   const place = (u0: number, u1: number, v0: number, v1: number): Rect => placeRect(r, facing, u0, u1, v0, v1);
+  // A per-chair upholstery tone inside the zone family: three deterministic
+  // combinations of the family's own back/seat/highlight tones, so a long row of
+  // identical chairs still reads as individual seating, never a cloned grid.
+  const tone = hashString(item.id) % 3;
+  const seatFill = tone === 0 ? U.seat : tone === 1 ? U.seatHi : U.back;
+  const seatTrim = tone === 0 ? U.seatHi : tone === 1 ? U.seat : U.backHi;
+  const backFill = tone === 0 ? U.back : tone === 1 ? U.backHi : U.seat;
+  const backTrim = tone === 0 ? U.backHi : tone === 1 ? U.seatHi : U.backHi;
 
   // Base: a shadow, five-star legs, four casters and a central post.
   const base: Op[] = [rectOp(r.x + 2, r.y + 3, W, H, F.shadow, 0.18)];
   const barU = W * 0.3;
   const barV = H * 0.3;
-  base.push(rectOp(Math.round(cx - barU - 1), Math.round(cy - 1), Math.round(barU * 2) + 2, 2, F.chairBase, 0.95));
-  base.push(rectOp(Math.round(cx - 1), Math.round(cy - barV - 1), 2, Math.round(barV * 2) + 2, F.chairBase, 0.95));
+  base.push(rectOp(Math.round(cx - barU - 1), Math.round(cy - 1), Math.round(barU * 2) + 2, 2, U.base, 0.95));
+  base.push(rectOp(Math.round(cx - 1), Math.round(cy - barV - 1), 2, Math.round(barV * 2) + 2, U.base, 0.95));
   base.push(rectOp(Math.round(cx - barU - 1), Math.round(cy - 1), Math.round(barU * 2) + 2, 1, F.metalDark, 0.5));
   base.push(rectOp(Math.round(cx - 1), Math.round(cy - barV - 1), 1, Math.round(barV * 2) + 2, F.metalDark, 0.5));
   for (const [su, sv] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as Array<[number, number]>) {
     const caster = placePoint(r, facing, su * barU, sv * barV);
     base.push(rectOp(Math.round(caster.x) - 2, Math.round(caster.y) - 2, 4, 4, F.ink));
-    base.push(circleOp(caster.x, caster.y, 1.6, F.chairBase));
+    base.push(circleOp(caster.x, caster.y, 1.6, U.base));
   }
-  base.push(rectOp(Math.round(cx) - 2, Math.round(cy) - 2, 4, 4, F.chairFrame));
-  base.push(circleOp(cx, cy, 2.4, F.chairBase));
+  base.push(rectOp(Math.round(cx) - 2, Math.round(cy) - 2, 4, 4, U.frame));
+  base.push(circleOp(cx, cy, 2.4, U.base));
 
   // Cushion: stepped, shifted toward the desk (away from the backrest).
   const seat = place(-W * 0.32, W * 0.32, -H * 0.16, H * 0.3);
   const seatOps: Op[] = [
     ...steppedBlock(expand(seat, 1), F.ink, 3),
-    ...steppedBlock(seat, F.chairSeat, 3),
-    edgeBand(seat, sideAway(facing), 1, F.chairSeatHi),
-    edgeBand(seat, sideToward(facing), 1, F.chairFrame, 0.35),
+    ...steppedBlock(seat, seatFill, 3),
+    edgeBand(seat, sideAway(facing), 1, seatTrim),
+    edgeBand(seat, sideToward(facing), 1, U.frame, 0.35),
   ];
 
-  // Backrest: stepped shell on the far side, highlighted on its outer edge.
+  // Backrest: stepped shell on the far side, highlighted on its outer edge and
+  // a lumbar band across its inner face so the seat reads in three layers.
   const back = place(-W * 0.36, W * 0.36, H * 0.2, H * 0.46);
   const backOps: Op[] = [
     ...steppedBlock(expand(back, 1), F.ink, 3),
-    ...steppedBlock(back, F.chairBack, 3),
-    edgeBand(back, sideToward(facing), 1, F.chairBackHi),
-    edgeBand(back, sideAway(facing), 1, F.chairSeat, 0.4),
+    ...steppedBlock(back, backFill, 3),
+    edgeBand(back, sideToward(facing), 1, backTrim),
+    edgeBand(back, sideAway(facing), 1, U.seat, 0.4),
   ];
+  if (back.w >= 6 && back.h >= 5) {
+    const lumbar = edgeBand(back, sideAway(facing), 2, backTrim, 0.45);
+    backOps.push({ ...lumbar, x: lumbar.x + 1, y: lumbar.y + 1, w: Math.max(1, lumbar.w - 2), h: Math.max(1, lumbar.h - 2) });
+    backOps.push(edgeBand(back, sideToward(facing), 1, U.frame, 0.3));
+  }
 
-  // Armrests flank the cushion along the perpendicular of the facing.
+  // Armrests flank the cushion along the perpendicular of the facing; each gets
+  // a dark frame, a fabric pad and a highlight cap.
   const armLow = -H * 0.05;
   const armHigh = H * 0.3;
   const arms: Op[] = [];
@@ -1259,7 +1743,8 @@ function chairArt(item: Furniture, facing: ChairFacing = 'north'): Op[] {
     const end = su < 0 ? -W * 0.3 : W * 0.42;
     const bar = place(start, end, armLow, armHigh);
     arms.push(...steppedBlock(expand(bar, 1), F.ink, 2));
-    arms.push(...steppedBlock(bar, F.chairArm, 2));
+    arms.push(...steppedBlock(bar, U.arm, 2));
+    if (bar.w >= 4 && bar.h >= 4) arms.push(edgeBand(bar, sideAway(facing), 2, backTrim, 0.3));
     arms.push(edgeBand(bar, sideToward(facing), 1, F.metalHi, 0.35));
   }
 
@@ -1320,7 +1805,7 @@ const FURNITURE_ART: Record<FurnitureKind, (item: Furniture) => Op[]> = {
 
 export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'north', kits: readonly Workstation[] = []): GroupOp {
   let ops: Op[];
-  if (item.kind === 'chair') ops = chairArt(item, facing);
+  if (item.kind === 'chair') ops = chairArt(item, facing, upholsteryFor(item.zone));
   else if (item.kind === 'desk') ops = deskArt(item, kits);
   else ops = FURNITURE_ART[item.kind](item);
   return { t: 'group', sourceId: item.id, semantic: `furniture:${item.kind}`, ops };
@@ -1366,6 +1851,34 @@ function wallArtOps(r: Rect, kind: 'clock' | 'art'): PaintedOp[] {
     ops.push(rectOp(face.x + 1, face.y + 1, Math.max(1, face.w - 2), Math.max(1, face.h - 2), F.artInk, 0.5));
     ops.push(rectOp(face.x + 1, face.y + Math.max(1, face.h - 3), Math.max(1, face.w - 2), 2, F.leaf, 0.7));
   }
+  return ops;
+}
+
+// The wastafel alcove is a real, walkable service nook but carries no approved
+// furniture item, so its basin is painted as zone-derived detail rather than an
+// invented collider: a tiled sill, a rimmed bowl with a tap and a couple of cups,
+// all derived from and contained by the approved zone rect.
+export function serviceNookOps(manifest: OfficeManifest): Op[] {
+  const F = GAME_PALETTE;
+  const zone = manifest.zones.find((entry) => entry.id === 'wastafel');
+  if (!zone) return [];
+  const r = snap(zone.rect);
+  const inner = inset(r, 3);
+  if (inner.w < 24 || inner.h < 16) return [];
+  const ops: Op[] = [];
+  ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.serviceHi, 0.7));
+  const basin = { x: inner.x + 2, y: inner.y + Math.round(inner.h * 0.35), w: Math.max(8, inner.w - 4), h: Math.max(6, Math.round(inner.h * 0.5)) };
+  ops.push(rectOp(basin.x, basin.y, basin.w, basin.h, F.ink));
+  ops.push(rectOp(basin.x + 1, basin.y + 1, Math.max(1, basin.w - 2), Math.max(1, basin.h - 2), F.sinkRim));
+  ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), Math.max(1, basin.h - 4), F.sinkBasin));
+  ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), 1, F.metalHi, 0.6));
+  ops.push(rectOp(basin.x + 3, basin.y + 3, Math.max(1, basin.w - 8), Math.max(1, basin.h - 6), F.sinkWater, 0.4));
+  const tapX = basin.x + Math.round(basin.w / 2) - 1;
+  ops.push(rectOp(tapX, basin.y - 3, 2, 4, F.sinkTap));
+  ops.push(rectOp(tapX - 3, basin.y - 3, 8, 2, F.sinkTap));
+  ops.push(rectOp(tapX - 2, basin.y - 1, 6, 1, F.metalHi, 0.6));
+  ops.push(rectOp(inner.x + inner.w - 6, inner.y + 2, 4, 5, F.ink));
+  ops.push(rectOp(inner.x + inner.w - 5, inner.y + 3, 2, 3, F.cup));
   return ops;
 }
 
@@ -1420,27 +1933,33 @@ export function buildDecorationOps(manifest: OfficeManifest): PaintedOp[] {
     }
   }
 
+  // Mounted wall motifs: one small framed art/clock per private room, hung on
+  // the room-facing side of its back (north) wall just inside the perimeter
+  // ring, so the rooms read as occupied rather than empty boxes. Placement is
+  // derived from the zone rect, tries a centre-first set of deterministic
+  // anchors and only paints where the spot is genuinely free (never over an
+  // opening, a fixture or a seat). It never creates a collider.
   let artIndex = 0;
-  for (const wall of manifest.walls) {
-    if (wall.kind !== 'full') continue;
-    const horizontal = wall.rect.w >= wall.rect.h;
-    const length = horizontal ? wall.rect.w : wall.rect.h;
-    if (length < 72) continue;
-    const artW = horizontal ? 26 : 12;
-    const artH = horizontal ? 12 : 26;
-    const rect = {
-      x: Math.round(wall.rect.x + wall.rect.w / 2 - artW / 2),
-      y: Math.round(wall.rect.y + wall.rect.h / 2 - artH / 2),
-      w: artW,
-      h: artH,
-    };
-    const padded: Rect = { x: rect.x - 3, y: rect.y - 3, w: rect.w + 6, h: rect.h + 6 };
-    if (manifest.openings.some((opening) => overlaps(padded, opening.rect))) continue;
-    if (manifest.furniture.some((item) => item.solid && overlaps(padded, item.rect))) continue;
-    if (!free(rect)) continue;
-    placed.push(rect);
-    ops.push(...wallArtOps(rect, artIndex % 4 === 0 ? 'clock' : 'art'));
-    artIndex += 1;
+  for (const zone of manifest.zones) {
+    if (zone.kind !== 'room') continue;
+    if (sealedNames.has(zone.name)) continue;
+    if (zone.rect.w < 96) continue;
+    const artW = 24;
+    const artH = 10;
+    const y = Math.round(zone.rect.y + 6);
+    const anchors = [0.5, 0.32, 0.68];
+    for (const anchor of anchors) {
+      const rect: Rect = { x: Math.round(zone.rect.x + zone.rect.w * anchor - artW / 2), y, w: artW, h: artH };
+      const padded: Rect = { x: rect.x - 3, y: rect.y - 2, w: rect.w + 6, h: rect.h + 4 };
+      if (manifest.openings.some((opening) => overlaps(padded, opening.rect))) continue;
+      if (manifest.furniture.some((item) => overlaps(padded, item.rect))) continue;
+      if (!free(rect)) continue;
+      if (overlaps(rect, inset(zone.rect, 24))) continue;
+      placed.push(rect);
+      ops.push(...wallArtOps(rect, artIndex % 3 === 0 ? 'clock' : 'art'));
+      artIndex += 1;
+      break;
+    }
   }
 
   return ops;
@@ -1466,8 +1985,14 @@ export function buildGameWorldOps(manifest: OfficeManifest): Op[] {
   surfaces.forEach((surface, index) => {
     const zone = manifest.zones.find((entry) => entry.id === surface.zone);
     const rect = surface.rect ?? zone?.rect;
-    if (rect) ops.push(...floorOps(rect, surface.kind, index));
+    if (rect) ops.push(...floorOps(rect, surface.kind, index, surface.zone));
   });
+
+  // Furniture-centred rugs, derived per room and painted under the furniture.
+  ops.push(...furnitureRugOps(manifest));
+
+  // Service-nook detail (the wastafel basin) derived from its own zone rect.
+  ops.push(...serviceNookOps(manifest));
 
   for (const window of manifest.windows) ops.push(...windowOps(window));
   for (const wall of manifest.walls) ops.push(...wallOps(wall));

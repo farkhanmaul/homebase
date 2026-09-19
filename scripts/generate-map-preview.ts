@@ -27,11 +27,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { BILIK_GENG_ZONE_ID, clampCamera, officeMap } from '../lib/office-map.ts';
+import { BILIK_GENG_ZONE_ID, clampCamera, officeMap, type Point, type Rect } from '../lib/office-map.ts';
 import { buildGamePreviewOps } from '../lib/office-game-ops.ts';
 import { cropPreviewOps } from '../lib/office-crop.ts';
-import { frameZoneView, resolveCamera, zoneCentre } from '../lib/office-camera.ts';
-import { computeViewport } from '../lib/office-viewport.ts';
+import { frameRectView, resolveCamera, zoneCentre } from '../lib/office-camera.ts';
 import { PREVIEW_COLORS, buildReviewPreviewOps, flattenOps, type Op, type PreviewOps } from '../lib/office-render-ops.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -57,28 +56,59 @@ function imageDataUri(src: string): string {
 // size) gives the in-app crop, drawn at 2x so pixel detail is legible.
 const CAMERA_BOX = { width: 1440, height: 1000 };
 const CAMERA_SCALE = 2;
-// Each crop is named for the zone it must show, never an arbitrary world point.
-const CAMERA_TARGETS: Array<[string, string]> = [
-  ['v1-detail-bilik', BILIK_GENG_ZONE_ID],
-  ['v1-detail-workareas', 'desk-collection'],
-  ['v1-detail-pantry', 'pantry'],
+// Each crop is named for what it must show and framed from its zones, never an
+// arbitrary world point: a single room is framed on that zone, while a row or a
+// whole service core is framed on the union of the zones it must keep visible.
+export type PreviewCropSpec = { name: string; zones: string[]; box?: { width: number; height: number } };
+
+export const PREVIEW_CROP_SPECS: readonly PreviewCropSpec[] = [
+  { name: 'v1-detail-bilik', zones: [BILIK_GENG_ZONE_ID] },
+  { name: 'v1-detail-workareas', zones: ['desk-collection'] },
+  { name: 'v1-detail-pantry', zones: ['pantry'] },
+  { name: 'v1-detail-top-rooms', zones: ['meeting-1', 'hrga', 'komisaris', 'product-manager', 'it', 'direktur-finance', BILIK_GENG_ZONE_ID], box: { width: 2800, height: 500 } },
+  { name: 'v1-detail-reception-lobby', zones: ['resepsionis', 'lobby-besar'], box: { width: 900, height: 1200 } },
+  { name: 'v1-detail-core', zones: ['pantry', 'gudang', 'toilet-wanita', 'wastafel', 'toilet-pria', 'meeting-2', 'server'], box: { width: 1200, height: 900 } },
+  { name: 'v1-detail-desk-collection', zones: ['desk-collection'] },
+  { name: 'v1-detail-tele', zones: ['tele-cs-ca'] },
 ];
 
-/**
- * Crop the game ops to a named zone. Bilik Geng Kami uses the exact in-app
- * zone-aware camera (`resolveCamera`); the other crops use the same zone fit so
- * they focus their own room instead of overlapping their neighbours.
- */
-export function gameplayCrop(preview: PreviewOps, zoneId: string): PreviewOps {
-  const zone = officeMap.zones.find((entry) => entry.id === zoneId);
-  if (!zone) {
-    const view = computeViewport(CAMERA_BOX, 'desktop');
-    return cropPreviewOps(preview, clampCamera(officeMap, view, { x: 0, y: 0 }), view, CAMERA_SCALE);
+/** The world rect a crop must keep visible: the union of its zones. */
+export function previewCropBounds(spec: PreviewCropSpec): Rect {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const id of spec.zones) {
+    const zone = officeMap.zones.find((entry) => entry.id === id);
+    if (!zone) continue;
+    minX = Math.min(minX, zone.rect.x);
+    minY = Math.min(minY, zone.rect.y);
+    maxX = Math.max(maxX, zone.rect.x + zone.rect.w);
+    maxY = Math.max(maxY, zone.rect.y + zone.rect.h);
   }
-  const centre = zoneCentre(zone);
-  const view = zone.id === BILIK_GENG_ZONE_ID
-    ? resolveCamera(officeMap, CAMERA_BOX, 'desktop', centre).view
-    : frameZoneView(officeMap, zone, CAMERA_BOX);
+  if (!Number.isFinite(minX)) return { x: 0, y: 0, w: officeMap.width, h: officeMap.height };
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+/**
+ * Crop the game ops to a named target. Bilik Geng Kami uses the exact in-app
+ * zone-aware camera (`resolveCamera`); every other crop fits the union of its
+ * zones with the shared padding band so it focuses the region it names instead
+ * of overlapping unrelated neighbours.
+ */
+export function gameplayCrop(preview: PreviewOps, spec: PreviewCropSpec): PreviewOps {
+  const bounds = previewCropBounds(spec);
+  const box = spec.box ?? CAMERA_BOX;
+  const single = spec.zones.length === 1 ? officeMap.zones.find((entry) => entry.id === spec.zones[0]) : undefined;
+  if (!single) {
+    const centre: Point = { x: bounds.x + bounds.w / 2, y: bounds.y + bounds.h / 2 };
+    const view = frameRectView(officeMap, bounds, box);
+    return cropPreviewOps(preview, clampCamera(officeMap, view, centre), view, CAMERA_SCALE);
+  }
+  const centre = zoneCentre(single);
+  const view = single.id === BILIK_GENG_ZONE_ID
+    ? resolveCamera(officeMap, box, 'desktop', centre).view
+    : frameRectView(officeMap, single.rect, box);
   return cropPreviewOps(preview, clampCamera(officeMap, view, centre), view, CAMERA_SCALE);
 }
 
@@ -213,7 +243,9 @@ function main(): void {
   emit('final-office-map', buildReviewPreviewOps(officeMap));
   const game = buildGamePreviewOps(officeMap);
   emit('final-office-game', game);
-  for (const [name, target] of CAMERA_TARGETS) emit(name, gameplayCrop(game, target));
+  for (const spec of PREVIEW_CROP_SPECS) emit(spec.name, gameplayCrop(game, spec));
 }
 
-main();
+// Only run when invoked directly, so the crop specs and helpers stay importable
+// from the tests without regenerating the artifacts as a side effect.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
