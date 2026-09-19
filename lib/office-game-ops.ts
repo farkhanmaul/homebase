@@ -20,7 +20,7 @@
 // every coordinate is snapped to integer pixels. The op list is pure, ordered
 // and deterministic, so the canvas and the standalone preview are identical.
 
-import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type SurfaceKind, type Wall, type WindowRect } from './office-map.ts';
+import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type Wall, type WindowRect } from './office-map.ts';
 import { type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
 
 // The raster art underlay for the Bilik Geng Kami zone. It is painted as one
@@ -182,8 +182,8 @@ export const GAME_PALETTE = {
   clockFace: '#f6f1e2',
   clockRim: '#4a3b2c',
 
-  // Area identity: fabric partitions, warm baseboards, per-room rug families
-  // and the restrained lamp pools that light the corridors and the lobby.
+  // Area identity: fabric partitions, warm baseboards and the restrained lamp
+  // pools that light the dedicated front-of-house floor family.
   partitionFabric: '#2f7580',
   partitionFabricHi: '#56a7ac',
   partitionFabricDark: '#1d4d55',
@@ -429,20 +429,8 @@ function hashString(value: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Area identity: deterministic per-zone materials and upholstery
+// Area identity: deterministic upholstery plus one explicit floor classification
 // ---------------------------------------------------------------------------
-
-type RugStyle = { edge: string; base: string; hi: string; seam: string };
-
-const RUG_STYLES = {
-  warm: { edge: GAME_PALETTE.rugEdge, base: GAME_PALETTE.rug, hi: GAME_PALETTE.rugHi, seam: GAME_PALETTE.rugSeam },
-  sand: { edge: '#7d6a4a', base: '#b9a276', hi: '#d8c69c', seam: '#9a8460' },
-  cool: { edge: '#22414a', base: '#3f6f7a', hi: '#5f96a0', seam: '#2e545d' },
-  slate: { edge: '#39444f', base: '#5f6f80', hi: '#8294a4', seam: '#4a5766' },
-  burgundy: { edge: '#54222c', base: '#8f3f4f', hi: '#b0606f', seam: '#6f2f3d' },
-} as const satisfies Record<string, RugStyle>;
-
-type RugVariant = keyof typeof RUG_STYLES;
 
 // Chair upholstery families: every family keeps the V1 teal-and-navy
 // construction, so a room's seating reads as its own set without leaving the
@@ -470,23 +458,21 @@ const PARTITION_FABRIC: Record<'warm' | 'cool', PartitionStyle> = {
   cool: { base: '#376f9c', hi: '#63a3c8', dark: '#21496b' },
 };
 
-export type ZoneIdentity = { rug?: RugVariant; upholstery: keyof typeof UPHOLSTERY; partition: keyof typeof PARTITION_FABRIC };
+export type ZoneIdentity = { upholstery: keyof typeof UPHOLSTERY; partition: keyof typeof PARTITION_FABRIC };
 
 const DEFAULT_IDENTITY: ZoneIdentity = { upholstery: 'v1', partition: 'warm' };
 
-// Rooms get a material identity derived from the approved zone id, never an
-// arbitrary coordinate: the top row each carries its own rug, the executive and
-// the IT rooms a distinct upholstery, and Tele/CS/CA switches to the cooler
-// partition fabric that separates it from Desk Collection at a glance.
+// Furniture identity is unchanged in Batch 0. Floor identity lives exclusively
+// in `zoneMaterialFamily` below; it is no longer coupled to desks or chairs.
 const ZONE_IDENTITY: Record<string, ZoneIdentity> = {
-  'meeting-1': { rug: 'warm', upholstery: 'v1', partition: 'warm' },
-  hrga: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
-  komisaris: { rug: 'cool', upholstery: 'exec', partition: 'cool' },
-  'product-manager': { rug: 'sand', upholstery: 'exec', partition: 'warm' },
-  it: { rug: 'slate', upholstery: 'cool', partition: 'cool' },
-  'direktur-finance': { rug: 'burgundy', upholstery: 'exec', partition: 'warm' },
-  resepsionis: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
-  'meeting-2': { rug: 'cool', upholstery: 'v1', partition: 'cool' },
+  'meeting-1': { upholstery: 'v1', partition: 'warm' },
+  hrga: { upholstery: 'v1', partition: 'warm' },
+  komisaris: { upholstery: 'exec', partition: 'cool' },
+  'product-manager': { upholstery: 'exec', partition: 'warm' },
+  it: { upholstery: 'cool', partition: 'cool' },
+  'direktur-finance': { upholstery: 'exec', partition: 'warm' },
+  resepsionis: { upholstery: 'v1', partition: 'warm' },
+  'meeting-2': { upholstery: 'v1', partition: 'cool' },
   'desk-collection': { upholstery: 'v1', partition: 'warm' },
   'tele-cs-ca': { upholstery: 'cool', partition: 'cool' },
 };
@@ -507,14 +493,49 @@ export function partitionFor(zoneId: string): PartitionStyle {
 // Floors
 // ---------------------------------------------------------------------------
 
-type FloorStyle = { base: string; seam: string; hi: string; edge: string; tile: number; grain: 'plank' | 'grid' | 'plain' };
+export type ZoneMaterialFamily = 'building-carpet' | 'front-of-house' | 'toilet-wet';
 
-const FLOOR: Record<SurfaceKind, FloorStyle> = {
-  office: { base: GAME_PALETTE.office, seam: GAME_PALETTE.officeSeam, hi: GAME_PALETTE.officeHi, edge: GAME_PALETTE.officeEdge, tile: 32, grain: 'plank' },
-  lobby: { base: GAME_PALETTE.lobby, seam: GAME_PALETTE.lobbySeam, hi: GAME_PALETTE.lobbyHi, edge: GAME_PALETTE.lobbyEdge, tile: 32, grain: 'grid' },
-  corridor: { base: GAME_PALETTE.corridor, seam: GAME_PALETTE.corridorSeam, hi: GAME_PALETTE.corridorHi, edge: GAME_PALETTE.corridorEdge, tile: 40, grain: 'grid' },
-  service: { base: GAME_PALETTE.service, seam: GAME_PALETTE.serviceSeam, hi: GAME_PALETTE.serviceHi, edge: GAME_PALETTE.serviceEdge, tile: 24, grain: 'grid' },
-  rug: { base: GAME_PALETTE.rug, seam: GAME_PALETTE.rugSeam, hi: GAME_PALETTE.rugHi, edge: GAME_PALETTE.rugEdge, tile: 0, grain: 'plain' },
+// Keep all 21 approved zones explicit: adding a map zone must be accompanied by
+// a deliberate material decision rather than silently creating an exception.
+const ZONE_MATERIAL_FAMILY: Readonly<Record<string, ZoneMaterialFamily>> = {
+  'meeting-1': 'building-carpet',
+  hrga: 'building-carpet',
+  komisaris: 'building-carpet',
+  'product-manager': 'building-carpet',
+  it: 'building-carpet',
+  'direktur-finance': 'building-carpet',
+  'bilik-geng-kami': 'building-carpet',
+  resepsionis: 'front-of-house',
+  'lobby-besar': 'front-of-house',
+  'lorong-utama': 'building-carpet',
+  sirkulasi: 'building-carpet',
+  'jalur-terbuka': 'building-carpet',
+  pantry: 'building-carpet',
+  gudang: 'building-carpet',
+  'toilet-wanita': 'toilet-wet',
+  wastafel: 'toilet-wet',
+  'toilet-pria': 'toilet-wet',
+  'meeting-2': 'building-carpet',
+  server: 'building-carpet',
+  'desk-collection': 'building-carpet',
+  'tele-cs-ca': 'building-carpet',
+};
+
+/** The only zone-to-floor policy; unknown zones fail closed for visual review. */
+export function zoneMaterialFamily(zoneId: string): ZoneMaterialFamily {
+  const family = ZONE_MATERIAL_FAMILY[zoneId];
+  if (!family) throw new RangeError(`Unknown office zone material: ${zoneId}`);
+  return family;
+}
+
+type FloorStyle = { base: string; seam: string; hi: string; edge: string; tile: number; grain: 'carpet' | 'grid' };
+
+// Building carpet borrows Bilik's amber base, horizontal rhythm and fine warm
+// highlights. The other two palettes are intentionally restricted exceptions.
+const MATERIAL_FLOOR: Record<ZoneMaterialFamily, FloorStyle> = {
+  'building-carpet': { base: '#c58d52', seam: '#aa713d', hi: '#dda666', edge: '#925d32', tile: 24, grain: 'carpet' },
+  'front-of-house': { base: GAME_PALETTE.lobby, seam: GAME_PALETTE.lobbySeam, hi: GAME_PALETTE.lobbyHi, edge: GAME_PALETTE.lobbyEdge, tile: 32, grain: 'grid' },
+  'toilet-wet': { base: GAME_PALETTE.service, seam: GAME_PALETTE.serviceSeam, hi: GAME_PALETTE.serviceHi, edge: GAME_PALETTE.serviceEdge, tile: 24, grain: 'grid' },
 };
 
 // Lamp pools: the restrained warm glow the corridors and the lobby read by. They
@@ -555,35 +576,24 @@ function edgeFrameOps(r: Rect, style: FloorStyle): Op[] {
   ];
 }
 
-// Office wood: horizontal boards, never a square tile grid. Board rows are
-// 10-16px tall, each carrying a dark seam plus an alternating warm highlight, a
-// staggered run of 48-80px end joints and a couple of short grain dashes. Every
-// number is derived from the zone/surface id hash, so the floor is identical on
-// every build but each room gets its own board pitch and joint stagger.
-function plankFloorOps(r: Rect, style: FloorStyle, zoneId: string): Op[] {
+// One Bilik-derived carpet rhythm for the whole building: restrained horizontal
+// bands and sparse granular dashes. Coordinates, not room identity, drive the
+// cadence so adjacent rooms never acquire their own colour/pattern personality.
+function buildingCarpetOps(r: Rect, style: FloorStyle): Op[] {
   const ops: Op[] = [];
-  const seed = hashString(zoneId);
-  const board = clamp(10 + (seed % 7), 10, 16);
-  const joint = clamp(48 + ((seed >>> 4) % 33), 48, 80);
+  const band = style.tile;
   let row = 0;
-  for (let y = r.y; y < r.y + r.h - 1; y += board, row += 1) {
-    const h = Math.min(board, r.y + r.h - y);
+  for (let y = r.y; y < r.y + r.h - 1; y += band, row += 1) {
+    const h = Math.min(band, r.y + r.h - y);
     if (h < 3) break;
-    ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.5));
-    if (row % 2 === 0) ops.push(rectOp(r.x, y + 1, r.w, 1, style.hi, 0.26));
-    const shift = (seed + row * 29) % joint;
-    for (let x = r.x + shift + joint; x < r.x + r.w - 4; x += joint) {
-      ops.push(rectOp(Math.round(x), y + 1, 1, Math.max(1, h - 1), style.seam, 0.45));
-    }
-    const grain = hashString(`${zoneId}#${row}`);
-    const dashes = 1 + (grain % 2);
-    for (let i = 0; i < dashes; i += 1) {
-      const span = Math.max(1, r.w - 14);
-      const gx = r.x + 5 + ((grain >>> (i * 5)) % span);
-      const gw = clamp(2 + ((grain >>> (i * 3 + 2)) % 7), 2, 8);
-      const gy = y + 2 + ((grain >>> (i * 2)) % Math.max(1, Math.min(h - 3, board - 3)));
-      if (gx + gw >= r.x + r.w - 1) continue;
-      ops.push(rectOp(Math.round(gx), Math.round(gy), gw, 1, style.edge, 0.34));
+    ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.26));
+    if (row % 2 === 0) ops.push(rectOp(r.x, y + 1, r.w, 1, style.hi, 0.2));
+    for (let x = r.x + 8; x < r.x + r.w - 4; x += 28) {
+      const grain = hashString(`${Math.floor(x / 4)}:${Math.floor(y / 4)}`);
+      const gx = x + (grain % 9);
+      const gy = y + 4 + ((grain >>> 5) % Math.max(1, h - 7));
+      const gw = 2 + ((grain >>> 9) % 4);
+      if (gx + gw < r.x + r.w - 1) ops.push(rectOp(gx, gy, gw, 1, grain % 2 ? style.hi : style.edge, 0.3));
     }
   }
   ops.push(...edgeFrameOps(r, style));
@@ -626,142 +636,19 @@ function lobbyBandOps(r: Rect): Op[] {
   ];
 }
 
-function floorOps(rect: Rect, kind: SurfaceKind, phase: number, zoneId: string): Op[] {
+function floorOps(rect: Rect, family: ZoneMaterialFamily, phase: number): Op[] {
   const r = snap(rect);
-  if (kind === 'rug') return rugOps(r, RUG_STYLES.warm);
-
-  const style = FLOOR[kind];
+  const style = MATERIAL_FLOOR[family];
   const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.base)];
 
-  if (style.grain === 'plank') ops.push(...plankFloorOps(r, style, zoneId));
+  if (style.grain === 'carpet') ops.push(...buildingCarpetOps(r, style));
   else if (style.grain === 'grid') ops.push(...gridFloorOps(r, style, phase));
 
-  // Restrained lighting pools along the corridors and across the lobby.
-  if (kind === 'corridor' || kind === 'lobby') ops.push(...lampPoolOps(r, phase));
-  if (kind === 'lobby') ops.push(...lobbyBandOps(r));
-
-  return ops;
-}
-
-// Furniture-centred rugs: instead of a room-wide inset panel, a rug is the union
-// of the room's approved tables/desks plus the chairs that sit at them, padded
-// 8-16px, clipped inside the zone and clear of every opening. Sealed rooms and
-// the long Desk Collection / Tele banks never get one (they have no rug identity
-// and stay legible as work floors), and the manifest rug surfaces are untouched.
-function furnitureRugOps(manifest: OfficeManifest): Op[] {
-  const ops: Op[] = [];
-  for (const zone of manifest.zones) {
-    const identity = zoneIdentity(zone.id);
-    if (!identity.rug || zone.kind === 'service') continue;
-    if (zone.id === 'desk-collection' || zone.id === 'tele-cs-ca') continue;
-
-    const items = manifest.furniture.filter((item) => item.zone === zone.id);
-    const tops = items.filter((item) => item.kind === 'table' || item.kind === 'desk');
-    if (!tops.length) continue;
-    const cluster = [...tops];
-    for (const chair of items) {
-      if (chair.kind !== 'chair') continue;
-      const cx = chair.rect.x + chair.rect.w / 2;
-      const cy = chair.rect.y + chair.rect.h / 2;
-      const seated = tops.some((top) => {
-        const dx = top.rect.x + top.rect.w / 2 - cx;
-        const dy = top.rect.y + top.rect.h / 2 - cy;
-        return Math.hypot(dx, dy) <= Math.max(top.rect.w, top.rect.h) / 2 + 44;
-      });
-      if (seated) cluster.push(chair);
-    }
-
-    const pad = 8 + (hashString(zone.id) % 9);
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (const item of cluster) {
-      minX = Math.min(minX, item.rect.x);
-      minY = Math.min(minY, item.rect.y);
-      maxX = Math.max(maxX, item.rect.x + item.rect.w);
-      maxY = Math.max(maxY, item.rect.y + item.rect.h);
-    }
-    const zx = zone.rect.x + 5;
-    const zy = zone.rect.y + 5;
-    const zr = zone.rect.x + zone.rect.w - 5;
-    const zb = zone.rect.y + zone.rect.h - 5;
-    const rect: Rect = {
-      x: Math.max(Math.floor(minX - pad), Math.round(zx)),
-      y: Math.max(Math.floor(minY - pad), Math.round(zy)),
-      w: 0,
-      h: 0,
-    };
-    rect.w = Math.min(Math.ceil(maxX + pad), Math.round(zr)) - rect.x;
-    rect.h = Math.min(Math.ceil(maxY + pad), Math.round(zb)) - rect.y;
-    if (rect.w < 44 || rect.h < 44) continue;
-
-    // Clip away any opening that bites into the rug, then re-check the size.
-    const clipped = clearOpenings(rect, manifest.openings.map((opening) => opening.rect));
-    if (!clipped) continue;
-    ops.push(...rugOps(clipped, RUG_STYLES[identity.rug]));
+  if (family === 'front-of-house') {
+    ops.push(...lampPoolOps(r, phase));
+    ops.push(...lobbyBandOps(r));
   }
-  return ops;
-}
 
-// Shrinks a rug away from any opening it overlaps, along the opening's dominant
-// axis, and returns null if the rug would collapse below a usable size.
-function clearOpenings(rect: Rect, openings: readonly Rect[]): Rect | null {
-  const r = { ...rect };
-  for (const opening of openings) {
-    if (!overlaps(r, opening)) continue;
-    const horizontal = opening.w >= opening.h;
-    const openingCx = opening.x + opening.w / 2;
-    const openingCy = opening.y + opening.h / 2;
-    const centreX = r.x + r.w / 2;
-    const centreY = r.y + r.h / 2;
-    if (horizontal) {
-      if (openingCy <= centreY) {
-        const next = Math.round(opening.y + opening.h + 2);
-        r.h -= next - r.y;
-        r.y = next;
-      } else {
-        r.h = Math.round(opening.y - 2) - r.y;
-      }
-    } else if (openingCx <= centreX) {
-      const next = Math.round(opening.x + opening.w + 2);
-      r.w -= next - r.x;
-      r.x = next;
-    } else {
-      r.w = Math.round(opening.x - 2) - r.x;
-    }
-    if (r.w < 44 || r.h < 44) return null;
-  }
-  return r;
-}
-
-function rugOps(r: Rect, style: RugStyle): Op[] {
-  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.edge)];
-  const o = inset(r, 3);
-  ops.push(rectOf(o, style.base));
-  ops.push(rectOp(o.x, o.y, o.w, 1, style.hi, 0.85));
-  ops.push(rectOp(o.x, o.y, 1, o.h, style.hi, 0.5));
-  ops.push(rectOp(o.x, o.y + o.h - 2, o.w, 2, GAME_PALETTE.shadow, 0.16));
-  ops.push(rectOp(o.x + o.w - 2, o.y, 2, o.h, GAME_PALETTE.shadow, 0.1));
-  const f = inset(o, 6);
-  ops.push(rectOp(f.x, f.y, f.w, 1, style.hi, 0.5));
-  ops.push(rectOp(f.x, f.y + f.h - 1, f.w, 1, style.hi, 0.5));
-  ops.push(rectOp(f.x, f.y, 1, f.h, style.hi, 0.5));
-  ops.push(rectOp(f.x + f.w - 1, f.y, 1, f.h, style.hi, 0.5));
-  const cx = o.x + o.w / 2;
-  const cy = o.y + o.h / 2;
-  ops.push(circleOp(cx, cy, Math.min(14, o.h * 0.3), style.seam, 0.9));
-  ops.push(circleOp(cx, cy, Math.min(9, o.h * 0.2), style.base, 1));
-  ops.push(circleOp(cx, cy, 4, style.hi, 0.6));
-  const corners: Array<[number, number]> = [[f.x, f.y], [f.x + f.w - 5, f.y], [f.x, f.y + f.h - 5], [f.x + f.w - 5, f.y + f.h - 5]];
-  for (const [mx, my] of corners) {
-    ops.push(rectOp(mx, my, 5, 5, style.seam, 0.7));
-    ops.push(rectOp(mx + 1, my + 1, 3, 3, style.hi, 0.5));
-  }
-  for (let i = 12; i < o.w - 12; i += 16) {
-    ops.push(rectOp(o.x + i, o.y + 5, 2, 3, style.hi, 0.45));
-    ops.push(rectOp(o.x + i, o.y + o.h - 8, 2, 3, style.hi, 0.45));
-  }
   return ops;
 }
 
@@ -2151,16 +2038,14 @@ export function buildGameWorldOps(manifest: OfficeManifest): Op[] {
 
   for (const block of manifest.blocks) if (block.kind === 'void') ops.push(...outsideOps(block.rect));
 
-  // Floors, largest first so patches (the lobby rug) sit on their parent zone.
+  // Floors, largest first so the approved lobby surface patch stays on its
+  // parent zone while sharing that zone's front-of-house material family.
   const surfaces = [...manifest.surfaces].sort((a, b) => surfaceArea(manifest, b) - surfaceArea(manifest, a));
   surfaces.forEach((surface, index) => {
     const zone = manifest.zones.find((entry) => entry.id === surface.zone);
     const rect = surface.rect ?? zone?.rect;
-    if (rect) ops.push(...floorOps(rect, surface.kind, index, surface.zone));
+    if (rect) ops.push(...floorOps(rect, zoneMaterialFamily(surface.zone), index));
   });
-
-  // Furniture-centred rugs, derived per room and painted under the furniture.
-  ops.push(...furnitureRugOps(manifest));
 
   // Service-nook detail (the wastafel basin) derived from its own zone rect.
   ops.push(...serviceNookOps(manifest));
