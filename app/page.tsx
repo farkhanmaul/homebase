@@ -12,11 +12,13 @@ import {
   type Occupant,
   type OfficeMessage,
 } from '../lib/office-session';
-import { clampCamera, isBlocked, officeMap, zoneAt, type Direction } from '../lib/office-map';
-import { computeViewport, defaultViewport, type Viewport, type ViewportBox, type ViewportMode } from '../lib/office-viewport';
+import { isBlocked, officeMap, zoneAt, type Direction } from '../lib/office-map';
+import type { ViewportBox, ViewportMode } from '../lib/office-viewport';
+import { resolveCamera } from '../lib/office-camera';
 import { playerAtPoint, resolveInteraction, screenToWorld } from '../lib/office-interaction';
 import { applyAvailability, resetActorToSeat } from '../lib/office-spawn';
-import { createWorldCanvas, drawActors, drawWorldCrop } from '../lib/office-renderer';
+import { actorPresentationScale, createWorldCanvas, drawActors, drawWorldCrop, assetUrl } from '../lib/office-renderer';
+import { BILIK_ZONE_IMAGE_SRC } from '../lib/office-game-ops';
 import './office.css';
 
 type Player = { id: number; name: string; sprite: number; x: number; y: number; direction: Direction; walking: boolean; status: string; online: boolean; sitting: boolean };
@@ -185,13 +187,21 @@ export default function Home() {
     const sheet = new Image(); sheet.src = 'avatar/team-six.png';
     // The whole static world is painted once into an offscreen canvas; each frame
     // only blits the camera crop and the avatars.
-    const world = createWorldCanvas(officeMap);
+    let world = createWorldCanvas(officeMap);
+    // The Bilik Geng Kami raster underlay is preloaded once. Until it arrives (or
+    // if it fails — the error path is silent) the vector art underneath shows.
+    // Its single load repaints the static world once; no asset is touched per
+    // frame and no geometry is rebuilt.
+    const zoneArt = new Image();
+    zoneArt.onload = () => { world = createWorldCanvas(officeMap, new Map([[BILIK_ZONE_IMAGE_SRC, zoneArt]])); };
+    zoneArt.src = assetUrl(BILIK_ZONE_IMAGE_SRC);
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reduced = motion.matches;
     const onMotion = () => { reduced = motion.matches; };
     motion.addEventListener('change', onMotion);
-    // Track the real CSS box; the camera view is only recomputed when it (or the
-    // desktop/mobile mode) actually changes, never once per frame.
+    // Track the real CSS box so the frame loop never reads layout from the DOM.
+    // resolveCamera still runs every frame: it is lightweight math that follows
+    // the moving actor and the desktop/mobile mode each time it is called.
     const observer = typeof ResizeObserver === 'function'
       ? new ResizeObserver((entries) => {
           const entry = entries[0];
@@ -202,17 +212,6 @@ export default function Home() {
     const observed = canvas.current;
     if (observer && observed) observer.observe(observed);
 
-    let viewCacheKey = '';
-    let cachedView: Viewport = defaultViewport('desktop');
-    function viewFor(mode: ViewportMode): Viewport {
-      const box = canvasBox.current;
-      const key = `${mode}:${Math.round(box.width)}x${Math.round(box.height)}`;
-      if (key !== viewCacheKey) {
-        viewCacheKey = key;
-        cachedView = box.width > 0 && box.height > 0 ? computeViewport(box, mode) : defaultViewport(mode);
-      }
-      return cachedView;
-    }
     let handle = 0, last = performance.now();
     const clear = () => keys.current.clear();
     function onDown(e: KeyboardEvent) {
@@ -250,11 +249,16 @@ export default function Home() {
       }
       // The backing size matches the container aspect, so CSS 100% x 100% fills
       // the box without object-fit letterboxing.
-      const cameraView = viewFor(innerWidth < MOBILE_BREAKPOINT ? 'mobile' : 'desktop');
+      const mode: ViewportMode = innerWidth < MOBILE_BREAKPOINT ? 'mobile' : 'desktop';
+      const { camera: cam, view: cameraView } = resolveCamera(officeMap, canvasBox.current, mode, p ? { x: p.x, y: p.y } : { x: 0, y: 0 });
       if (target.width !== cameraView.w || target.height !== cameraView.h) { target.width = cameraView.w; target.height = cameraView.h; }
-      const cam = p ? clampCamera(officeMap, cameraView, { x: p.x, y: p.y }) : { x: 0, y: 0 }; camera.current = cam;
+      camera.current = cam;
+      // Hold the avatars/labels/ring at a constant CSS size: the camera crop
+      // maps cameraView.w world px onto the box's CSS width, so this factor
+      // converts the authored CSS sizes into world px for the current zoom.
+      const actorScale = actorPresentationScale(cameraView.w, canvasBox.current.width);
       drawWorldCrop(ctx, world, cam, cameraView);
-      drawActors(ctx, players.current, { camera: cam, activeId: activeId.current, sheet, now, reducedMotion: reduced });
+      drawActors(ctx, players.current, { camera: cam, activeId: activeId.current, sheet, now, reducedMotion: reduced, scale: actorScale });
       // Only touch React state when the zone actually changes.
       const zoneName = p ? zoneAt(officeMap, p.x, p.y)?.name ?? '' : '';
       if (zoneRef.current !== zoneName) { zoneRef.current = zoneName; setZone(zoneName); }

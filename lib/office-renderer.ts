@@ -11,6 +11,21 @@ import { buildGameWorldOps } from './office-game-ops.ts';
 
 export type CanvasView = { w: number; h: number };
 
+// Preloaded bitmaps keyed by the op's `src`. An image op is skipped until its
+// asset is present, so the vector art underneath is the natural fallback while
+// the bitmap loads (or if it never does).
+export type ImageAssets = ReadonlyMap<string, CanvasImageSource>;
+
+/**
+ * Base-path-safe URL for an asset op (`/room/foo.png` -> `room/foo.png`), matching
+ * the relative `avatar/team-six.png` convention already used by the page. GitHub
+ * Pages serves the app under `/homebase/`, so a leading slash would escape the
+ * project path.
+ */
+export function assetUrl(src: string): string {
+  return src.replace(/^\/+/, '');
+}
+
 export type RenderActor = {
   id: number;
   name: string;
@@ -24,11 +39,11 @@ export type RenderActor = {
 };
 
 /** Paints a manifest-derived op list into a 2D context at world coordinates. */
-export function paintOps(ctx: CanvasRenderingContext2D, ops: readonly Op[]): void {
+export function paintOps(ctx: CanvasRenderingContext2D, ops: readonly Op[], assets?: ImageAssets): void {
   for (const op of ops) {
     if (op.t === 'group') {
       // Groups are metadata around a layered visual; only their ops paint.
-      paintOps(ctx, op.ops);
+      paintOps(ctx, op.ops, assets);
       continue;
     }
     if (op.t === 'rect') {
@@ -53,6 +68,15 @@ export function paintOps(ctx: CanvasRenderingContext2D, ops: readonly Op[]): voi
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
+    } else if (op.t === 'image') {
+      // Skipped until the bitmap is preloaded: the vector art underneath is the
+      // fallback, so a missing/failed asset degrades gracefully.
+      const asset = assets?.get(op.src);
+      if (asset) {
+        ctx.globalAlpha = op.opacity ?? 1;
+        ctx.drawImage(asset, op.x, op.y, op.w, op.h);
+        ctx.globalAlpha = 1;
+      }
     } else {
       ctx.font = `${op.weight ?? 400} ${op.size}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
       ctx.textAlign = op.anchor === 'middle' ? 'center' : op.anchor === 'end' ? 'right' : 'left';
@@ -85,15 +109,18 @@ function paintTextRun(ctx: CanvasRenderingContext2D, op: Extract<Op, { t: 'text'
   ctx.fillText(op.text, x, y);
 }
 
-/** Pre-renders the whole static world once. */
-export function createWorldCanvas(manifest: OfficeManifest): HTMLCanvasElement {
+/**
+ * Pre-renders the whole static world once. Pass a preloaded `assets` map to paint
+ * the image ops; without it those ops are skipped and the vector art shows.
+ */
+export function createWorldCanvas(manifest: OfficeManifest, assets?: ImageAssets): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = manifest.width;
   canvas.height = manifest.height;
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.imageSmoothingEnabled = false;
-    paintOps(ctx, buildGameWorldOps(manifest));
+    paintOps(ctx, buildGameWorldOps(manifest), assets);
   }
   return canvas;
 }
@@ -111,22 +138,53 @@ export type ActorDrawOptions = {
   sheet: CanvasImageSource & { naturalWidth: number; naturalHeight: number };
   now: number;
   reducedMotion: boolean;
+  /**
+   * World px per CSS px for the current camera zoom. The presentation sizes
+   * below are authored in CSS px (a ~56 CSS px tall actor, an 11px label), so
+   * multiplying by this factor keeps them roughly constant on screen however
+   * far the zone-aware camera zooms in. 1 means world px == CSS px.
+   */
+  scale: number;
 };
+
+/**
+ * The actor presentation factor: world px per CSS px when a camera crop of
+ * `viewWidth` world units fills a `boxWidth`-CSS-px canvas. A zone-framed
+ * desktop camera maps fewer world units onto the same box, so the factor drops
+ * and actors shrink in world units to hold their CSS size. Falls back to 1
+ * while the box is unmeasured (zero/NaN), keeping the unscaled look.
+ */
+export function actorPresentationScale(viewWidth: number, boxWidth: number): number {
+  if (!(viewWidth > 0) || !(boxWidth > 0)) return 1;
+  const scale = viewWidth / boxWidth;
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
 
 /** Draws the online avatars, their name tags and the active-player ring. */
 export function drawActors(ctx: CanvasRenderingContext2D, actors: readonly RenderActor[], options: ActorDrawOptions): void {
   const sheet = options.sheet;
   if (!sheet.naturalWidth) return;
+  const s = options.scale > 0 && Number.isFinite(options.scale) ? options.scale : 1;
   const cw = sheet.naturalWidth / 6;
   const ch = sheet.naturalHeight / 2;
   const ordered = actors.filter((actor) => actor.online).sort((a, b) => a.y - b.y);
 
   for (const person of ordered) {
     const frame = person.walking && !options.reducedMotion ? Math.floor(options.now / 180) % 2 : 0;
-    const w = person.id === 2 ? 40 : 34;
-    const h = person.sitting ? 46 : person.id === 1 ? 62 : 56;
+    const w = (person.id === 2 ? 40 : 34) * s;
+    const h = (person.sitting ? 46 : person.id === 1 ? 62 : 56) * s;
     const x = person.x - options.camera.x;
     const y = person.y - options.camera.y;
+
+    // The active ring is painted first so it sits behind the avatar and never
+    // crosses the nameplate drawn last.
+    if (person.id === options.activeId) {
+      ctx.strokeStyle = PREVIEW_COLORS.hotspot;
+      ctx.lineWidth = 2 * s;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 21 * s, 6 * s, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     ctx.save();
     if (person.direction === 'left') {
@@ -140,19 +198,12 @@ export function drawActors(ctx: CanvasRenderingContext2D, actors: readonly Rende
 
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = `bold ${11 * s}px sans-serif`;
     const label = person.name + (person.id === options.activeId ? ' · kamu' : '');
     const tw = ctx.measureText(label).width;
     ctx.fillStyle = PREVIEW_COLORS.hotspotInk;
-    ctx.fillRect(x - tw / 2 - 5, y + 2, tw + 10, 18);
+    ctx.fillRect(x - tw / 2 - 5 * s, y + 2 * s, tw + 10 * s, 18 * s);
     ctx.fillStyle = '#fff6df';
-    ctx.fillText(label, x - tw / 2, y + 15);
-    if (person.id === options.activeId) {
-      ctx.strokeStyle = PREVIEW_COLORS.hotspot;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(x, y, 21, 6, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+    ctx.fillText(label, x - tw / 2, y + 15 * s);
   }
 }

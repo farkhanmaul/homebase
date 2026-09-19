@@ -136,7 +136,9 @@ function boundsOf(ops: readonly Op[]): Rect {
       ? { x: op.x, y: op.y, w: op.w, h: op.h }
       : op.t === 'circle'
         ? { x: op.cx - op.r, y: op.cy - op.r, w: op.r * 2, h: op.r * 2 }
-        : { x: op.x, y: op.y, w: 0, h: 0 };
+        : op.t === 'image'
+          ? { x: op.x, y: op.y, w: op.w, h: op.h }
+          : { x: op.x, y: op.y, w: 0, h: 0 };
     minX = Math.min(minX, box.x);
     minY = Math.min(minY, box.y);
     maxX = Math.max(maxX, box.x + box.w);
@@ -215,11 +217,16 @@ void test('every game op is finite and stays inside the world bounds', () => {
       ? [op.x, op.y, op.w, op.h]
       : op.t === 'circle'
         ? [op.cx, op.cy, op.r]
-        : [op.x, op.y, op.size];
+        : op.t === 'image'
+          ? [op.x, op.y, op.w, op.h]
+          : [op.x, op.y, op.size];
     for (const value of numbers) assert.ok(Number.isFinite(value), `op ${JSON.stringify(op)} is finite`);
     if (op.t === 'rect') {
       assert.ok(op.w > 0 && op.h > 0, 'rects have positive size');
       assert.ok(op.x >= -1 && op.y >= -1 && op.x + op.w <= width + 1 && op.y + op.h <= height + 1, `rect ${JSON.stringify(op)} is in bounds`);
+    } else if (op.t === 'image') {
+      assert.ok(op.w > 0 && op.h > 0, 'images have positive size');
+      assert.ok(op.x >= -1 && op.y >= -1 && op.x + op.w <= width + 1 && op.y + op.h <= height + 1, `image ${JSON.stringify(op)} is in bounds`);
     } else if (op.t === 'circle') {
       assert.ok(op.r > 0, 'circles have positive radius');
       assert.ok(op.cx - op.r >= -1 && op.cy - op.r >= -1 && op.cx + op.r <= width + 1 && op.cy + op.r <= height + 1, `circle stays in bounds`);

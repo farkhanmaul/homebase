@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Paint the preview op list with Pillow.
 
-Usage: rasterize-map-preview.py <ops.json> <out.png>
+Usage: rasterize-map-preview.py <ops.json> <out.png> [assets_dir]
 
 `ops.json` is written by scripts/generate-map-preview.ts and is the exact same op
 list the SVG serializer consumes, so the PNG is just another backend for the
 single manifest-derived scene (it is not a second, hand-maintained map). This is
 only used when no real SVG rasterizer is installed.
+
+`assets_dir` resolves `image` op sources (`/room/foo.png` -> `<assets_dir>/room/foo.png`).
+An image op with no readable asset is a hard error, never a silent omission.
 """
 
 from __future__ import annotations
@@ -72,6 +75,7 @@ def draw_rotated_text(image: Image.Image, op: dict, text_font: ImageFont.FreeTyp
 def main() -> int:
     ops_path = Path(sys.argv[1])
     out_path = Path(sys.argv[2])
+    assets_dir = Path(sys.argv[3]) if len(sys.argv) > 3 else None
     scene = json.loads(ops_path.read_text())
 
     image = Image.new("RGB", (int(scene["width"]), int(scene["height"])), (13, 26, 38))
@@ -101,6 +105,19 @@ def main() -> int:
                 image.paste(layer, (box[0], box[1]), layer)
             else:
                 draw.ellipse(box, fill=fill, outline=outline, width=int(op.get("strokeWidth", 1)) if outline else 0)
+        elif kind == "image":
+            if assets_dir is None:
+                raise SystemExit(f"image op {op['src']!r} present but no assets dir was provided")
+            source = assets_dir / op["src"].lstrip("/")
+            if not source.is_file():
+                raise SystemExit(f"image op source not found: {source}")
+            with Image.open(source) as bitmap:
+                box = (max(1, round(op["w"])), max(1, round(op["h"])))
+                resized = bitmap.convert("RGBA").resize(box, Image.NEAREST)
+            opacity = op.get("opacity")
+            if opacity is not None and opacity < 0.999:
+                resized.putalpha(resized.getchannel("A").point(lambda value: round(value * opacity)))
+            image.paste(resized, (round(op["x"]), round(op["y"])), resized)
         elif kind == "text":
             stroke_width = 4 if op.get("halo") else 0
             text_font = font(int(op["size"]), bool(op.get("weight", 400) >= 600))

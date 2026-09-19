@@ -7,10 +7,12 @@
 // (a 368x602 box rendering a fixed 560x360 bitmap).
 //
 // `computeViewport` derives the camera crop from the real box aspect while
-// keeping the world scale controlled: desktop anchors on a ~960 world-unit width,
-// mobile on a ~600 world-unit height, and the other axis is derived. The result
-// is clamped to the world and always positive, so the backing ratio matches the
-// container and no letterboxing happens.
+// keeping the world scale controlled. V2 closes the camera so a workstation is
+// readable at gameplay size: desktop anchors on a ~680 world-unit width (the old
+// 960 crop left desks as small rectangles) and mobile on a ~440 world-unit
+// height, with the other axis derived. The result is clamped to the world and
+// always positive, so the backing ratio matches the container and no
+// letterboxing happens.
 
 import { officeMap } from './office-map.ts';
 
@@ -18,16 +20,16 @@ export type Viewport = { w: number; h: number };
 export type ViewportBox = { width: number; height: number };
 export type ViewportMode = 'desktop' | 'mobile';
 
-// Desktop aims for a 960 world-unit-wide crop; mobile aims for a 600-unit-tall
-// crop (a portrait phone wants more vertical world, not a squashed 16:9 slice).
-export const DESKTOP_WORLD_WIDTH = 960;
-export const MOBILE_WORLD_HEIGHT = 600;
+// Desktop aims for a 680 world-unit-wide crop; mobile aims for a 440-unit-tall
+// crop (a portrait phone wants more vertical world, not a squashed slice).
+export const DESKTOP_WORLD_WIDTH = 680;
+export const MOBILE_WORLD_HEIGHT = 440;
 
 const MIN_DIMENSION = 1;
 
 const FALLBACK: Record<ViewportMode, Viewport> = {
-  desktop: { w: DESKTOP_WORLD_WIDTH, h: 540 },
-  mobile: { w: 366, h: MOBILE_WORLD_HEIGHT },
+  desktop: { w: DESKTOP_WORLD_WIDTH, h: 383 },
+  mobile: { w: 269, h: MOBILE_WORLD_HEIGHT },
 };
 
 /** The view used before the container has been measured (or when it is zero). */

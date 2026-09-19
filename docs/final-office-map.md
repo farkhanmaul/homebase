@@ -1,6 +1,6 @@
 # Final office map
 
-Data-driven, vector-rendered office world for the Homebase / "Nongkrong Kantor"
+Data-driven, hybrid pixel-art office world for the Homebase / "Nongkrong Kantor"
 preview. This document covers the **final generated manifest** (builder phase),
 the geometry helpers + tests, the in-app canvas renderer + interactions, and the
 backend bounds.
@@ -70,8 +70,10 @@ rect extents derived from the transformed endpoints so no gaps appear.
 | Manifest | `lib/office-map.json` | **The only place world coordinates exist.** Generated. |
 | Helpers | `lib/office-map.ts` | Types, strict validation, pure geometry. Imports the JSON and validates it at import time. |
 | Review draw list | `lib/office-render-ops.ts` | Manifest → labelled technical-review ops, including QA markers and legend. Never used by the runtime canvas. |
-| Game draw list | `lib/office-game-ops.ts` | Manifest → layered pixel-art ops. Contains no room labels, seat numbers, hotspot initials or internal ids. |
-| Canvas | `lib/office-renderer.ts` | Pre-renders only the game op list to an offscreen canvas once; blits the camera crop and draws avatars per frame. |
+| Game draw list | `lib/office-game-ops.ts` | Manifest → layered pixel-art ops plus one local Bilik image op. Contains no room labels, seat numbers, hotspot initials or internal ids. |
+| Bilik zone art | `public/room/bilik-geng-zone.png` | Deterministic 386x185 derivative of approved V1 art; vector art remains the load-failure fallback. |
+| Canvas | `lib/office-renderer.ts` | Builds the vector world immediately, rebuilds it once after the local Bilik image loads, then only blits the camera crop and draws actors per frame. |
+| Camera | `lib/office-camera.ts`, `lib/office-viewport.ts` | Closer gameplay view and desktop room framing; mobile keeps the actor-follow view. |
 | Input | `lib/office-interaction.ts` | Pure pointer→world mapping, avatar hit test, and the hotspot interaction reducer. |
 | Spawn policy | `lib/office-spawn.ts` | Manifest-seat reset and active-only remote position merge; stale inactive coordinates are ignored. |
 | Page | `app/page.tsx` | Wires the manifest into the existing UI. No map coordinates. |
@@ -443,6 +445,30 @@ Browser tests at 1440x1000, 320x480, 368x603 and 414x720 inject the stale
 `139,211` coordinate, assert the first claim heartbeat is the manifest seat, and
 assert `Reset posisi` sends an immediate second heartbeat to that same seat.
 
+### V1-detail art pass
+
+The room art pass keeps `lib/office-map.json`, collision, seats, backend and the
+dependency set byte-identical. It adds workstation detail, a closer camera, desktop
+room framing and one compact local Bilik raster derived deterministically from
+`public/room/bilik-geng-v4.png`. The raster is loaded once; if it fails, the vector
+scene remains visible. Actor sprites, labels and rings use world-pixels-per-CSS-pixel
+scaling, so room zoom does not enlarge them or move their feet off the manifest seat.
+
+```
+npm run test:frontend      ->  # tests 181  # pass 181  # fail 0
+npm run backend:test       ->  # tests 58   # pass 58   # fail 0
+npm run backend:setup:test ->  PASS
+npm run lint               ->  Found 0 warnings and 0 errors
+npx tsc --noEmit           ->  exit 0
+npm run build:pages        ->  built
+git diff --check           ->  clean
+```
+
+The final game layer contains 7,925 painted ops (budget 9,000). Gameplay-camera
+previews are `v1-detail-bilik`, `v1-detail-workareas` and `v1-detail-pantry` under
+`docs/previews/`. Image ops are embedded into SVG artifacts as deterministic data
+URIs and are also supported by the Pillow fallback rasterizer.
+
 Earlier slices (unchanged behaviour): slice A/B/C RED/GREEN evidence and the
 viewport/rotation fixes are recorded in git history of this file.
 
@@ -452,24 +478,27 @@ viewport/rotation fixes are recorded in git history of this file.
 | --- | --- | --- | --- |
 | `docs/previews/final-office-map.svg` | 1920x1052 | 33,576 | `23db5827…e2743d29` |
 | `docs/previews/final-office-map.png` | 1920x1052 | 73,637 | `5d749c6b…df4b0dc9` |
-| `docs/previews/final-office-game.svg` | 1920x960 | 260,688 | `b99e51ba…050b9ce8` |
-| `docs/previews/final-office-game.png` | 1920x960 | 48,242 | `9d98d32a…3b6339c` |
+| `docs/previews/final-office-game.svg` | 1920x960 | 732,711 | `02214cdf…068cb211` |
+| `docs/previews/final-office-game.png` | 1920x960 | 168,834 | `36889760…58dbb312` |
+| `docs/previews/v1-detail-bilik.png` | 934x648 | 139,628 | `11e3a6b5…55b98e9a` |
+| `public/room/bilik-geng-zone.png` | 386x185 | 105,793 | `aa5874c5…a67fdb57` |
 | `lib/office-map.json` | — | 52,510 (4,983 gzip) | `28f553ed…54db90d9` |
 
 ## Bundle budget
 
 `npm run build:pages` (manifest + renderer + interactions in the app bundle):
 
-- JS: 316.62 kB raw / **98.52 kB gzip** (budget 115 kB).
-- CSS: 171.59 kB raw / **30.31 kB gzip** (budget 35 kB).
+- JS: 333.51 kB raw / **103.81 kB gzip** (budget 115 kB).
+- CSS: 172.17 kB raw / **30.39 kB gzip** (budget 35 kB).
 
-Both within budget; the manifest contributes ~5.0 kB gzip. The preview assets are
-separate from the app bundle.
+Both remain within budget. The 105,793-byte Bilik zone PNG is a separately cached
+static asset; preview artifacts are not runtime assets.
 
 The quality pass adds `lib/office-game-ops.ts`, `lib/office-spawn.ts`, their tests,
 the game-art preview, runtime renderer separation, and accessible reset controls.
-It changes no approved geometry, backend hook, migration, dependency or runtime
-asset.
+The later V1-detail pass adds the deterministic Bilik zone asset, image-op fallback,
+room camera, CSS-sized actor presentation and crop previews. Neither pass changes
+approved geometry, backend hooks, migrations or dependencies.
 
 ## Changed files (builder phase)
 

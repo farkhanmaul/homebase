@@ -75,6 +75,13 @@ export type TextOp = {
 export type RectOp = { t: 'rect'; x: number; y: number; w: number; h: number; fill: string; opacity?: number; stroke?: string; strokeWidth?: number };
 export type CircleOp = { t: 'circle'; cx: number; cy: number; r: number; fill: string; stroke?: string; strokeWidth?: number; opacity?: number };
 
+// A raster bitmap painted into the world rect (x, y, w, h). The source is a
+// web path such as `/room/bilik-geng-zone.png`; the browser resolves it through
+// `assetUrl` and the preview generator embeds it as a data URI, so the same op
+// works on both backends. `w`/`h` are independent of the asset's own pixel size,
+// so the caller can fit it to an approved zone rect.
+export type ImageOp = { t: 'image'; src: string; x: number; y: number; w: number; h: number; opacity?: number };
+
 // A layered visual group. `sourceId` is the stable manifest id of the thing
 // being drawn (a furniture item) and `semantic` names what it is
 // ("furniture:desk"). Both are metadata: they let tests and the QA preview
@@ -82,10 +89,11 @@ export type CircleOp = { t: 'circle'; cx: number; cy: number; r: number; fill: s
 // on the playfield. Only the nested ops are drawn.
 export type GroupOp = { t: 'group'; sourceId: string; semantic: string; ops: Op[] };
 
-export type Op = RectOp | CircleOp | TextOp | GroupOp;
+export type Op = RectOp | CircleOp | TextOp | ImageOp | GroupOp;
 
-// Everything that actually paints: rect/circle/text, with groups flattened away.
-export type PaintedOp = RectOp | CircleOp | TextOp;
+// Everything that actually paints: rect/circle/text/image, with groups flattened
+// away.
+export type PaintedOp = RectOp | CircleOp | TextOp | ImageOp;
 
 export type PreviewOps = { width: number; height: number; ops: Op[] };
 
