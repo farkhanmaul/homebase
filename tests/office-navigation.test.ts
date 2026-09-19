@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { isBlocked, officeMap, type OfficeManifest } from '../lib/office-map.ts';
 import { MAX_MOVEMENT_SUBSTEP, moveWithCollision } from '../lib/office-navigation.ts';
+import { INITIAL_INTERACTION_STATE, closedDoorRects, isBlockedWithDoors } from '../lib/office-interactions.ts';
 
 function thinWallManifest(): OfficeManifest {
   return {
@@ -64,6 +65,39 @@ void test('every two-sided manifest opening remains traversable with the real ac
     checked += 1;
   }
   assert.ok(checked >= 8, `audited ${checked} two-sided openings`);
+});
+
+void test('swept movement respects a closed interactive door and crosses it when opened', () => {
+  const allClosedState = {
+    ...INITIAL_INTERACTION_STATE,
+    closedDoorIds: officeMap.openings.map((opening) => opening.id),
+  };
+  const closedRects = closedDoorRects(officeMap, allClosedState);
+  const closedDoor = officeMap.openings.find(({ rect }) => {
+    if (!closedRects.includes(rect)) return false;
+    const horizontal = rect.w >= rect.h;
+    const cx = rect.x + rect.w / 2;
+    const cy = rect.y + rect.h / 2;
+    const from = horizontal ? { x: cx, y: cy - 18 } : { x: cx - 18, y: cy };
+    const to = horizontal ? { x: cx, y: cy + 18 } : { x: cx + 18, y: cy };
+    return !isBlocked(officeMap, from.x, from.y) && !isBlocked(officeMap, to.x, to.y);
+  });
+  assert.ok(closedDoor, 'a two-sided interactive door exists');
+
+  const horizontal = closedDoor.rect.w >= closedDoor.rect.h;
+  const cx = closedDoor.rect.x + closedDoor.rect.w / 2;
+  const cy = closedDoor.rect.y + closedDoor.rect.h / 2;
+  const from = horizontal ? { x: cx, y: cy - 18 } : { x: cx - 18, y: cy };
+  const delta = horizontal ? { x: 0, y: 36 } : { x: 36, y: 0 };
+  const blocked = moveWithCollision(from, delta, (x, y) => isBlockedWithDoors(officeMap, x, y, allClosedState));
+  assert.notDeepEqual(blocked, { x: from.x + delta.x, y: from.y + delta.y }, 'closed door stops the sweep');
+
+  const openedState = {
+    ...allClosedState,
+    closedDoorIds: allClosedState.closedDoorIds.filter((id) => id !== closedDoor.id),
+  };
+  const crossed = moveWithCollision(from, delta, (x, y) => isBlockedWithDoors(officeMap, x, y, openedState));
+  assert.deepEqual(crossed, { x: from.x + delta.x, y: from.y + delta.y }, 'open door permits the sweep');
 });
 
 void test('production page routes keyboard movement through swept collision', () => {

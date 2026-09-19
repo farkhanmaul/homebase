@@ -317,14 +317,9 @@ export default function Home() {
       // Hold the avatars/labels/ring at a constant CSS size: the camera crop
       // maps camView.w world px onto the box's CSS width, so this factor
       // converts the authored CSS sizes into world px for the current zoom.
-<<<<<<< HEAD
       const actorScale = actorPresentationScale(camView.w, canvasBox.current.width);
       drawWorldCrop(ctx, world, cam, camView);
-=======
-      const actorScale = actorPresentationScale(cameraView.w, canvasBox.current.width);
-      drawWorldCrop(ctx, world, cam, cameraView);
       drawInteractionState(ctx, officeMap, interaction.current, cam);
->>>>>>> eb06170 ([verified] feat: add office interactions and muted light controls)
       drawActors(ctx, players.current, { camera: cam, activeId: activeId.current, sheet, now, reducedMotion: reduced, scale: actorScale });
       // Only touch React state when the zone actually changes.
       const zoneName = p ? zoneAt(officeMap, p.x, p.y)?.name ?? '' : '';

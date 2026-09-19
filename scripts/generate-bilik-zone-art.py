@@ -25,7 +25,7 @@ import json
 import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "lib" / "office-map.json"
@@ -35,6 +35,8 @@ DEFAULT_OUT = ROOT / "public" / "room" / "bilik-geng-zone.png"
 # The approved zone contract: rect of `bilik-geng-kami` in the generated manifest.
 ZONE_ID = "bilik-geng-kami"
 EXPECTED_ZONE = {"x": 1450.0, "y": 40.0, "w": 386.25, "h": 185.0}
+COLUMN_ID = "col-geng-1"
+EXPECTED_COLUMN = {"x": 1672.5, "y": 56.25, "w": 60.0, "h": 57.5}
 
 # Rows at the bottom of the raster kept fully transparent, so the manifest wall
 # and the door opening (`op-geng-kami`) stay visible from the vector fallback.
@@ -61,6 +63,41 @@ def target_size(rect: dict[str, float]) -> tuple[int, int]:
     return round(rect["w"]), round(rect["h"])
 
 
+def expected_column(zone: dict[str, float]) -> dict[str, int]:
+    """Validate the approved column and return its integer zone-local box."""
+    manifest = json.loads(MANIFEST.read_text())
+    column = next((entry for entry in manifest["columns"] if entry["id"] == COLUMN_ID), None)
+    if column is None:
+        raise SystemExit(f"manifest has no column {COLUMN_ID!r}")
+    rect = {key: float(column["rect"][key]) for key in ("x", "y", "w", "h")}
+    for key, expected in EXPECTED_COLUMN.items():
+        if abs(rect[key] - expected) > 1e-9:
+            raise SystemExit(f"column {COLUMN_ID!r} {key}={rect[key]} != approved {expected}")
+    return {
+        "x": round(rect["x"] - zone["x"]),
+        "y": round(rect["y"] - zone["y"]),
+        "w": round(rect["w"]),
+        "h": round(rect["h"]),
+    }
+
+
+def paint_column(image: Image.Image, rect: dict[str, int]) -> None:
+    """Paint a layered pillar so its authoritative collider is never invisible."""
+    x, y, w, h = (rect[key] for key in ("x", "y", "w", "h"))
+    draw = ImageDraw.Draw(image)
+    # Contact shadow, outlined body/front face, top cap, and right side face.
+    draw.rectangle((x + 4, y + 5, x + w + 5, y + h + 5), fill=(65, 72, 74, 255))
+    draw.rectangle((x, y + 7, x + w - 1, y + h - 1), fill=(50, 55, 62, 255))
+    draw.rectangle((x + 2, y + 9, x + w - 3, y + h - 3), fill=(185, 179, 161, 255))
+    draw.rectangle((x + w - 8, y + 9, x + w - 3, y + h - 3), fill=(139, 133, 116, 255))
+    draw.rectangle((x, y, x + w - 1, y + 11), fill=(50, 55, 62, 255))
+    draw.rectangle((x + 2, y + 2, x + w - 3, y + 9), fill=(216, 210, 192, 255))
+    draw.line((x + 3, y + 3, x + w - 4, y + 3), fill=(255, 250, 234, 255), width=1)
+    for row in (22, 36, 50):
+        if row < h - 3:
+            draw.line((x + 3, y + row, x + w - 9, y + row), fill=(163, 157, 140, 255), width=1)
+
+
 def cover_fit(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     """Scales with LANCZOS to cover ``size`` exactly, then centre-crops."""
     target_w, target_h = size
@@ -78,6 +115,8 @@ def build(source: Path, out: Path) -> None:
     with Image.open(source) as raw:
         source_size = raw.size
         covered = cover_fit(raw.convert("RGBA"), size)
+
+    paint_column(covered, expected_column(rect))
 
     # Bottom rows fully transparent: a clean cut, not a fade.
     covered.paste((0, 0, 0, 0), (0, size[1] - TRANSPARENT_BOTTOM_ROWS, size[0], size[1]))

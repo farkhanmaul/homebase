@@ -39,8 +39,8 @@ const CAMERA_SCALE = 2;
 const bilik = zoneById(officeMap, BILIK_GENG_ZONE_ID)!;
 const EXPECTED_ZONE: Rect = { x: 1450, y: 40, w: 386.25, h: 185 };
 // The deterministic artifact pinned by the generator test.
-const ZONE_PNG_SHA256 = 'aa5874c536b522aabdf12bca83ead97146a55f91b9b78d83f399736ea67fdb57';
-const ZONE_PNG_BYTES = 105793;
+const ZONE_PNG_SHA256 = '1938ed6931f2964e0d69e08aeab0c289abcfe13fed26e9d3242ef7af85c4f47f';
+const ZONE_PNG_BYTES = 101301;
 
 const hasPillow = (): boolean => spawnSync('python3', ['-c', 'import PIL'], { stdio: 'ignore' }).status === 0;
 
@@ -84,6 +84,22 @@ void test('the zone raster is the exact 386x185 RGBA integer box under the size 
   assert.ok(bytes.length <= 150 * 1024, `artifact ${bytes.length} bytes exceeds the 150KB budget`);
   assert.equal(bytes.length, ZONE_PNG_BYTES, 'artifact size is stable');
   assert.equal(createHash('sha256').update(bytes).digest('hex'), ZONE_PNG_SHA256, 'artifact bytes are stable');
+});
+
+void test('the Bilik raster exposes the authoritative structural column instead of empty floor', () => {
+  if (!hasPillow()) return;
+  const script = [
+    'from PIL import Image',
+    `im = Image.open(${JSON.stringify(ZONE_PNG)}).convert("RGBA")`,
+    // col-geng-1 is world (1672.5,56.25,60,57.5), local to zone (1450,40).
+    'assert im.getpixel((224, 18))[:3] == (216, 210, 192), im.getpixel((224, 18))',
+    'assert im.getpixel((230, 40))[:3] == (185, 179, 161), im.getpixel((230, 40))',
+    'assert im.getpixel((279, 60))[:3] == (139, 133, 116), im.getpixel((279, 60))',
+    'print("pillar-ok")',
+  ].join('\n');
+  const result = spawnSync('python3', ['-c', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /pillar-ok/);
 });
 
 void test('the generator is deterministic and derives its size from the manifest zone contract', () => {
