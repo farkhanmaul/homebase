@@ -13,6 +13,7 @@ import {
   type OfficeMessage,
 } from '../lib/office-session';
 import { isBlocked, officeMap, zoneAt, type Direction } from '../lib/office-map';
+import { moveWithCollision } from '../lib/office-navigation';
 import type { ViewportBox, ViewportMode } from '../lib/office-viewport';
 import { resolveCamera } from '../lib/office-camera';
 import { playerAtPoint, resolveInteraction, screenToWorld } from '../lib/office-interaction';
@@ -243,8 +244,12 @@ export default function Home() {
         if (p.walking) {
           p.sitting = false; p.direction = dx ? dx < 0 ? 'left' : 'right' : dy < 0 ? 'up' : 'down';
           const speed = 125 * dt / (Math.hypot(dx, dy) || 1);
-          if (!isBlocked(officeMap, p.x + dx * speed, p.y)) p.x += dx * speed;
-          if (!isBlocked(officeMap, p.x, p.y + dy * speed)) p.y += dy * speed;
+          const moved = moveWithCollision(
+            { x: p.x, y: p.y },
+            { x: dx * speed, y: dy * speed },
+            (x, y) => isBlocked(officeMap, x, y),
+          );
+          p.x = moved.x; p.y = moved.y;
         }
       }
       // The backing size matches the container aspect, so CSS 100% x 100% fills
