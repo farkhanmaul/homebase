@@ -3,9 +3,10 @@
 // Written RED before implementation.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inflateSync } from 'node:zlib';
 import { officeMap } from '../lib/office-map.ts';
 import { buildGameWorldOps } from '../lib/office-game-ops.ts';
 import { flattenOps, type GroupOp, type Op, type PaintedOp } from '../lib/office-render-ops.ts';
@@ -30,6 +31,61 @@ function rgb(fill: string): [number, number, number] | undefined {
   if (!match) return undefined;
   const value = Number.parseInt(match[1]!, 16);
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+}
+
+function decodeRgbaPng(path: string): { width: number; height: number; pixel(x: number, y: number): [number, number, number, number] } {
+  const png = readFileSync(path);
+  assert.equal(png.subarray(0, 8).toString('latin1'), '\x89PNG\r\n\x1a\n');
+  const width = png.readUInt32BE(16);
+  const height = png.readUInt32BE(20);
+  assert.equal(png[24], 8, '8-bit PNG');
+  assert.equal(png[25], 6, 'RGBA PNG');
+  assert.equal(png[28], 0, 'non-interlaced PNG');
+
+  const idat: Buffer[] = [];
+  for (let offset = 8; offset < png.length;) {
+    const length = png.readUInt32BE(offset);
+    const type = png.subarray(offset + 4, offset + 8).toString('ascii');
+    if (type === 'IDAT') idat.push(png.subarray(offset + 8, offset + 8 + length));
+    offset += length + 12;
+  }
+  const packed = inflateSync(Buffer.concat(idat));
+  const stride = width * 4;
+  const rgba = Buffer.alloc(stride * height);
+  const paeth = (a: number, b: number, c: number): number => {
+    const p = a + b - c;
+    const pa = Math.abs(p - a);
+    const pb = Math.abs(p - b);
+    const pc = Math.abs(p - c);
+    return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+  };
+  for (let y = 0, source = 0; y < height; y += 1) {
+    const filter = packed[source++]!;
+    for (let x = 0; x < stride; x += 1) {
+      const raw = packed[source++]!;
+      const index = y * stride + x;
+      const left = x >= 4 ? rgba[index - 4]! : 0;
+      const up = y > 0 ? rgba[index - stride]! : 0;
+      const upperLeft = y > 0 && x >= 4 ? rgba[index - stride - 4]! : 0;
+      const predictor = filter === 0 ? 0
+        : filter === 1 ? left
+          : filter === 2 ? up
+            : filter === 3 ? Math.floor((left + up) / 2)
+              : filter === 4 ? paeth(left, up, upperLeft)
+                : -1;
+      assert.notEqual(predictor, -1, `unsupported PNG filter ${filter}`);
+      rgba[index] = (raw + predictor) & 255;
+    }
+  }
+  return {
+    width,
+    height,
+    pixel(x, y) {
+      assert.ok(x >= 0 && x < width && y >= 0 && y < height);
+      const index = y * stride + x * 4;
+      return [rgba[index]!, rgba[index + 1]!, rgba[index + 2]!, rgba[index + 3]!];
+    },
+  };
 }
 
 void test('every procedural chair is black-neutral and has no armrest subgroup', () => {
@@ -57,23 +113,30 @@ void test('every procedural chair is black-neutral and has no armrest subgroup',
 });
 
 void test('the composed Bilik raster has neutral-black chairs and a white pillar', () => {
-  const image = resolve(ROOT, 'public/room/bilik-geng-zone.png');
-  const script = [
-    'from PIL import Image',
-    `im=Image.open(${JSON.stringify(image)}).convert("RGBA")`,
-    // White pillar: cap, face and side are all neutral white/grey, not beige.
-    'for p in [(224,18),(230,40),(279,60)]:',
-    ' c=im.getpixel(p)[:3]; assert min(c)>=185 and max(c)-min(c)<=12,(p,c)',
-    // Five visible chair centres; C5 is legitimately occluded by the structural pillar.
-    'for p in [(100,42),(156,42),(100,122),(156,122),(332,78)]:',
-    ' c=im.getpixel(p)[:3]; assert max(c)<=105 and max(c)-min(c)<=24,(p,c)',
-    'regions=[(85,24,115,59),(141,24,171,59),(85,104,115,139),(141,104,171,139),(217,65,248,101),(317,60,348,96)]',
-    'for box in regions:',
-    ' bad=[p for p in im.crop(box).getdata() if p[2]-p[0]>=18 and p[2]-p[1]>=5 and p[2]<150 and p[1]<130]',
-    ' assert not bad,(box,bad[:5],len(bad))',
-    'print("bilik-correction-ok")',
-  ].join('\n');
-  const result = spawnSync('python3', ['-c', script], { encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /bilik-correction-ok/);
+  const png = decodeRgbaPng(resolve(ROOT, 'public/room/bilik-geng-zone.png'));
+  assert.deepEqual([png.width, png.height], [386, 185]);
+
+  // White pillar: cap, face and side are all neutral white/grey, not beige.
+  for (const [x, y] of [[224, 18], [230, 40], [279, 60]]) {
+    const [r, g, b] = png.pixel(x!, y!);
+    assert.ok(Math.min(r, g, b) >= 185 && Math.max(r, g, b) - Math.min(r, g, b) <= 12, `pillar pixel ${x},${y}: ${r},${g},${b}`);
+  }
+
+  // Five visible chair centres; C5 is legitimately occluded by the pillar.
+  for (const [x, y] of [[100, 42], [156, 42], [100, 122], [156, 122], [332, 78]]) {
+    const [r, g, b] = png.pixel(x!, y!);
+    assert.ok(Math.max(r, g, b) <= 105 && Math.max(r, g, b) - Math.min(r, g, b) <= 24, `chair pixel ${x},${y}: ${r},${g},${b}`);
+  }
+
+  const regions = [[85, 24, 115, 59], [141, 24, 171, 59], [85, 104, 115, 139], [141, 104, 171, 139], [217, 65, 248, 101], [317, 60, 348, 96]];
+  for (const [x1, y1, x2, y2] of regions) {
+    const bad: string[] = [];
+    for (let y = y1!; y < y2!; y += 1) {
+      for (let x = x1!; x < x2!; x += 1) {
+        const [r, g, b] = png.pixel(x, y);
+        if (b - r >= 18 && b - g >= 5 && b < 150 && g < 130) bad.push(`${x},${y}:${r},${g},${b}`);
+      }
+    }
+    assert.deepEqual(bad, [], `blue/cyan remnants in ${x1},${y1},${x2},${y2}: ${bad.slice(0, 5).join('; ')}`);
+  }
 });
