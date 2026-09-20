@@ -57,7 +57,6 @@
 <rect x="586.88" y="518.75" width="6.25" height="96.25" fill="#d8c79f" />
 <rect x="590" y="515.63" width="55" height="6.25" fill="#d8c79f" />
 <rect x="641.88" y="475" width="6.25" height="140" fill="#d8c79f" />
-<rect x="645" y="580.63" width="52.5" height="6.25" fill="#d8c79f" />
 <rect x="694.38" y="507.5" width="6.25" height="107.5" fill="#d8c79f" />
 <rect x="697.5" y="504.38" width="46.25" height="6.25" fill="#d8c79f" />
 <rect x="740.63" y="465" width="6.25" height="150" fill="#d8c79f" />
@@ -190,7 +189,7 @@
 <rect x="1253.99" y="406.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1320.39" y="406.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1386.8" y="406.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
-<rect x="911.25" y="362.5" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
+<rect x="884.45" y="318.75" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="921.95" y="481.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="988.36" y="481.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1054.76" y="481.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
@@ -207,7 +206,7 @@
 <rect x="1253.99" y="568.75" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1320.39" y="568.75" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1386.8" y="568.75" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
-<rect x="911.25" y="525" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
+<rect x="884.45" y="481.25" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1505" y="326.25" width="50" height="250" fill="#d9c9a3" opacity="1" />
 <rect x="1730" y="326.25" width="50" height="250" fill="#d9c9a3" opacity="1" />
 <rect x="1471.25" y="332.09" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
@@ -235,6 +234,7 @@
 <rect x="1781.25" y="498.75" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="1781.25" y="540.41" width="32.5" height="30" fill="#7e6a4c" opacity="0.92" />
 <rect x="876.25" y="301.25" width="8.75" height="52.5" fill="#f0dca6" opacity="0.92" />
+<rect x="523.75" y="435" width="25" height="22.5" fill="#7e6a4c" opacity="0.92" />
 <rect x="515.75" y="42" width="152" height="28" fill="#0b1720" opacity="0.9" stroke="#8a7a52" stroke-width="1" />
 <text x="519.75" y="59" font-size="16" font-weight="700" fill="#f4efdf" text-anchor="start" stroke="#0b1720" stroke-width="4" paint-order="stroke" stroke-linejoin="round">Ruang Meeting 1</text>
 <rect x="694.5" y="42" width="123.2" height="28" fill="#0b1720" opacity="0.9" stroke="#8a7a52" stroke-width="1" />

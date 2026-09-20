@@ -51,7 +51,7 @@ const MIN_LAYERED_OPS: Record<FurnitureKind, number> = {
 };
 
 // The exact asset that must not drift during an art-only pass.
-const MAP_SHA256 = '28f553ed62365bba858a4e69a1da317d46ebaff4e43a724936e7952a54db90d9';
+const MAP_SHA256 = '7a8d6ed0b055eb6c1c7913d24ab242756ae1ee4e2590599118d6f87958faebb7';
 
 function topGroups(ops: readonly Op[]): GroupOp[] {
   return ops.filter((op): op is GroupOp => op.t === 'group');
@@ -240,9 +240,9 @@ void test('no furniture layer, circle or dash leaks into the empty floor', () =>
 // (b2) Chair silhouette
 // ---------------------------------------------------------------------------
 
-const CHAIR_PARTS = ['chair:base', 'chair:seat', 'chair:backrest', 'chair:armrest'] as const;
+const CHAIR_PARTS = ['chair:base', 'chair:seat', 'chair:backrest'] as const;
 
-void test('every chair is a layered V1 silhouette with an oriented backrest, cushion, arms and base', () => {
+void test('every chair is a layered black armless silhouette with an oriented backrest, cushion and base', () => {
   const byId = new Map(topGroups(buildGameWorldOps(officeMap)).map((group) => [group.sourceId, group]));
   const solids = officeMap.furniture.filter((item) => item.solid);
   const chairs = officeMap.furniture.filter((item) => item.kind === 'chair');
@@ -253,6 +253,7 @@ void test('every chair is a layered V1 silhouette with an oriented backrest, cus
     const nested = walkGroups(group.ops);
     const parts = new Set(nested.map((inner) => inner.semantic));
     for (const part of CHAIR_PARTS) assert.ok(parts.has(part), `${chair.id} has ${part}`);
+    assert.equal(parts.has('chair:armrest'), false, `${chair.id} has no armrest`);
     assert.ok(painted(group.ops).length >= MIN_LAYERED_OPS.chair, `${chair.id} clears the chair op floor`);
 
     // V1 chairs are stepped rectangles, not circle-dominant schematic symbols:
@@ -403,7 +404,7 @@ void test('plant decorations sit in the zone perimeter, never across a room inte
 });
 
 void test('the decoration pass adds no collider and no manifest furniture', () => {
-  assert.equal(officeMap.furniture.length, 123, 'the approved furniture inventory is untouched');
+  assert.equal(officeMap.furniture.length, 124, 'the approved furniture inventory is untouched');
   assert.equal(officeMap.blocks.length, 17, 'the approved block list is untouched');
   assert.equal(officeMap.blocks.filter((block) => block.kind === 'sealed').length, 8, 'sealed blocks untouched');
   // Decorations are pure paint: nothing about them reaches collision.

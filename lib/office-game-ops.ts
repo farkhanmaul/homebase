@@ -20,8 +20,8 @@
 // every coordinate is snapped to integer pixels. The op list is pure, ordered
 // and deterministic, so the canvas and the standalone preview are identical.
 
-import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type SurfaceKind, type Wall, type WindowRect } from './office-map.ts';
-import { type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
+import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type Wall, type WindowRect } from './office-map.ts';
+import { flattenOps, type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
 
 // The raster art underlay for the Bilik Geng Kami zone. It is painted as one
 // image op over the zone's own vector art, at the exact approved zone rect; the
@@ -182,8 +182,8 @@ export const GAME_PALETTE = {
   clockFace: '#f6f1e2',
   clockRim: '#4a3b2c',
 
-  // Area identity: fabric partitions, warm baseboards, per-room rug families
-  // and the restrained lamp pools that light the corridors and the lobby.
+  // Area identity: fabric partitions, warm baseboards and the restrained lamp
+  // pools that light the dedicated front-of-house floor family.
   partitionFabric: '#2f7580',
   partitionFabricHi: '#56a7ac',
   partitionFabricDark: '#1d4d55',
@@ -429,24 +429,11 @@ function hashString(value: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Area identity: deterministic per-zone materials and upholstery
+// Area identity: deterministic upholstery plus one explicit floor classification
 // ---------------------------------------------------------------------------
 
-type RugStyle = { edge: string; base: string; hi: string; seam: string };
-
-const RUG_STYLES = {
-  warm: { edge: GAME_PALETTE.rugEdge, base: GAME_PALETTE.rug, hi: GAME_PALETTE.rugHi, seam: GAME_PALETTE.rugSeam },
-  sand: { edge: '#7d6a4a', base: '#b9a276', hi: '#d8c69c', seam: '#9a8460' },
-  cool: { edge: '#22414a', base: '#3f6f7a', hi: '#5f96a0', seam: '#2e545d' },
-  slate: { edge: '#39444f', base: '#5f6f80', hi: '#8294a4', seam: '#4a5766' },
-  burgundy: { edge: '#54222c', base: '#8f3f4f', hi: '#b0606f', seam: '#6f2f3d' },
-} as const satisfies Record<string, RugStyle>;
-
-type RugVariant = keyof typeof RUG_STYLES;
-
-// Chair upholstery families: every family keeps the V1 teal-and-navy
-// construction, so a room's seating reads as its own set without leaving the
-// shared material language.
+// Legacy room identities remain available for partition styling, but the user
+// approved one chair language for the whole building: neutral black upholstery.
 type Upholstery = {
   back: string;
   backHi: string;
@@ -457,10 +444,11 @@ type Upholstery = {
   arm: string;
 };
 
-const UPHOLSTERY: Record<'v1' | 'exec' | 'cool', Upholstery> = {
+const UPHOLSTERY: Record<'v1' | 'exec' | 'cool' | 'black', Upholstery> = {
   v1: { back: GAME_PALETTE.chairBack, backHi: GAME_PALETTE.chairBackHi, seat: GAME_PALETTE.chairSeat, seatHi: GAME_PALETTE.chairSeatHi, frame: GAME_PALETTE.chairFrame, base: GAME_PALETTE.chairBase, arm: GAME_PALETTE.chairArm },
   exec: { back: GAME_PALETTE.execBack, backHi: GAME_PALETTE.execBackHi, seat: GAME_PALETTE.execSeat, seatHi: GAME_PALETTE.execSeatHi, frame: GAME_PALETTE.execFrame, base: GAME_PALETTE.execBase, arm: GAME_PALETTE.execFrame },
   cool: { back: GAME_PALETTE.coolBack, backHi: GAME_PALETTE.coolBackHi, seat: GAME_PALETTE.coolSeat, seatHi: GAME_PALETTE.coolSeatHi, frame: GAME_PALETTE.coolFrame, base: GAME_PALETTE.coolBase, arm: GAME_PALETTE.coolFrame },
+  black: { back: '#202226', backHi: '#414349', seat: '#2c2e33', seatHi: '#55575d', frame: '#15171a', base: '#25272b', arm: '#202226' },
 };
 
 type PartitionStyle = { base: string; hi: string; dark: string };
@@ -470,23 +458,21 @@ const PARTITION_FABRIC: Record<'warm' | 'cool', PartitionStyle> = {
   cool: { base: '#376f9c', hi: '#63a3c8', dark: '#21496b' },
 };
 
-export type ZoneIdentity = { rug?: RugVariant; upholstery: keyof typeof UPHOLSTERY; partition: keyof typeof PARTITION_FABRIC };
+export type ZoneIdentity = { upholstery: keyof typeof UPHOLSTERY; partition: keyof typeof PARTITION_FABRIC };
 
 const DEFAULT_IDENTITY: ZoneIdentity = { upholstery: 'v1', partition: 'warm' };
 
-// Rooms get a material identity derived from the approved zone id, never an
-// arbitrary coordinate: the top row each carries its own rug, the executive and
-// the IT rooms a distinct upholstery, and Tele/CS/CA switches to the cooler
-// partition fabric that separates it from Desk Collection at a glance.
+// Furniture identity is unchanged in Batch 0. Floor identity lives exclusively
+// in `zoneMaterialFamily` below; it is no longer coupled to desks or chairs.
 const ZONE_IDENTITY: Record<string, ZoneIdentity> = {
-  'meeting-1': { rug: 'warm', upholstery: 'v1', partition: 'warm' },
-  hrga: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
-  komisaris: { rug: 'cool', upholstery: 'exec', partition: 'cool' },
-  'product-manager': { rug: 'sand', upholstery: 'exec', partition: 'warm' },
-  it: { rug: 'slate', upholstery: 'cool', partition: 'cool' },
-  'direktur-finance': { rug: 'burgundy', upholstery: 'exec', partition: 'warm' },
-  resepsionis: { rug: 'sand', upholstery: 'v1', partition: 'warm' },
-  'meeting-2': { rug: 'cool', upholstery: 'v1', partition: 'cool' },
+  'meeting-1': { upholstery: 'v1', partition: 'warm' },
+  hrga: { upholstery: 'v1', partition: 'warm' },
+  komisaris: { upholstery: 'exec', partition: 'cool' },
+  'product-manager': { upholstery: 'exec', partition: 'warm' },
+  it: { upholstery: 'cool', partition: 'cool' },
+  'direktur-finance': { upholstery: 'exec', partition: 'warm' },
+  resepsionis: { upholstery: 'v1', partition: 'warm' },
+  'meeting-2': { upholstery: 'v1', partition: 'cool' },
   'desk-collection': { upholstery: 'v1', partition: 'warm' },
   'tele-cs-ca': { upholstery: 'cool', partition: 'cool' },
 };
@@ -503,18 +489,106 @@ export function partitionFor(zoneId: string): PartitionStyle {
   return PARTITION_FABRIC[zoneIdentity(zoneId).partition];
 }
 
+export type RoomDetailProfile = 'conference' | 'hr-document' | 'executive' | 'planning' | 'technical' | 'finance';
+
+// Batch 1 deliberately has no generic fallback. Extending room-aware furniture
+// detail to another zone requires an explicit art-direction decision and test.
+const ROOM_DETAIL_PROFILE: Readonly<Record<string, RoomDetailProfile>> = {
+  'meeting-1': 'conference',
+  hrga: 'hr-document',
+  komisaris: 'executive',
+  'product-manager': 'planning',
+  it: 'technical',
+  'direktur-finance': 'finance',
+};
+
+export function roomDetailProfile(zoneId: string): RoomDetailProfile {
+  const profile = ROOM_DETAIL_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown room detail profile: ${zoneId}`);
+  return profile;
+}
+
+export type FrontOfHouseProfile = 'reception' | 'lobby' | 'circulation';
+
+const FRONT_OF_HOUSE_PROFILE: Readonly<Record<string, FrontOfHouseProfile>> = {
+  resepsionis: 'reception',
+  'lobby-besar': 'lobby',
+  'lorong-utama': 'circulation',
+  sirkulasi: 'circulation',
+  'jalur-terbuka': 'circulation',
+};
+
+export function frontOfHouseProfile(zoneId: string): FrontOfHouseProfile {
+  const profile = FRONT_OF_HOUSE_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown front-of-house profile: ${zoneId}`);
+  return profile;
+}
+
+export type ServiceCoreProfile = 'pantry' | 'storage' | 'toilet' | 'wet-service' | 'meeting' | 'server';
+
+const SERVICE_CORE_PROFILE: Readonly<Record<string, ServiceCoreProfile>> = {
+  pantry: 'pantry',
+  gudang: 'storage',
+  'toilet-wanita': 'toilet',
+  wastafel: 'wet-service',
+  'toilet-pria': 'toilet',
+  'meeting-2': 'meeting',
+  server: 'server',
+};
+
+export function serviceCoreProfile(zoneId: string): ServiceCoreProfile {
+  const profile = SERVICE_CORE_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown service-core profile: ${zoneId}`);
+  return profile;
+}
+
 // ---------------------------------------------------------------------------
 // Floors
 // ---------------------------------------------------------------------------
 
-type FloorStyle = { base: string; seam: string; hi: string; edge: string; tile: number; grain: 'plank' | 'grid' | 'plain' };
+export type ZoneMaterialFamily = 'building-carpet' | 'front-of-house' | 'toilet-wet';
 
-const FLOOR: Record<SurfaceKind, FloorStyle> = {
-  office: { base: GAME_PALETTE.office, seam: GAME_PALETTE.officeSeam, hi: GAME_PALETTE.officeHi, edge: GAME_PALETTE.officeEdge, tile: 32, grain: 'plank' },
-  lobby: { base: GAME_PALETTE.lobby, seam: GAME_PALETTE.lobbySeam, hi: GAME_PALETTE.lobbyHi, edge: GAME_PALETTE.lobbyEdge, tile: 32, grain: 'grid' },
-  corridor: { base: GAME_PALETTE.corridor, seam: GAME_PALETTE.corridorSeam, hi: GAME_PALETTE.corridorHi, edge: GAME_PALETTE.corridorEdge, tile: 40, grain: 'grid' },
-  service: { base: GAME_PALETTE.service, seam: GAME_PALETTE.serviceSeam, hi: GAME_PALETTE.serviceHi, edge: GAME_PALETTE.serviceEdge, tile: 24, grain: 'grid' },
-  rug: { base: GAME_PALETTE.rug, seam: GAME_PALETTE.rugSeam, hi: GAME_PALETTE.rugHi, edge: GAME_PALETTE.rugEdge, tile: 0, grain: 'plain' },
+// Keep all 21 approved zones explicit: adding a map zone must be accompanied by
+// a deliberate material decision rather than silently creating an exception.
+const ZONE_MATERIAL_FAMILY: Readonly<Record<string, ZoneMaterialFamily>> = {
+  'meeting-1': 'building-carpet',
+  hrga: 'building-carpet',
+  komisaris: 'building-carpet',
+  'product-manager': 'building-carpet',
+  it: 'building-carpet',
+  'direktur-finance': 'building-carpet',
+  'bilik-geng-kami': 'building-carpet',
+  resepsionis: 'front-of-house',
+  'lobby-besar': 'front-of-house',
+  'lorong-utama': 'building-carpet',
+  sirkulasi: 'building-carpet',
+  'jalur-terbuka': 'building-carpet',
+  pantry: 'building-carpet',
+  gudang: 'building-carpet',
+  'toilet-wanita': 'toilet-wet',
+  wastafel: 'toilet-wet',
+  'toilet-pria': 'toilet-wet',
+  'meeting-2': 'building-carpet',
+  server: 'building-carpet',
+  'desk-collection': 'building-carpet',
+  'tele-cs-ca': 'building-carpet',
+};
+
+/** The only zone-to-floor policy; unknown zones fail closed for visual review. */
+export function zoneMaterialFamily(zoneId: string): ZoneMaterialFamily {
+  const family = ZONE_MATERIAL_FAMILY[zoneId];
+  if (!family) throw new RangeError(`Unknown office zone material: ${zoneId}`);
+  return family;
+}
+
+type FloorStyle = { base: string; seam: string; hi: string; edge: string; tile: number; grain: 'carpet' | 'grid' };
+
+// Building carpet borrows Bilik's amber base, horizontal rhythm and fine warm
+// highlights. The other two palettes are intentionally restricted exceptions.
+const MATERIAL_FLOOR: Record<ZoneMaterialFamily, FloorStyle> = {
+  'building-carpet': { base: '#c58d52', seam: '#aa713d', hi: '#dda666', edge: '#925d32', tile: 24, grain: 'carpet' },
+  'front-of-house': { base: GAME_PALETTE.lobby, seam: GAME_PALETTE.lobbySeam, hi: GAME_PALETTE.lobbyHi, edge: GAME_PALETTE.lobbyEdge, tile: 32, grain: 'grid' },
+  'toilet-wet': { base: GAME_PALETTE.service, seam: GAME_PALETTE.serviceSeam, hi: GAME_PALETTE.serviceHi, edge: GAME_PALETTE.serviceEdge, tile: 24, grain: 'grid' },
 };
 
 // Lamp pools: the restrained warm glow the corridors and the lobby read by. They
@@ -555,35 +629,24 @@ function edgeFrameOps(r: Rect, style: FloorStyle): Op[] {
   ];
 }
 
-// Office wood: horizontal boards, never a square tile grid. Board rows are
-// 10-16px tall, each carrying a dark seam plus an alternating warm highlight, a
-// staggered run of 48-80px end joints and a couple of short grain dashes. Every
-// number is derived from the zone/surface id hash, so the floor is identical on
-// every build but each room gets its own board pitch and joint stagger.
-function plankFloorOps(r: Rect, style: FloorStyle, zoneId: string): Op[] {
+// One Bilik-derived carpet rhythm for the whole building: restrained horizontal
+// bands and sparse granular dashes. Coordinates, not room identity, drive the
+// cadence so adjacent rooms never acquire their own colour/pattern personality.
+function buildingCarpetOps(r: Rect, style: FloorStyle): Op[] {
   const ops: Op[] = [];
-  const seed = hashString(zoneId);
-  const board = clamp(10 + (seed % 7), 10, 16);
-  const joint = clamp(48 + ((seed >>> 4) % 33), 48, 80);
+  const band = style.tile;
   let row = 0;
-  for (let y = r.y; y < r.y + r.h - 1; y += board, row += 1) {
-    const h = Math.min(board, r.y + r.h - y);
+  for (let y = r.y; y < r.y + r.h - 1; y += band, row += 1) {
+    const h = Math.min(band, r.y + r.h - y);
     if (h < 3) break;
-    ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.5));
-    if (row % 2 === 0) ops.push(rectOp(r.x, y + 1, r.w, 1, style.hi, 0.26));
-    const shift = (seed + row * 29) % joint;
-    for (let x = r.x + shift + joint; x < r.x + r.w - 4; x += joint) {
-      ops.push(rectOp(Math.round(x), y + 1, 1, Math.max(1, h - 1), style.seam, 0.45));
-    }
-    const grain = hashString(`${zoneId}#${row}`);
-    const dashes = 1 + (grain % 2);
-    for (let i = 0; i < dashes; i += 1) {
-      const span = Math.max(1, r.w - 14);
-      const gx = r.x + 5 + ((grain >>> (i * 5)) % span);
-      const gw = clamp(2 + ((grain >>> (i * 3 + 2)) % 7), 2, 8);
-      const gy = y + 2 + ((grain >>> (i * 2)) % Math.max(1, Math.min(h - 3, board - 3)));
-      if (gx + gw >= r.x + r.w - 1) continue;
-      ops.push(rectOp(Math.round(gx), Math.round(gy), gw, 1, style.edge, 0.34));
+    ops.push(rectOp(r.x, y, r.w, 1, style.seam, 0.26));
+    if (row % 2 === 0) ops.push(rectOp(r.x, y + 1, r.w, 1, style.hi, 0.2));
+    for (let x = r.x + 8; x < r.x + r.w - 4; x += 28) {
+      const grain = hashString(`${Math.floor(x / 4)}:${Math.floor(y / 4)}`);
+      const gx = x + (grain % 9);
+      const gy = y + 4 + ((grain >>> 5) % Math.max(1, h - 7));
+      const gw = 2 + ((grain >>> 9) % 4);
+      if (gx + gw < r.x + r.w - 1) ops.push(rectOp(gx, gy, gw, 1, grain % 2 ? style.hi : style.edge, 0.3));
     }
   }
   ops.push(...edgeFrameOps(r, style));
@@ -626,142 +689,19 @@ function lobbyBandOps(r: Rect): Op[] {
   ];
 }
 
-function floorOps(rect: Rect, kind: SurfaceKind, phase: number, zoneId: string): Op[] {
+function floorOps(rect: Rect, family: ZoneMaterialFamily, phase: number): Op[] {
   const r = snap(rect);
-  if (kind === 'rug') return rugOps(r, RUG_STYLES.warm);
-
-  const style = FLOOR[kind];
+  const style = MATERIAL_FLOOR[family];
   const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.base)];
 
-  if (style.grain === 'plank') ops.push(...plankFloorOps(r, style, zoneId));
+  if (style.grain === 'carpet') ops.push(...buildingCarpetOps(r, style));
   else if (style.grain === 'grid') ops.push(...gridFloorOps(r, style, phase));
 
-  // Restrained lighting pools along the corridors and across the lobby.
-  if (kind === 'corridor' || kind === 'lobby') ops.push(...lampPoolOps(r, phase));
-  if (kind === 'lobby') ops.push(...lobbyBandOps(r));
-
-  return ops;
-}
-
-// Furniture-centred rugs: instead of a room-wide inset panel, a rug is the union
-// of the room's approved tables/desks plus the chairs that sit at them, padded
-// 8-16px, clipped inside the zone and clear of every opening. Sealed rooms and
-// the long Desk Collection / Tele banks never get one (they have no rug identity
-// and stay legible as work floors), and the manifest rug surfaces are untouched.
-function furnitureRugOps(manifest: OfficeManifest): Op[] {
-  const ops: Op[] = [];
-  for (const zone of manifest.zones) {
-    const identity = zoneIdentity(zone.id);
-    if (!identity.rug || zone.kind === 'service') continue;
-    if (zone.id === 'desk-collection' || zone.id === 'tele-cs-ca') continue;
-
-    const items = manifest.furniture.filter((item) => item.zone === zone.id);
-    const tops = items.filter((item) => item.kind === 'table' || item.kind === 'desk');
-    if (!tops.length) continue;
-    const cluster = [...tops];
-    for (const chair of items) {
-      if (chair.kind !== 'chair') continue;
-      const cx = chair.rect.x + chair.rect.w / 2;
-      const cy = chair.rect.y + chair.rect.h / 2;
-      const seated = tops.some((top) => {
-        const dx = top.rect.x + top.rect.w / 2 - cx;
-        const dy = top.rect.y + top.rect.h / 2 - cy;
-        return Math.hypot(dx, dy) <= Math.max(top.rect.w, top.rect.h) / 2 + 44;
-      });
-      if (seated) cluster.push(chair);
-    }
-
-    const pad = 8 + (hashString(zone.id) % 9);
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (const item of cluster) {
-      minX = Math.min(minX, item.rect.x);
-      minY = Math.min(minY, item.rect.y);
-      maxX = Math.max(maxX, item.rect.x + item.rect.w);
-      maxY = Math.max(maxY, item.rect.y + item.rect.h);
-    }
-    const zx = zone.rect.x + 5;
-    const zy = zone.rect.y + 5;
-    const zr = zone.rect.x + zone.rect.w - 5;
-    const zb = zone.rect.y + zone.rect.h - 5;
-    const rect: Rect = {
-      x: Math.max(Math.floor(minX - pad), Math.round(zx)),
-      y: Math.max(Math.floor(minY - pad), Math.round(zy)),
-      w: 0,
-      h: 0,
-    };
-    rect.w = Math.min(Math.ceil(maxX + pad), Math.round(zr)) - rect.x;
-    rect.h = Math.min(Math.ceil(maxY + pad), Math.round(zb)) - rect.y;
-    if (rect.w < 44 || rect.h < 44) continue;
-
-    // Clip away any opening that bites into the rug, then re-check the size.
-    const clipped = clearOpenings(rect, manifest.openings.map((opening) => opening.rect));
-    if (!clipped) continue;
-    ops.push(...rugOps(clipped, RUG_STYLES[identity.rug]));
+  if (family === 'front-of-house') {
+    ops.push(...lampPoolOps(r, phase));
+    ops.push(...lobbyBandOps(r));
   }
-  return ops;
-}
 
-// Shrinks a rug away from any opening it overlaps, along the opening's dominant
-// axis, and returns null if the rug would collapse below a usable size.
-function clearOpenings(rect: Rect, openings: readonly Rect[]): Rect | null {
-  const r = { ...rect };
-  for (const opening of openings) {
-    if (!overlaps(r, opening)) continue;
-    const horizontal = opening.w >= opening.h;
-    const openingCx = opening.x + opening.w / 2;
-    const openingCy = opening.y + opening.h / 2;
-    const centreX = r.x + r.w / 2;
-    const centreY = r.y + r.h / 2;
-    if (horizontal) {
-      if (openingCy <= centreY) {
-        const next = Math.round(opening.y + opening.h + 2);
-        r.h -= next - r.y;
-        r.y = next;
-      } else {
-        r.h = Math.round(opening.y - 2) - r.y;
-      }
-    } else if (openingCx <= centreX) {
-      const next = Math.round(opening.x + opening.w + 2);
-      r.w -= next - r.x;
-      r.x = next;
-    } else {
-      r.w = Math.round(opening.x - 2) - r.x;
-    }
-    if (r.w < 44 || r.h < 44) return null;
-  }
-  return r;
-}
-
-function rugOps(r: Rect, style: RugStyle): Op[] {
-  const ops: Op[] = [rectOp(r.x, r.y, r.w, r.h, style.edge)];
-  const o = inset(r, 3);
-  ops.push(rectOf(o, style.base));
-  ops.push(rectOp(o.x, o.y, o.w, 1, style.hi, 0.85));
-  ops.push(rectOp(o.x, o.y, 1, o.h, style.hi, 0.5));
-  ops.push(rectOp(o.x, o.y + o.h - 2, o.w, 2, GAME_PALETTE.shadow, 0.16));
-  ops.push(rectOp(o.x + o.w - 2, o.y, 2, o.h, GAME_PALETTE.shadow, 0.1));
-  const f = inset(o, 6);
-  ops.push(rectOp(f.x, f.y, f.w, 1, style.hi, 0.5));
-  ops.push(rectOp(f.x, f.y + f.h - 1, f.w, 1, style.hi, 0.5));
-  ops.push(rectOp(f.x, f.y, 1, f.h, style.hi, 0.5));
-  ops.push(rectOp(f.x + f.w - 1, f.y, 1, f.h, style.hi, 0.5));
-  const cx = o.x + o.w / 2;
-  const cy = o.y + o.h / 2;
-  ops.push(circleOp(cx, cy, Math.min(14, o.h * 0.3), style.seam, 0.9));
-  ops.push(circleOp(cx, cy, Math.min(9, o.h * 0.2), style.base, 1));
-  ops.push(circleOp(cx, cy, 4, style.hi, 0.6));
-  const corners: Array<[number, number]> = [[f.x, f.y], [f.x + f.w - 5, f.y], [f.x, f.y + f.h - 5], [f.x + f.w - 5, f.y + f.h - 5]];
-  for (const [mx, my] of corners) {
-    ops.push(rectOp(mx, my, 5, 5, style.seam, 0.7));
-    ops.push(rectOp(mx + 1, my + 1, 3, 3, style.hi, 0.5));
-  }
-  for (let i = 12; i < o.w - 12; i += 16) {
-    ops.push(rectOp(o.x + i, o.y + 5, 2, 3, style.hi, 0.45));
-    ops.push(rectOp(o.x + i, o.y + o.h - 8, 2, 3, style.hi, 0.45));
-  }
   return ops;
 }
 
@@ -1127,6 +1067,33 @@ function kitBox(facing: ChairFacing, inner: Rect, l0: number, l1: number, d0: nu
 const PROP_KINDS = ['plant', 'mug', 'books', 'pens', 'papers'] as const;
 type PropKind = (typeof PROP_KINDS)[number];
 
+export type DenseWorkProfile = 'collection' | 'contact-center';
+
+const DENSE_WORK_PROFILES: Readonly<Record<string, DenseWorkProfile>> = {
+  'desk-collection': 'collection',
+  'tele-cs-ca': 'contact-center',
+};
+
+export function denseWorkProfile(zoneId: string): DenseWorkProfile {
+  const profile = DENSE_WORK_PROFILES[zoneId];
+  if (!profile) throw new Error(`No dense work profile is approved for zone: ${zoneId}`);
+  return profile;
+}
+
+type DensePropVariant = 'headset' | 'documents' | 'notepad' | 'clean' | 'ticket' | 'status';
+
+function densePropVariant(zoneId: string, stationIndex: number): DensePropVariant | null {
+  if (zoneId === 'desk-collection') {
+    const rhythm: readonly DensePropVariant[] = ['headset', 'documents', 'notepad', 'clean'];
+    return rhythm[stationIndex % rhythm.length]!;
+  }
+  if (zoneId === 'tele-cs-ca') {
+    const rhythm: readonly DensePropVariant[] = ['headset', 'ticket', 'headset', 'status', 'headset', 'clean'];
+    return rhythm[stationIndex % rhythm.length]!;
+  }
+  return null;
+}
+
 // Workstation material variants. Every pick is derived from the kit's own id, so
 // a long bank never reads as exact clones while every choice stays inside the
 // shared office material language (muted screens, veneer mats, warm props).
@@ -1208,7 +1175,62 @@ function propArt(kind: PropKind, box: Rect, variant = 0): Op[] {
   ];
 }
 
-function workstationOps(workstation: Workstation, inner: Rect, deskId: string): Op[] {
+function densePropArt(variant: DensePropVariant, box: Rect, seed: number): Op[] {
+  const F = GAME_PALETTE;
+  const size = Math.max(6, Math.min(box.w, box.h, 14));
+  const r: Rect = {
+    x: Math.round(box.x + (box.w - size) / 2),
+    y: Math.round(box.y + (box.h - size) / 2),
+    w: size,
+    h: size,
+  };
+  if (variant === 'headset') {
+    return [
+      rectOp(r.x + 1, r.y + 2, Math.max(4, r.w - 2), 2, F.ink),
+      rectOp(r.x, r.y + 3, 2, Math.max(3, r.h - 5), F.phoneShell),
+      rectOp(r.x + r.w - 2, r.y + 3, 2, Math.max(3, r.h - 5), F.phoneShell),
+      rectOp(r.x + r.w - 4, r.y + r.h - 3, 4, 2, F.ink),
+      rectOp(r.x + r.w - 3, r.y + r.h - 3, 2, 1, F.metalHi),
+    ];
+  }
+  if (variant === 'documents') {
+    return [
+      ...propArt('papers', r, seed),
+      rectOp(r.x + Math.round(r.w / 2), r.y + 2, 1, Math.max(2, r.h - 4), F.bookAlt, 0.8),
+    ];
+  }
+  if (variant === 'notepad') {
+    return [
+      rectOp(r.x, r.y + 1, r.w, Math.max(4, r.h - 2), F.ink),
+      rectOp(r.x + 1, r.y + 2, Math.max(2, r.w - 2), Math.max(2, r.h - 4), F.paper),
+      rectOp(r.x + 2, r.y + 4, Math.max(1, r.w - 4), 1, F.paperLine),
+      rectOp(r.x + r.w - 2, r.y, 1, Math.max(3, r.h - 2), F.pen),
+    ];
+  }
+  if (variant === 'clean') {
+    return [
+      rectOp(r.x + 1, r.y + 2, Math.max(3, r.w - 3), Math.max(3, r.h - 4), F.ink),
+      rectOp(r.x + 2, r.y + 3, Math.max(1, r.w - 5), Math.max(1, r.h - 6), F.mug),
+      rectOp(r.x + r.w - 2, r.y + 4, 2, Math.max(1, r.h - 7), F.mug),
+    ];
+  }
+  if (variant === 'ticket') {
+    return [
+      rectOp(r.x, r.y + 1, r.w, Math.max(4, r.h - 2), F.ink),
+      rectOp(r.x + 1, r.y + 2, Math.max(2, r.w - 2), Math.max(2, r.h - 4), F.paper),
+      rectOp(r.x + 2, r.y + 4, Math.max(1, r.w - 4), 1, F.paperLine),
+      rectOp(r.x + 2, r.y + 6, Math.max(1, r.w - 5), 1, F.mugAccent),
+    ];
+  }
+  return [
+    rectOp(r.x, r.y + 2, r.w, Math.max(3, r.h - 4), F.ink),
+    rectOp(r.x + 1, r.y + 3, Math.max(1, Math.floor((r.w - 3) / 2)), Math.max(1, r.h - 6), F.leafHi),
+    rectOp(r.x + Math.ceil(r.w / 2), r.y + 3, Math.max(1, Math.floor((r.w - 3) / 2)), Math.max(1, r.h - 6), F.mugAccent),
+    rectOp(r.x + 2, r.y + 3, Math.max(1, r.w - 4), 1, F.metalHi, 0.75),
+  ];
+}
+
+function workstationOps(workstation: Workstation, inner: Rect, deskId: string, zoneId: string, stationIndex: number): Op[] {
   const F = GAME_PALETTE;
   const { facing, latStart, latLen, depStart, depLen } = workstation;
   const dep = (f: number): number => depStart + depLen * f;
@@ -1284,7 +1306,15 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
   const propD = clamp(depLen * 0.34, 6, 14);
   const propLat = clamp(latStart + latLen * 0.04, latStart, Math.max(latStart, latStart + latLen - propW));
   const propBox = box(propLat, propLat + propW, dep(0.5), dep(0.5) + propD);
-  const propOps = propArt(propKind, propBox, seed >>> 6);
+  const denseVariant = densePropVariant(zoneId, stationIndex);
+  const propOps: Op[] = denseVariant
+    ? [{
+        t: 'group',
+        sourceId: `${base}:dense-${denseVariant}`,
+        semantic: `workarea:${zoneId === 'desk-collection' ? 'collection' : 'tele'}:${denseVariant}`,
+        ops: densePropArt(denseVariant, propBox, seed >>> 6),
+      }]
+    : propArt(propKind, propBox, seed >>> 6);
 
   return [
     ...matOps,
@@ -1376,8 +1406,8 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
     .filter((kit) => (kit.facing === 'north' || kit.facing === 'south') === lateralIsX)
     .map((kit) => Math.round(kit.latStart + kit.latLen / 2)))].sort((a, b) => a - b);
 
-  for (const kit of kits) {
-    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id) });
+  for (const [stationIndex, kit] of kits.entries()) {
+    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id, item.zone, stationIndex) });
   }
 
   // Two-sided banks get a central partition — the cubicle divider the V1
@@ -1425,6 +1455,23 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
       }
     }
     ops.push({ t: 'group', sourceId: `${item.id}:divider`, semantic: 'desk:divider', ops: dividers });
+  }
+
+  if (item.zone === 'desk-collection' || item.zone === 'tele-cs-ca') {
+    const tray = wide
+      ? { x: inner.x + 5, y: inner.y + inner.h - 6, w: Math.max(4, inner.w - 10), h: 3 }
+      : { x: inner.x + inner.w - 6, y: inner.y + 5, w: 3, h: Math.max(4, inner.h - 10) };
+    const cableOps: Op[] = [
+      rectOp(tray.x, tray.y, tray.w, tray.h, F.ink, 0.9),
+      rectOp(tray.x + 1, tray.y + 1, Math.max(1, tray.w - 2), Math.max(1, tray.h - 2), F.metalDark),
+      wide
+        ? rectOp(tray.x + Math.round(tray.w * 0.3), tray.y, 2, tray.h, F.metalHi, 0.7)
+        : rectOp(tray.x, tray.y + Math.round(tray.h * 0.3), tray.w, 2, F.metalHi, 0.7),
+      wide
+        ? rectOp(tray.x + Math.round(tray.w * 0.7), tray.y, 2, tray.h, F.metalHi, 0.7)
+        : rectOp(tray.x, tray.y + Math.round(tray.h * 0.7), tray.w, 2, F.metalHi, 0.7),
+    ];
+    ops.push({ t: 'group', sourceId: `${item.id}:cable-tray`, semantic: 'workarea:cable-tray', ops: cableOps });
   }
 
   return ops;
@@ -1838,10 +1885,9 @@ const sideToward = (facing: ChairFacing): Side =>
 const sideAway = (facing: ChairFacing): Side =>
   facing === 'north' ? 'bottom' : facing === 'south' ? 'top' : facing === 'west' ? 'right' : 'left';
 
-// Chairs keep the V1 silhouette: a pixel-rounded cushion and backrest built from
-// stepped rectangles, visible armrests, a five-star base with casters and a
-// central post, and an orientation that is readable from the backrest side.
-function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Upholstery = UPHOLSTERY.v1): Op[] {
+// Chairs use one black, armless silhouette throughout the building: a stepped
+// cushion and backrest, five-star base/casters and a readable orientation.
+function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Upholstery = UPHOLSTERY.black): Op[] {
   const F = GAME_PALETTE;
   const U = upholstery;
   const r = snap(item.rect);
@@ -1850,14 +1896,10 @@ function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Up
   const cx = r.x + W / 2;
   const cy = r.y + H / 2;
   const place = (u0: number, u1: number, v0: number, v1: number): Rect => placeRect(r, facing, u0, u1, v0, v1);
-  // A per-chair upholstery tone inside the zone family: three deterministic
-  // combinations of the family's own back/seat/highlight tones, so a long row of
-  // identical chairs still reads as individual seating, never a cloned grid.
-  const tone = hashString(item.id) % 3;
-  const seatFill = tone === 0 ? U.seat : tone === 1 ? U.seatHi : U.back;
-  const seatTrim = tone === 0 ? U.seatHi : tone === 1 ? U.seat : U.backHi;
-  const backFill = tone === 0 ? U.back : tone === 1 ? U.backHi : U.seat;
-  const backTrim = tone === 0 ? U.backHi : tone === 1 ? U.seatHi : U.backHi;
+  const seatFill = U.seat;
+  const seatTrim = U.seatHi;
+  const backFill = U.back;
+  const backTrim = U.backHi;
 
   // Base: a shadow, five-star legs, four casters and a central post.
   const base: Op[] = [rectOp(r.x + 2, r.y + 3, W, H, F.shadow, 0.18)];
@@ -1899,26 +1941,10 @@ function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Up
     backOps.push(edgeBand(back, sideToward(facing), 1, U.frame, 0.3));
   }
 
-  // Armrests flank the cushion along the perpendicular of the facing; each gets
-  // a dark frame, a fabric pad and a highlight cap.
-  const armLow = -H * 0.05;
-  const armHigh = H * 0.3;
-  const arms: Op[] = [];
-  for (const su of [-1, 1]) {
-    const start = su < 0 ? -W * 0.42 : W * 0.3;
-    const end = su < 0 ? -W * 0.3 : W * 0.42;
-    const bar = place(start, end, armLow, armHigh);
-    arms.push(...steppedBlock(expand(bar, 1), F.ink, 2));
-    arms.push(...steppedBlock(bar, U.arm, 2));
-    if (bar.w >= 4 && bar.h >= 4) arms.push(edgeBand(bar, sideAway(facing), 2, backTrim, 0.3));
-    arms.push(edgeBand(bar, sideToward(facing), 1, F.metalHi, 0.35));
-  }
-
   return [
     { t: 'group', sourceId: `${item.id}:base`, semantic: 'chair:base', ops: base },
     { t: 'group', sourceId: `${item.id}:seat`, semantic: 'chair:seat', ops: seatOps },
     { t: 'group', sourceId: `${item.id}:backrest`, semantic: 'chair:backrest', ops: backOps },
-    { t: 'group', sourceId: `${item.id}:armrest`, semantic: 'chair:armrest', ops: arms },
   ];
 }
 
@@ -1955,6 +1981,259 @@ function boardArt(item: Furniture): Op[] {
   return ops;
 }
 
+function detailGroup(item: Furniture, suffix: string, semantic: string, ops: Op[]): GroupOp {
+  return { t: 'group', sourceId: `${item.id}:${suffix}`, semantic, ops };
+}
+
+function frontOfHouseDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-REC-COUNTER') {
+    const monitorX = q.x + 8;
+    add('reception-monitor', 'front:reception-monitor', [
+      rectOp(monitorX, q.y + 2, 20, 9, F.ink),
+      rectOp(monitorX + 1, q.y + 3, 18, 7, F.monitorBezel),
+      rectOp(monitorX + 2, q.y + 4, 16, 5, F.screen),
+      rectOp(monitorX + 3, q.y + 5, 10, 1, F.screenHi),
+      rectOp(monitorX + 8, q.y + 11, 4, 2, F.monitorStand),
+    ]);
+    const guestX = q.x + 38;
+    add('reception-guestbook', 'front:reception-guestbook', [
+      rectOp(guestX, q.y + 3, 22, 10, F.ink),
+      rectOp(guestX + 1, q.y + 4, 20, 8, F.paper),
+      rectOp(guestX + 3, q.y + 7, 15, 1, F.paperLine),
+      rectOp(guestX + 18, q.y + 2, 1, 10, F.pen),
+    ]);
+    const panelY = q.y + q.h - 5;
+    add('counter-panel', 'front:counter-panel', [
+      rectOp(q.x + 2, panelY, q.w - 4, 4, F.woodDark),
+      rectOp(q.x + 3, panelY + 1, Math.round((q.w - 8) / 2), 2, F.woodSide),
+      rectOp(q.x + Math.round(q.w / 2) + 1, panelY + 1, Math.round((q.w - 8) / 2), 2, F.woodSide),
+      rectOp(q.x + Math.round(q.w / 2), panelY, 2, 4, F.ink, 0.6),
+    ]);
+  }
+
+  if (item.zone === 'resepsionis' && item.kind === 'sofa') {
+    add('sofa-cushion', 'front:sofa-cushion', [
+      rectOp(q.x + 2, q.y + 3, Math.max(4, q.w - 4), Math.max(4, q.h - 7), F.ink),
+      rectOp(q.x + 3, q.y + 4, Math.max(2, q.w - 6), Math.max(2, q.h - 9), F.sofaCushion),
+      rectOp(q.x + Math.round(q.w / 2), q.y + 5, 1, Math.max(2, q.h - 11), F.sofaPiping, 0.8),
+      rectOp(q.x + 4, q.y + 5, Math.max(2, q.w - 8), 1, F.sofaCushionHi, 0.7),
+    ]);
+  }
+
+  if (item.id === 'F-PS-LOUNGE-T') {
+    add('lounge-kit', 'front:lounge-kit', [
+      rectOp(q.x + 5, q.y + 5, 18, 11, F.ink),
+      rectOp(q.x + 6, q.y + 6, 16, 9, F.bookAlt),
+      rectOp(q.x + 8, q.y + 8, 12, 1, F.bookPage),
+      rectOp(q.x + q.w - 14, q.y + q.h - 14, 9, 9, F.ink),
+      rectOp(q.x + q.w - 13, q.y + q.h - 13, 6, 7, F.mug),
+    ]);
+  }
+
+  if (item.id === 'F-PS-CERT-TABLE') {
+    const display: Op[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const x = q.x + 14 + i * 36;
+      display.push(rectOp(x, q.y + 6, 24, 15, F.ink));
+      display.push(rectOp(x + 1, q.y + 7, 22, 13, F.paper));
+      display.push(rectOp(x + 4, q.y + 11, 16, 1, F.paperLine));
+      display.push(rectOp(x + 7, q.y + 15, 10, 1, F.bookAlt));
+    }
+    add('document-display', 'front:document-display', display);
+  }
+
+  return out;
+}
+
+function serviceCoreDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-PS-PANTRY-COUNTER') {
+    add('pantry-tray', 'service:pantry-tray', [
+      rectOp(q.x + 3, q.y + 3, Math.max(10, q.w - 9), 11, F.ink),
+      rectOp(q.x + 4, q.y + 4, Math.max(8, q.w - 11), 9, F.tray),
+      rectOp(q.x + 6, q.y + 5, 6, 6, F.mug),
+      rectOp(q.x + 13, q.y + 5, 5, 6, F.cup),
+      rectOp(q.x + 5, q.y + 4, Math.max(5, q.w - 13), 1, F.metalHi, 0.7),
+    ]);
+    const panelY = q.y + q.h - 8;
+    add('pantry-panel', 'service:pantry-panel', [
+      rectOp(q.x + 2, panelY, q.w - 4, 7, F.cabinetDark),
+      rectOp(q.x + 3, panelY + 1, Math.round((q.w - 8) / 2), 5, F.cabinet),
+      rectOp(q.x + Math.round(q.w / 2) + 1, panelY + 1, Math.round((q.w - 8) / 2), 5, F.cabinet),
+      rectOp(q.x + Math.round(q.w / 2), panelY, 2, 7, F.ink, 0.6),
+      rectOp(q.x + Math.round(q.w / 2) - 4, panelY + 3, 3, 1, F.metalHi),
+      rectOp(q.x + Math.round(q.w / 2) + 3, panelY + 3, 3, 1, F.metalHi),
+    ]);
+  }
+
+  if (item.id === 'F-PS-MTG2-TABLE') {
+    const kit: Op[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const x = q.x + 13 + i * 31;
+      kit.push(rectOp(x, q.y + 7, 18, 11, F.ink));
+      kit.push(rectOp(x + 1, q.y + 8, 16, 9, F.paper));
+      kit.push(rectOp(x + 3, q.y + 11, 12, 1, F.paperLine));
+      kit.push(rectOp(x + 15, q.y + 6, 1, 11, F.pen));
+      kit.push(rectOp(x + 5, q.y + q.h - 14, 8, 8, F.mug));
+    }
+    add('meeting-kit', 'service:meeting-kit', kit);
+  }
+
+  if (item.id === 'F-PS-EXT-TABLE') {
+    const shelfY = q.y + Math.round(q.h * 0.55);
+    add('sideboard-storage', 'service:sideboard-storage', [
+      rectOp(q.x + 3, q.y + 5, q.w - 6, q.h - 10, F.woodDark, 0.65),
+      rectOp(q.x + 4, q.y + 6, q.w - 8, q.h - 12, F.woodSide),
+      rectOp(q.x + 4, shelfY, q.w - 8, 2, F.ink, 0.65),
+      rectOp(q.x + Math.round(q.w / 2), q.y + 7, 2, q.h - 14, F.ink, 0.55),
+      rectOp(q.x + 7, shelfY - 13, 7, 11, F.bookAlt),
+      rectOp(q.x + 16, shelfY - 16, 8, 14, F.book),
+      rectOp(q.x + 8, shelfY + 6, 14, 9, F.tray),
+      rectOp(q.x + 10, shelfY + 8, 10, 1, F.metalHi, 0.7),
+    ]);
+  }
+
+  return out;
+}
+
+// Batch 1 details are nested paint in the approved furniture group. Coordinates
+// derive only from the snapped item rect and stay on its inner top plane.
+function roomDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-MTG1-TABLE') {
+    const midY = q.y + Math.round(q.h / 2) - 2;
+    add('conference-supports', 'room-detail:table-support', [
+      rectOp(q.x + 3, midY, q.w - 6, 4, F.ink),
+      rectOp(q.x + 4, midY + 1, q.w - 8, 2, F.woodDark),
+      rectOp(q.x + 4, q.y + 3, 7, q.h - 6, F.woodDark, 0.75),
+      rectOp(q.x + 5, q.y + 4, 2, q.h - 8, F.woodTopHi, 0.55),
+      rectOp(q.x + q.w - 11, q.y + 3, 7, q.h - 6, F.woodDark, 0.75),
+      rectOp(q.x + q.w - 7, q.y + 4, 2, q.h - 8, F.woodTopHi, 0.55),
+      rectOp(q.x + 2, q.y + q.h - 3, q.w - 4, 2, F.woodEdge),
+    ]);
+    const xs = [q.x + 19, q.x + Math.round(q.w / 2), q.x + q.w - 19];
+    add('meeting-kit-notepad', 'room-detail:meeting-kit', [
+      rectOp(xs[0]! - 7, q.y + 7, 14, 10, F.ink), rectOp(xs[0]! - 6, q.y + 8, 12, 8, F.paper),
+      rectOp(xs[0]! - 5, q.y + 11, 9, 1, F.paperLine), rectOp(xs[0]! + 6, q.y + 8, 1, 10, F.pen),
+    ]);
+    add('meeting-kit-drink', 'room-detail:meeting-kit', [
+      rectOp(xs[1]! - 4, q.y + q.h - 18, 8, 10, F.ink), rectOp(xs[1]! - 3, q.y + q.h - 17, 6, 8, F.dispenserBottle),
+      rectOp(xs[1]! - 2, q.y + q.h - 16, 4, 2, F.dispenserWater), rectOp(xs[1]! + 3, q.y + q.h - 15, 3, 5, F.mug),
+    ]);
+    add('meeting-kit-papers', 'room-detail:meeting-kit', [
+      rectOp(xs[2]! - 8, q.y + 9, 16, 10, F.paperShadow), rectOp(xs[2]! - 7, q.y + 7, 15, 10, F.ink),
+      rectOp(xs[2]! - 6, q.y + 8, 13, 8, F.paper), rectOp(xs[2]! - 5, q.y + 11, 10, 1, F.paperLine),
+      rectOp(xs[2]! - 5, q.y + 14, 8, 1, F.paperLine),
+    ]);
+  }
+
+  if (item.zone === 'hrga' && item.kind === 'desk') {
+    const x = q.x + 4; const y = q.y + q.h - 10;
+    add('hr-files', 'room-detail:hr-files', [
+      rectOp(x, y, 20, 8, F.ink), rectOp(x + 1, y + 1, 18, 6, F.tray),
+      rectOp(x + 2, y, 15, 2, F.paper), rectOp(x + 3, y + 2, 14, 2, F.bookAlt),
+      rectOp(x + 4, y + 4, 13, 2, F.book), rectOp(x + 2, y + 1, 1, 5, F.paperLine),
+    ]);
+  }
+  if (item.id === 'F-HRGA-CABINET') {
+    const shelf = q.y + Math.round(q.h * 0.48);
+    const binders: Op[] = [rectOp(q.x + 1, shelf, q.w - 2, 2, F.cabinetDark), rectOp(q.x + Math.round(q.w / 2), q.y + 1, 2, q.h - 3, F.cabinetDark)];
+    const tones = [F.book, F.bookAlt, F.penCup, F.pot];
+    for (let i = 0; i < 7; i += 1) {
+      const x = q.x + 4 + i * 8; if (x + 5 >= q.x + q.w) break;
+      const h = 6 + i % 3;
+      binders.push(rectOp(x, shelf - h, 5, h, F.ink), rectOp(x + 1, shelf - h + 1, 3, h - 2, tones[i % tones.length]!), rectOp(x + 2, shelf - 2, 1, 1, F.paper));
+    }
+    binders.push(rectOp(q.x + Math.round(q.w / 2) - 5, q.y + q.h - 7, 3, 5, F.metalHi), rectOp(q.x + Math.round(q.w / 2) + 3, q.y + q.h - 7, 3, 5, F.metalHi));
+    add('storage-binders', 'room-detail:storage-binders', binders);
+  }
+
+  if (item.id === 'F-KOM-DESK') {
+    add('executive-folio', 'room-detail:executive-folio', [
+      rectOp(q.x + 5, q.y + q.h - 18, 20, 13, F.ink), rectOp(q.x + 6, q.y + q.h - 17, 18, 11, F.bookAlt),
+      rectOp(q.x + 8, q.y + q.h - 15, 14, 1, F.metalHi), rectOp(q.x + 15, q.y + q.h - 17, 2, 11, F.bookPage),
+      rectOp(q.x + 4, q.y + q.h - 5, q.w - 8, 2, F.woodDark),
+    ]);
+    const x = q.x + q.w - 17;
+    add('phone', 'room-detail:phone', [
+      rectOp(x, q.y + 6, 12, 9, F.ink), rectOp(x + 1, q.y + 7, 10, 7, F.phoneShell),
+      rectOp(x + 2, q.y + 7, 8, 2, F.phoneShellHi), rectOp(x + 3, q.y + 10, 6, 3, F.metalDark),
+      rectOp(x + 4, q.y + 11, 1, 1, F.metalHi), rectOp(x + 7, q.y + 11, 1, 1, F.metalHi),
+    ]);
+  }
+
+  if (item.id === 'F-PM-DESK') {
+    add('planning-kit', 'room-detail:planning-kit', [
+      rectOp(q.x + 5, q.y + q.h - 17, 24, 12, F.ink), rectOp(q.x + 6, q.y + q.h - 16, 22, 10, F.paper),
+      rectOp(q.x + 8, q.y + q.h - 13, 5, 4, F.bookAlt), rectOp(q.x + 15, q.y + q.h - 13, 5, 4, F.book),
+      rectOp(q.x + 22, q.y + q.h - 13, 4, 4, F.pen), rectOp(q.x + 7, q.y + q.h - 7, 18, 1, F.paperLine),
+    ]);
+    const x = q.x + q.w - 28;
+    add('sticky-strip', 'room-detail:sticky-strip', [
+      rectOp(x, q.y + 4, 24, 7, F.ink), rectOp(x + 1, q.y + 5, 6, 5, F.pen),
+      rectOp(x + 9, q.y + 5, 6, 5, F.mugAccent), rectOp(x + 17, q.y + 5, 6, 5, F.leafHi),
+    ]);
+  }
+
+  if (item.zone === 'it' && item.kind === 'desk') {
+    const wide = q.w >= q.h; const w = wide ? 16 : q.w - 8; const h = wide ? q.h - 12 : 13;
+    const x = q.x + 4; const y = q.y + 4;
+    const device: Op[] = [
+      rectOp(x, y, w, h, F.ink), rectOp(x + 1, y + 1, w - 2, h - 2, F.monitorBezel),
+      rectOp(x + 2, y + 2, w - 4, h - 4, F.screen), rectOp(x + 2, y + 2, w - 4, 1, F.screenHi),
+      rectOp(x + 4, y + h, Math.max(3, w - 8), 2, F.metalDark),
+    ];
+    if (wide) device.push(rectOp(x + w + 4, y + 2, 12, h - 2, F.ink), rectOp(x + w + 5, y + 3, 10, h - 4, F.screen));
+    add('it-device', 'room-detail:it-device', device);
+    add('cable-tray', 'room-detail:cable-tray', wide ? [
+      rectOp(q.x + 5, q.y + q.h - 6, q.w - 10, 2, F.ink), rectOp(q.x + 7, q.y + q.h - 5, q.w - 14, 1, F.metalDark), rectOp(q.x + q.w - 12, q.y + q.h - 9, 3, 5, F.ink),
+    ] : [
+      rectOp(q.x + q.w - 6, q.y + 5, 2, q.h - 10, F.ink), rectOp(q.x + q.w - 5, q.y + 7, 1, q.h - 14, F.metalDark), rectOp(q.x + q.w - 9, q.y + q.h - 12, 5, 3, F.ink),
+    ]);
+  }
+
+  if (item.zone === 'direktur-finance' && item.kind === 'desk') {
+    const ledgerW = Math.max(10, Math.min(20, q.w - 7));
+    add('ledger', 'room-detail:ledger', [
+      rectOp(q.x + 3, q.y + 4, ledgerW, 12, F.ink), rectOp(q.x + 4, q.y + 5, ledgerW - 2, 10, F.paper),
+      rectOp(q.x + 6, q.y + 8, ledgerW - 6, 1, F.paperLine), rectOp(q.x + 6, q.y + 11, ledgerW - 8, 1, F.paperLine),
+    ]);
+    const x = q.x + Math.max(3, q.w - 15);
+    add('calculator', 'room-detail:calculator', [
+      rectOp(x, q.y + q.h - 17, 11, 13, F.ink), rectOp(x + 1, q.y + q.h - 16, 9, 11, F.phoneShell),
+      rectOp(x + 2, q.y + q.h - 15, 7, 3, F.screen), rectOp(x + 2, q.y + q.h - 10, 2, 2, F.metalHi),
+      rectOp(x + 5, q.y + q.h - 10, 2, 2, F.metalHi), rectOp(x + 8, q.y + q.h - 10, 1, 2, F.mugAccent),
+      rectOp(x + 2, q.y + q.h - 7, 2, 1, F.metalHi), rectOp(x + 5, q.y + q.h - 7, 2, 1, F.metalHi),
+    ]);
+  }
+  if (item.id === 'F-FIN-COUNTER') {
+    const mid = q.x + Math.round(q.w / 2);
+    add('counter-panel', 'room-detail:counter-panel', [
+      rectOp(q.x + 1, q.y + 3, q.w - 2, 3, F.woodTopHi), rectOp(q.x + 1, q.y + 6, q.w - 2, 2, F.woodEdge),
+      rectOp(mid - 1, q.y + 8, 2, q.h - 10, F.woodDark), rectOp(q.x + 3, q.y + 9, mid - q.x - 6, q.h - 12, F.woodSeam),
+      rectOp(mid + 3, q.y + 9, q.x + q.w - mid - 6, q.h - 12, F.woodSeam),
+      rectOp(mid - 6, q.y + Math.round(q.h * 0.62), 4, 2, F.metalHi), rectOp(mid + 3, q.y + Math.round(q.h * 0.62), 4, 2, F.metalHi),
+    ]);
+  }
+  return out;
+}
+
 const FURNITURE_ART: Record<FurnitureKind, (item: Furniture) => Op[]> = {
   desk: (item) => deskArt(item, []),
   table: tableArt,
@@ -1971,17 +2250,19 @@ const FURNITURE_ART: Record<FurnitureKind, (item: Furniture) => Op[]> = {
 
 export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'north', kits: readonly Workstation[] = []): GroupOp {
   let ops: Op[];
-  if (item.kind === 'chair') ops = chairArt(item, facing, upholsteryFor(item.zone));
+  if (item.kind === 'chair') ops = chairArt(item, facing, UPHOLSTERY.black);
   else if (item.kind === 'desk') ops = deskArt(item, kits);
   else ops = FURNITURE_ART[item.kind](item);
+  ops.push(...roomDetailOps(item));
   // Bilik Geng Kami keeps its raster-only look: the depth kit is skipped there so
   // no vector layer competes with the approved bitmap underlay.
   if (item.zone !== BILIK_GENG_ZONE_ID) {
     ops.push({ t: 'group', sourceId: `${item.id}:depth`, semantic: 'furniture:depth', ops: furnitureDepthOps(item) });
   }
+  ops.push(...frontOfHouseDetailOps(item));
+  ops.push(...serviceCoreDetailOps(item));
   return { t: 'group', sourceId: item.id, semantic: `furniture:${item.kind}`, ops };
 }
-
 // ---------------------------------------------------------------------------
 // Decorations: deterministic, non-collision, geometry-derived
 // ---------------------------------------------------------------------------
@@ -2025,10 +2306,8 @@ function wallArtOps(r: Rect, kind: 'clock' | 'art'): PaintedOp[] {
   return ops;
 }
 
-// The wastafel alcove is a real, walkable service nook but carries no approved
-// furniture item, so its basin is painted as zone-derived detail rather than an
-// invented collider: a tiled sill, a rimmed bowl with a tap and a couple of cups,
-// all derived from and contained by the approved zone rect.
+// Wastafel is an open wall fixture, not a separate room: its north side remains
+// open while a compact mirror and basin sit against the south/bottom wall.
 export function serviceNookOps(manifest: OfficeManifest): Op[] {
   const F = GAME_PALETTE;
   const zone = manifest.zones.find((entry) => entry.id === 'wastafel');
@@ -2037,20 +2316,56 @@ export function serviceNookOps(manifest: OfficeManifest): Op[] {
   const inner = inset(r, 3);
   if (inner.w < 24 || inner.h < 16) return [];
   const ops: Op[] = [];
-  ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.serviceHi, 0.7));
-  const basin = { x: inner.x + 2, y: inner.y + Math.round(inner.h * 0.35), w: Math.max(8, inner.w - 4), h: Math.max(6, Math.round(inner.h * 0.5)) };
+  const mirror = { x: inner.x + 8, y: inner.y + inner.h - 7, w: Math.max(20, inner.w - 16), h: 7 };
+  ops.push(rectOp(mirror.x, mirror.y, mirror.w, mirror.h, F.ink));
+  ops.push(rectOp(mirror.x + 1, mirror.y + 1, mirror.w - 2, mirror.h - 2, F.windowGlass));
+  ops.push(rectOp(mirror.x + 2, mirror.y + 2, Math.max(2, mirror.w - 8), 1, F.windowGlassHi, 0.75));
+  const basin = { x: inner.x + Math.round((inner.w - 24) / 2), y: mirror.y - 9, w: 24, h: 8 };
   ops.push(rectOp(basin.x, basin.y, basin.w, basin.h, F.ink));
   ops.push(rectOp(basin.x + 1, basin.y + 1, Math.max(1, basin.w - 2), Math.max(1, basin.h - 2), F.sinkRim));
   ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), Math.max(1, basin.h - 4), F.sinkBasin));
   ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), 1, F.metalHi, 0.6));
-  ops.push(rectOp(basin.x + 3, basin.y + 3, Math.max(1, basin.w - 8), Math.max(1, basin.h - 6), F.sinkWater, 0.4));
+  ops.push(rectOp(basin.x + 3, basin.y + 3, Math.max(1, basin.w - 6), Math.max(1, basin.h - 5), F.sinkWater, 0.4));
   const tapX = basin.x + Math.round(basin.w / 2) - 1;
   ops.push(rectOp(tapX, basin.y - 3, 2, 4, F.sinkTap));
   ops.push(rectOp(tapX - 3, basin.y - 3, 8, 2, F.sinkTap));
   ops.push(rectOp(tapX - 2, basin.y - 1, 6, 1, F.metalHi, 0.6));
-  ops.push(rectOp(inner.x + inner.w - 6, inner.y + 2, 4, 5, F.ink));
-  ops.push(rectOp(inner.x + inner.w - 5, inner.y + 3, 2, 3, F.cup));
   return ops;
+}
+
+/** Two visual-only toilet fixtures; locked-room collision remains authoritative. */
+export function toiletFixtureGroups(manifest: OfficeManifest): GroupOp[] {
+  const F = GAME_PALETTE;
+  const groups: GroupOp[] = [];
+  for (const zoneId of ['toilet-wanita', 'toilet-pria'] as const) {
+    const zone = manifest.zones.find((entry) => entry.id === zoneId);
+    if (!zone) continue;
+    const r = snap(zone.rect);
+    const centreX = Math.round(r.x + r.w / 2);
+    const tank = { x: centreX - 11, y: r.y + r.h - 10, w: 22, h: 7 };
+    const bowlCentreY = tank.y - 8;
+    const tankOps: Op[] = [
+      rectOp(tank.x, tank.y, tank.w, tank.h, F.ink),
+      rectOp(tank.x + 1, tank.y + 1, tank.w - 2, tank.h - 2, F.sinkRim),
+      rectOp(tank.x + 2, tank.y + 1, tank.w - 4, 1, F.metalHi, 0.8),
+    ];
+    const bowlOps: Op[] = [
+      circleOp(centreX, bowlCentreY, 8, F.ink),
+      circleOp(centreX, bowlCentreY, 6, F.sinkRim),
+      circleOp(centreX, bowlCentreY - 1, 4, F.sinkBasin),
+      rectOp(centreX - 5, tank.y - 4, 10, 5, F.sinkRim),
+    ];
+    groups.push({
+      t: 'group',
+      sourceId: `fixture:${zoneId}`,
+      semantic: 'service:toilet-up',
+      ops: [
+        { t: 'group', sourceId: `fixture:${zoneId}:tank`, semantic: 'toilet:tank-bottom', ops: tankOps },
+        { t: 'group', sourceId: `fixture:${zoneId}:bowl`, semantic: 'toilet:bowl-up', ops: bowlOps },
+      ],
+    });
+  }
+  return groups;
 }
 
 /**
@@ -2151,19 +2466,20 @@ export function buildGameWorldOps(manifest: OfficeManifest): Op[] {
 
   for (const block of manifest.blocks) if (block.kind === 'void') ops.push(...outsideOps(block.rect));
 
-  // Floors, largest first so patches (the lobby rug) sit on their parent zone.
+  // Floors, largest first so the approved lobby surface patch stays on its
+  // parent zone while sharing that zone's front-of-house material family.
   const surfaces = [...manifest.surfaces].sort((a, b) => surfaceArea(manifest, b) - surfaceArea(manifest, a));
   surfaces.forEach((surface, index) => {
     const zone = manifest.zones.find((entry) => entry.id === surface.zone);
     const rect = surface.rect ?? zone?.rect;
-    if (rect) ops.push(...floorOps(rect, surface.kind, index, surface.zone));
+    if (rect) ops.push(...floorOps(rect, zoneMaterialFamily(surface.zone), index));
   });
-
-  // Furniture-centred rugs, derived per room and painted under the furniture.
-  ops.push(...furnitureRugOps(manifest));
 
   // Service-nook detail (the wastafel basin) derived from its own zone rect.
   ops.push(...serviceNookOps(manifest));
+  // Fixture groups expose semantic test contracts but runtime receives only
+  // paint ops, so furniture-group cardinality and collision remain untouched.
+  for (const fixture of toiletFixtureGroups(manifest)) ops.push(...flattenOps(fixture.ops));
 
   for (const window of manifest.windows) ops.push(...windowOps(window));
   for (const wall of manifest.walls) ops.push(...wallOps(wall));
