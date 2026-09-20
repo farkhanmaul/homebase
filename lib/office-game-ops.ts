@@ -508,6 +508,22 @@ export function roomDetailProfile(zoneId: string): RoomDetailProfile {
   return profile;
 }
 
+export type FrontOfHouseProfile = 'reception' | 'lobby' | 'circulation';
+
+const FRONT_OF_HOUSE_PROFILE: Readonly<Record<string, FrontOfHouseProfile>> = {
+  resepsionis: 'reception',
+  'lobby-besar': 'lobby',
+  'lorong-utama': 'circulation',
+  sirkulasi: 'circulation',
+  'jalur-terbuka': 'circulation',
+};
+
+export function frontOfHouseProfile(zoneId: string): FrontOfHouseProfile {
+  const profile = FRONT_OF_HOUSE_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown front-of-house profile: ${zoneId}`);
+  return profile;
+}
+
 // ---------------------------------------------------------------------------
 // Floors
 // ---------------------------------------------------------------------------
@@ -1972,6 +1988,72 @@ function detailGroup(item: Furniture, suffix: string, semantic: string, ops: Op[
   return { t: 'group', sourceId: `${item.id}:${suffix}`, semantic, ops };
 }
 
+function frontOfHouseDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-REC-COUNTER') {
+    const monitorX = q.x + 8;
+    add('reception-monitor', 'front:reception-monitor', [
+      rectOp(monitorX, q.y + 2, 20, 9, F.ink),
+      rectOp(monitorX + 1, q.y + 3, 18, 7, F.monitorBezel),
+      rectOp(monitorX + 2, q.y + 4, 16, 5, F.screen),
+      rectOp(monitorX + 3, q.y + 5, 10, 1, F.screenHi),
+      rectOp(monitorX + 8, q.y + 11, 4, 2, F.monitorStand),
+    ]);
+    const guestX = q.x + 38;
+    add('reception-guestbook', 'front:reception-guestbook', [
+      rectOp(guestX, q.y + 3, 22, 10, F.ink),
+      rectOp(guestX + 1, q.y + 4, 20, 8, F.paper),
+      rectOp(guestX + 3, q.y + 7, 15, 1, F.paperLine),
+      rectOp(guestX + 18, q.y + 2, 1, 10, F.pen),
+    ]);
+    const panelY = q.y + q.h - 5;
+    add('counter-panel', 'front:counter-panel', [
+      rectOp(q.x + 2, panelY, q.w - 4, 4, F.woodDark),
+      rectOp(q.x + 3, panelY + 1, Math.round((q.w - 8) / 2), 2, F.woodSide),
+      rectOp(q.x + Math.round(q.w / 2) + 1, panelY + 1, Math.round((q.w - 8) / 2), 2, F.woodSide),
+      rectOp(q.x + Math.round(q.w / 2), panelY, 2, 4, F.ink, 0.6),
+    ]);
+  }
+
+  if (item.zone === 'resepsionis' && item.kind === 'sofa') {
+    add('sofa-cushion', 'front:sofa-cushion', [
+      rectOp(q.x + 2, q.y + 3, Math.max(4, q.w - 4), Math.max(4, q.h - 7), F.ink),
+      rectOp(q.x + 3, q.y + 4, Math.max(2, q.w - 6), Math.max(2, q.h - 9), F.sofaCushion),
+      rectOp(q.x + Math.round(q.w / 2), q.y + 5, 1, Math.max(2, q.h - 11), F.sofaPiping, 0.8),
+      rectOp(q.x + 4, q.y + 5, Math.max(2, q.w - 8), 1, F.sofaCushionHi, 0.7),
+    ]);
+  }
+
+  if (item.id === 'F-PS-LOUNGE-T') {
+    add('lounge-kit', 'front:lounge-kit', [
+      rectOp(q.x + 5, q.y + 5, 18, 11, F.ink),
+      rectOp(q.x + 6, q.y + 6, 16, 9, F.bookAlt),
+      rectOp(q.x + 8, q.y + 8, 12, 1, F.bookPage),
+      rectOp(q.x + q.w - 14, q.y + q.h - 14, 9, 9, F.ink),
+      rectOp(q.x + q.w - 13, q.y + q.h - 13, 6, 7, F.mug),
+    ]);
+  }
+
+  if (item.id === 'F-PS-CERT-TABLE') {
+    const display: Op[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const x = q.x + 14 + i * 36;
+      display.push(rectOp(x, q.y + 6, 24, 15, F.ink));
+      display.push(rectOp(x + 1, q.y + 7, 22, 13, F.paper));
+      display.push(rectOp(x + 4, q.y + 11, 16, 1, F.paperLine));
+      display.push(rectOp(x + 7, q.y + 15, 10, 1, F.bookAlt));
+    }
+    add('document-display', 'front:document-display', display);
+  }
+
+  return out;
+}
+
 // Batch 1 details are nested paint in the approved furniture group. Coordinates
 // derive only from the snapped item rect and stay on its inner top plane.
 function roomDetailOps(item: Furniture): Op[] {
@@ -2124,9 +2206,10 @@ export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'nort
   if (item.zone !== BILIK_GENG_ZONE_ID) {
     ops.push({ t: 'group', sourceId: `${item.id}:depth`, semantic: 'furniture:depth', ops: furnitureDepthOps(item) });
   }
+  ops.push(...roomDetailOps(item));
+  ops.push(...frontOfHouseDetailOps(item));
   return { t: 'group', sourceId: item.id, semantic: `furniture:${item.kind}`, ops };
 }
-
 // ---------------------------------------------------------------------------
 // Decorations: deterministic, non-collision, geometry-derived
 // ---------------------------------------------------------------------------
