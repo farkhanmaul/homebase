@@ -747,6 +747,11 @@
 <rect x="-149" y="367" width="220" height="6" fill="#b98a48" />
 <rect x="-149" y="367" width="220" height="2" fill="#f0c98a" />
 <rect x="-149" y="371" width="220" height="2" fill="#16202c" opacity="0.45" />
+<rect x="3" y="285" width="36" height="22" fill="#16202c" />
+<rect x="5" y="287" width="32" height="18" fill="#f7f0dc" />
+<rect x="9" y="293" width="24" height="2" fill="#c3ac7c" />
+<rect x="33" y="283" width="2" height="22" fill="#e0b64a" />
+<rect x="13" y="341" width="16" height="16" fill="#e8e2d0" />
 <rect x="5" y="203" width="64" height="60" fill="#1b2531" opacity="0.18" />
 <rect x="11" y="225" width="42" height="4" fill="#25454a" opacity="0.95" />
 <rect x="31" y="207" width="4" height="40" fill="#25454a" opacity="0.95" />

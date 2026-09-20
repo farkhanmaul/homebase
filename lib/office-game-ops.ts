@@ -524,6 +524,24 @@ export function frontOfHouseProfile(zoneId: string): FrontOfHouseProfile {
   return profile;
 }
 
+export type ServiceCoreProfile = 'pantry' | 'storage' | 'toilet' | 'wet-service' | 'meeting' | 'server';
+
+const SERVICE_CORE_PROFILE: Readonly<Record<string, ServiceCoreProfile>> = {
+  pantry: 'pantry',
+  gudang: 'storage',
+  'toilet-wanita': 'toilet',
+  wastafel: 'wet-service',
+  'toilet-pria': 'toilet',
+  'meeting-2': 'meeting',
+  server: 'server',
+};
+
+export function serviceCoreProfile(zoneId: string): ServiceCoreProfile {
+  const profile = SERVICE_CORE_PROFILE[zoneId];
+  if (!profile) throw new RangeError(`Unknown service-core profile: ${zoneId}`);
+  return profile;
+}
+
 // ---------------------------------------------------------------------------
 // Floors
 // ---------------------------------------------------------------------------
@@ -2054,6 +2072,62 @@ function frontOfHouseDetailOps(item: Furniture): Op[] {
   return out;
 }
 
+function serviceCoreDetailOps(item: Furniture): Op[] {
+  const F = GAME_PALETTE;
+  const r = snap(item.rect);
+  const q = inset(r, 2);
+  const out: Op[] = [];
+  const add = (suffix: string, semantic: string, ops: Op[]): void => { out.push(detailGroup(item, suffix, semantic, ops)); };
+
+  if (item.id === 'F-PS-PANTRY-COUNTER') {
+    add('pantry-tray', 'service:pantry-tray', [
+      rectOp(q.x + 3, q.y + 3, Math.max(10, q.w - 9), 11, F.ink),
+      rectOp(q.x + 4, q.y + 4, Math.max(8, q.w - 11), 9, F.tray),
+      rectOp(q.x + 6, q.y + 5, 6, 6, F.mug),
+      rectOp(q.x + 13, q.y + 5, 5, 6, F.cup),
+      rectOp(q.x + 5, q.y + 4, Math.max(5, q.w - 13), 1, F.metalHi, 0.7),
+    ]);
+    const panelY = q.y + q.h - 8;
+    add('pantry-panel', 'service:pantry-panel', [
+      rectOp(q.x + 2, panelY, q.w - 4, 7, F.cabinetDark),
+      rectOp(q.x + 3, panelY + 1, Math.round((q.w - 8) / 2), 5, F.cabinet),
+      rectOp(q.x + Math.round(q.w / 2) + 1, panelY + 1, Math.round((q.w - 8) / 2), 5, F.cabinet),
+      rectOp(q.x + Math.round(q.w / 2), panelY, 2, 7, F.ink, 0.6),
+      rectOp(q.x + Math.round(q.w / 2) - 4, panelY + 3, 3, 1, F.metalHi),
+      rectOp(q.x + Math.round(q.w / 2) + 3, panelY + 3, 3, 1, F.metalHi),
+    ]);
+  }
+
+  if (item.id === 'F-PS-MTG2-TABLE') {
+    const kit: Op[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const x = q.x + 13 + i * 31;
+      kit.push(rectOp(x, q.y + 7, 18, 11, F.ink));
+      kit.push(rectOp(x + 1, q.y + 8, 16, 9, F.paper));
+      kit.push(rectOp(x + 3, q.y + 11, 12, 1, F.paperLine));
+      kit.push(rectOp(x + 15, q.y + 6, 1, 11, F.pen));
+      kit.push(rectOp(x + 5, q.y + q.h - 14, 8, 8, F.mug));
+    }
+    add('meeting-kit', 'service:meeting-kit', kit);
+  }
+
+  if (item.id === 'F-PS-EXT-TABLE') {
+    const shelfY = q.y + Math.round(q.h * 0.55);
+    add('sideboard-storage', 'service:sideboard-storage', [
+      rectOp(q.x + 3, q.y + 5, q.w - 6, q.h - 10, F.woodDark, 0.65),
+      rectOp(q.x + 4, q.y + 6, q.w - 8, q.h - 12, F.woodSide),
+      rectOp(q.x + 4, shelfY, q.w - 8, 2, F.ink, 0.65),
+      rectOp(q.x + Math.round(q.w / 2), q.y + 7, 2, q.h - 14, F.ink, 0.55),
+      rectOp(q.x + 7, shelfY - 13, 7, 11, F.bookAlt),
+      rectOp(q.x + 16, shelfY - 16, 8, 14, F.book),
+      rectOp(q.x + 8, shelfY + 6, 14, 9, F.tray),
+      rectOp(q.x + 10, shelfY + 8, 10, 1, F.metalHi, 0.7),
+    ]);
+  }
+
+  return out;
+}
+
 // Batch 1 details are nested paint in the approved furniture group. Coordinates
 // derive only from the snapped item rect and stay on its inner top plane.
 function roomDetailOps(item: Furniture): Op[] {
@@ -2206,8 +2280,8 @@ export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'nort
   if (item.zone !== BILIK_GENG_ZONE_ID) {
     ops.push({ t: 'group', sourceId: `${item.id}:depth`, semantic: 'furniture:depth', ops: furnitureDepthOps(item) });
   }
-  ops.push(...roomDetailOps(item));
   ops.push(...frontOfHouseDetailOps(item));
+  ops.push(...serviceCoreDetailOps(item));
   return { t: 'group', sourceId: item.id, semantic: `furniture:${item.kind}`, ops };
 }
 // ---------------------------------------------------------------------------
