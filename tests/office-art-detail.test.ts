@@ -240,9 +240,9 @@ void test('no furniture layer, circle or dash leaks into the empty floor', () =>
 // (b2) Chair silhouette
 // ---------------------------------------------------------------------------
 
-const CHAIR_PARTS = ['chair:base', 'chair:seat', 'chair:backrest', 'chair:armrest'] as const;
+const CHAIR_PARTS = ['chair:base', 'chair:seat', 'chair:backrest'] as const;
 
-void test('every chair is a layered V1 silhouette with an oriented backrest, cushion, arms and base', () => {
+void test('every chair is a layered black armless silhouette with an oriented backrest, cushion and base', () => {
   const byId = new Map(topGroups(buildGameWorldOps(officeMap)).map((group) => [group.sourceId, group]));
   const solids = officeMap.furniture.filter((item) => item.solid);
   const chairs = officeMap.furniture.filter((item) => item.kind === 'chair');
@@ -253,6 +253,7 @@ void test('every chair is a layered V1 silhouette with an oriented backrest, cus
     const nested = walkGroups(group.ops);
     const parts = new Set(nested.map((inner) => inner.semantic));
     for (const part of CHAIR_PARTS) assert.ok(parts.has(part), `${chair.id} has ${part}`);
+    assert.equal(parts.has('chair:armrest'), false, `${chair.id} has no armrest`);
     assert.ok(painted(group.ops).length >= MIN_LAYERED_OPS.chair, `${chair.id} clears the chair op floor`);
 
     // V1 chairs are stepped rectangles, not circle-dominant schematic symbols:

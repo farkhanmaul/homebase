@@ -39,8 +39,8 @@ const CAMERA_SCALE = 2;
 const bilik = zoneById(officeMap, BILIK_GENG_ZONE_ID)!;
 const EXPECTED_ZONE: Rect = { x: 1450, y: 40, w: 386.25, h: 185 };
 // The deterministic artifact pinned by the generator test.
-const ZONE_PNG_SHA256 = '1938ed6931f2964e0d69e08aeab0c289abcfe13fed26e9d3242ef7af85c4f47f';
-const ZONE_PNG_BYTES = 101301;
+const ZONE_PNG_SHA256 = '1df4c17ab39648dd34ec89994ea74438d99d7c36a52172d699b122282eeb9547';
+const ZONE_PNG_BYTES = 97641;
 
 const hasPillow = (): boolean => spawnSync('python3', ['-c', 'import PIL'], { stdio: 'ignore' }).status === 0;
 
@@ -92,9 +92,9 @@ void test('the Bilik raster exposes the authoritative structural column instead 
     'from PIL import Image',
     `im = Image.open(${JSON.stringify(ZONE_PNG)}).convert("RGBA")`,
     // col-geng-1 is world (1672.5,56.25,60,57.5), local to zone (1450,40).
-    'assert im.getpixel((224, 18))[:3] == (216, 210, 192), im.getpixel((224, 18))',
-    'assert im.getpixel((230, 40))[:3] == (185, 179, 161), im.getpixel((230, 40))',
-    'assert im.getpixel((279, 60))[:3] == (139, 133, 116), im.getpixel((279, 60))',
+    'assert im.getpixel((224, 18))[:3] == (247, 247, 243), im.getpixel((224, 18))',
+    'assert im.getpixel((230, 40))[:3] == (232, 232, 228), im.getpixel((230, 40))',
+    'assert im.getpixel((279, 60))[:3] == (205, 205, 201), im.getpixel((279, 60))',
     'print("pillar-ok")',
   ].join('\n');
   const result = spawnSync('python3', ['-c', script], { encoding: 'utf8' });

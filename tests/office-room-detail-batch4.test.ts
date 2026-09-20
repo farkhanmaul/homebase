@@ -86,7 +86,7 @@ void test('Batch 4 is deterministic, locked, cardinality-safe and within budget'
   const hashes: Readonly<Record<string, string>> = {
     'lib/office-map.json': '28f553ed62365bba858a4e69a1da317d46ebaff4e43a724936e7952a54db90d9',
     'public/room/bilik-geng-v4.png': '8c553abc4058f76e1328f9d3ad9c0b24a07ab68108bc25ed0554da717beb178e',
-    'public/room/bilik-geng-zone.png': '1938ed6931f2964e0d69e08aeab0c289abcfe13fed26e9d3242ef7af85c4f47f',
+    'public/room/bilik-geng-zone.png': '1df4c17ab39648dd34ec89994ea74438d99d7c36a52172d699b122282eeb9547',
   };
   for (const [path, expected] of Object.entries(hashes)) assert.equal(createHash('sha256').update(readFileSync(resolve(ROOT, path))).digest('hex'), expected);
 });

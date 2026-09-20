@@ -432,9 +432,8 @@ function hashString(value: string): number {
 // Area identity: deterministic upholstery plus one explicit floor classification
 // ---------------------------------------------------------------------------
 
-// Chair upholstery families: every family keeps the V1 teal-and-navy
-// construction, so a room's seating reads as its own set without leaving the
-// shared material language.
+// Legacy room identities remain available for partition styling, but the user
+// approved one chair language for the whole building: neutral black upholstery.
 type Upholstery = {
   back: string;
   backHi: string;
@@ -445,10 +444,11 @@ type Upholstery = {
   arm: string;
 };
 
-const UPHOLSTERY: Record<'v1' | 'exec' | 'cool', Upholstery> = {
+const UPHOLSTERY: Record<'v1' | 'exec' | 'cool' | 'black', Upholstery> = {
   v1: { back: GAME_PALETTE.chairBack, backHi: GAME_PALETTE.chairBackHi, seat: GAME_PALETTE.chairSeat, seatHi: GAME_PALETTE.chairSeatHi, frame: GAME_PALETTE.chairFrame, base: GAME_PALETTE.chairBase, arm: GAME_PALETTE.chairArm },
   exec: { back: GAME_PALETTE.execBack, backHi: GAME_PALETTE.execBackHi, seat: GAME_PALETTE.execSeat, seatHi: GAME_PALETTE.execSeatHi, frame: GAME_PALETTE.execFrame, base: GAME_PALETTE.execBase, arm: GAME_PALETTE.execFrame },
   cool: { back: GAME_PALETTE.coolBack, backHi: GAME_PALETTE.coolBackHi, seat: GAME_PALETTE.coolSeat, seatHi: GAME_PALETTE.coolSeatHi, frame: GAME_PALETTE.coolFrame, base: GAME_PALETTE.coolBase, arm: GAME_PALETTE.coolFrame },
+  black: { back: '#202226', backHi: '#414349', seat: '#2c2e33', seatHi: '#55575d', frame: '#15171a', base: '#25272b', arm: '#202226' },
 };
 
 type PartitionStyle = { base: string; hi: string; dark: string };
@@ -1885,10 +1885,9 @@ const sideToward = (facing: ChairFacing): Side =>
 const sideAway = (facing: ChairFacing): Side =>
   facing === 'north' ? 'bottom' : facing === 'south' ? 'top' : facing === 'west' ? 'right' : 'left';
 
-// Chairs keep the V1 silhouette: a pixel-rounded cushion and backrest built from
-// stepped rectangles, visible armrests, a five-star base with casters and a
-// central post, and an orientation that is readable from the backrest side.
-function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Upholstery = UPHOLSTERY.v1): Op[] {
+// Chairs use one black, armless silhouette throughout the building: a stepped
+// cushion and backrest, five-star base/casters and a readable orientation.
+function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Upholstery = UPHOLSTERY.black): Op[] {
   const F = GAME_PALETTE;
   const U = upholstery;
   const r = snap(item.rect);
@@ -1897,14 +1896,10 @@ function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Up
   const cx = r.x + W / 2;
   const cy = r.y + H / 2;
   const place = (u0: number, u1: number, v0: number, v1: number): Rect => placeRect(r, facing, u0, u1, v0, v1);
-  // A per-chair upholstery tone inside the zone family: three deterministic
-  // combinations of the family's own back/seat/highlight tones, so a long row of
-  // identical chairs still reads as individual seating, never a cloned grid.
-  const tone = hashString(item.id) % 3;
-  const seatFill = tone === 0 ? U.seat : tone === 1 ? U.seatHi : U.back;
-  const seatTrim = tone === 0 ? U.seatHi : tone === 1 ? U.seat : U.backHi;
-  const backFill = tone === 0 ? U.back : tone === 1 ? U.backHi : U.seat;
-  const backTrim = tone === 0 ? U.backHi : tone === 1 ? U.seatHi : U.backHi;
+  const seatFill = U.seat;
+  const seatTrim = U.seatHi;
+  const backFill = U.back;
+  const backTrim = U.backHi;
 
   // Base: a shadow, five-star legs, four casters and a central post.
   const base: Op[] = [rectOp(r.x + 2, r.y + 3, W, H, F.shadow, 0.18)];
@@ -1946,26 +1941,10 @@ function chairArt(item: Furniture, facing: ChairFacing = 'north', upholstery: Up
     backOps.push(edgeBand(back, sideToward(facing), 1, U.frame, 0.3));
   }
 
-  // Armrests flank the cushion along the perpendicular of the facing; each gets
-  // a dark frame, a fabric pad and a highlight cap.
-  const armLow = -H * 0.05;
-  const armHigh = H * 0.3;
-  const arms: Op[] = [];
-  for (const su of [-1, 1]) {
-    const start = su < 0 ? -W * 0.42 : W * 0.3;
-    const end = su < 0 ? -W * 0.3 : W * 0.42;
-    const bar = place(start, end, armLow, armHigh);
-    arms.push(...steppedBlock(expand(bar, 1), F.ink, 2));
-    arms.push(...steppedBlock(bar, U.arm, 2));
-    if (bar.w >= 4 && bar.h >= 4) arms.push(edgeBand(bar, sideAway(facing), 2, backTrim, 0.3));
-    arms.push(edgeBand(bar, sideToward(facing), 1, F.metalHi, 0.35));
-  }
-
   return [
     { t: 'group', sourceId: `${item.id}:base`, semantic: 'chair:base', ops: base },
     { t: 'group', sourceId: `${item.id}:seat`, semantic: 'chair:seat', ops: seatOps },
     { t: 'group', sourceId: `${item.id}:backrest`, semantic: 'chair:backrest', ops: backOps },
-    { t: 'group', sourceId: `${item.id}:armrest`, semantic: 'chair:armrest', ops: arms },
   ];
 }
 
@@ -2271,7 +2250,7 @@ const FURNITURE_ART: Record<FurnitureKind, (item: Furniture) => Op[]> = {
 
 export function buildFurnitureGroup(item: Furniture, facing: ChairFacing = 'north', kits: readonly Workstation[] = []): GroupOp {
   let ops: Op[];
-  if (item.kind === 'chair') ops = chairArt(item, facing, upholsteryFor(item.zone));
+  if (item.kind === 'chair') ops = chairArt(item, facing, UPHOLSTERY.black);
   else if (item.kind === 'desk') ops = deskArt(item, kits);
   else ops = FURNITURE_ART[item.kind](item);
   ops.push(...roomDetailOps(item));

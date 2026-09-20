@@ -111,7 +111,7 @@ void test('Bilik source and generated zone raster stay byte-identical', () => {
   const source = readFileSync(resolve(ROOT, 'public', 'room', 'bilik-geng-v4.png'));
   const generated = readFileSync(resolve(ROOT, 'public', 'room', 'bilik-geng-zone.png'));
   assert.equal(createHash('sha256').update(source).digest('hex'), '8c553abc4058f76e1328f9d3ad9c0b24a07ab68108bc25ed0554da717beb178e');
-  assert.equal(createHash('sha256').update(generated).digest('hex'), '1938ed6931f2964e0d69e08aeab0c289abcfe13fed26e9d3242ef7af85c4f47f');
+  assert.equal(createHash('sha256').update(generated).digest('hex'), '1df4c17ab39648dd34ec89994ea74438d99d7c36a52172d699b122282eeb9547');
 });
 
 void test('the renderer has no furniture-centred rug pass or per-room rug identity', () => {
