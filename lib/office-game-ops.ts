@@ -1033,6 +1033,33 @@ function kitBox(facing: ChairFacing, inner: Rect, l0: number, l1: number, d0: nu
 const PROP_KINDS = ['plant', 'mug', 'books', 'pens', 'papers'] as const;
 type PropKind = (typeof PROP_KINDS)[number];
 
+export type DenseWorkProfile = 'collection' | 'contact-center';
+
+const DENSE_WORK_PROFILES: Readonly<Record<string, DenseWorkProfile>> = {
+  'desk-collection': 'collection',
+  'tele-cs-ca': 'contact-center',
+};
+
+export function denseWorkProfile(zoneId: string): DenseWorkProfile {
+  const profile = DENSE_WORK_PROFILES[zoneId];
+  if (!profile) throw new Error(`No dense work profile is approved for zone: ${zoneId}`);
+  return profile;
+}
+
+type DensePropVariant = 'headset' | 'documents' | 'notepad' | 'clean' | 'ticket' | 'status';
+
+function densePropVariant(zoneId: string, stationIndex: number): DensePropVariant | null {
+  if (zoneId === 'desk-collection') {
+    const rhythm: readonly DensePropVariant[] = ['headset', 'documents', 'notepad', 'clean'];
+    return rhythm[stationIndex % rhythm.length]!;
+  }
+  if (zoneId === 'tele-cs-ca') {
+    const rhythm: readonly DensePropVariant[] = ['headset', 'ticket', 'headset', 'status', 'headset', 'clean'];
+    return rhythm[stationIndex % rhythm.length]!;
+  }
+  return null;
+}
+
 // Workstation material variants. Every pick is derived from the kit's own id, so
 // a long bank never reads as exact clones while every choice stays inside the
 // shared office material language (muted screens, veneer mats, warm props).
@@ -1114,7 +1141,62 @@ function propArt(kind: PropKind, box: Rect, variant = 0): Op[] {
   ];
 }
 
-function workstationOps(workstation: Workstation, inner: Rect, deskId: string): Op[] {
+function densePropArt(variant: DensePropVariant, box: Rect, seed: number): Op[] {
+  const F = GAME_PALETTE;
+  const size = Math.max(6, Math.min(box.w, box.h, 14));
+  const r: Rect = {
+    x: Math.round(box.x + (box.w - size) / 2),
+    y: Math.round(box.y + (box.h - size) / 2),
+    w: size,
+    h: size,
+  };
+  if (variant === 'headset') {
+    return [
+      rectOp(r.x + 1, r.y + 2, Math.max(4, r.w - 2), 2, F.ink),
+      rectOp(r.x, r.y + 3, 2, Math.max(3, r.h - 5), F.phoneShell),
+      rectOp(r.x + r.w - 2, r.y + 3, 2, Math.max(3, r.h - 5), F.phoneShell),
+      rectOp(r.x + r.w - 4, r.y + r.h - 3, 4, 2, F.ink),
+      rectOp(r.x + r.w - 3, r.y + r.h - 3, 2, 1, F.metalHi),
+    ];
+  }
+  if (variant === 'documents') {
+    return [
+      ...propArt('papers', r, seed),
+      rectOp(r.x + Math.round(r.w / 2), r.y + 2, 1, Math.max(2, r.h - 4), F.bookAlt, 0.8),
+    ];
+  }
+  if (variant === 'notepad') {
+    return [
+      rectOp(r.x, r.y + 1, r.w, Math.max(4, r.h - 2), F.ink),
+      rectOp(r.x + 1, r.y + 2, Math.max(2, r.w - 2), Math.max(2, r.h - 4), F.paper),
+      rectOp(r.x + 2, r.y + 4, Math.max(1, r.w - 4), 1, F.paperLine),
+      rectOp(r.x + r.w - 2, r.y, 1, Math.max(3, r.h - 2), F.pen),
+    ];
+  }
+  if (variant === 'clean') {
+    return [
+      rectOp(r.x + 1, r.y + 2, Math.max(3, r.w - 3), Math.max(3, r.h - 4), F.ink),
+      rectOp(r.x + 2, r.y + 3, Math.max(1, r.w - 5), Math.max(1, r.h - 6), F.mug),
+      rectOp(r.x + r.w - 2, r.y + 4, 2, Math.max(1, r.h - 7), F.mug),
+    ];
+  }
+  if (variant === 'ticket') {
+    return [
+      rectOp(r.x, r.y + 1, r.w, Math.max(4, r.h - 2), F.ink),
+      rectOp(r.x + 1, r.y + 2, Math.max(2, r.w - 2), Math.max(2, r.h - 4), F.paper),
+      rectOp(r.x + 2, r.y + 4, Math.max(1, r.w - 4), 1, F.paperLine),
+      rectOp(r.x + 2, r.y + 6, Math.max(1, r.w - 5), 1, F.mugAccent),
+    ];
+  }
+  return [
+    rectOp(r.x, r.y + 2, r.w, Math.max(3, r.h - 4), F.ink),
+    rectOp(r.x + 1, r.y + 3, Math.max(1, Math.floor((r.w - 3) / 2)), Math.max(1, r.h - 6), F.leafHi),
+    rectOp(r.x + Math.ceil(r.w / 2), r.y + 3, Math.max(1, Math.floor((r.w - 3) / 2)), Math.max(1, r.h - 6), F.mugAccent),
+    rectOp(r.x + 2, r.y + 3, Math.max(1, r.w - 4), 1, F.metalHi, 0.75),
+  ];
+}
+
+function workstationOps(workstation: Workstation, inner: Rect, deskId: string, zoneId: string, stationIndex: number): Op[] {
   const F = GAME_PALETTE;
   const { facing, latStart, latLen, depStart, depLen } = workstation;
   const dep = (f: number): number => depStart + depLen * f;
@@ -1190,7 +1272,15 @@ function workstationOps(workstation: Workstation, inner: Rect, deskId: string): 
   const propD = clamp(depLen * 0.34, 6, 14);
   const propLat = clamp(latStart + latLen * 0.04, latStart, Math.max(latStart, latStart + latLen - propW));
   const propBox = box(propLat, propLat + propW, dep(0.5), dep(0.5) + propD);
-  const propOps = propArt(propKind, propBox, seed >>> 6);
+  const denseVariant = densePropVariant(zoneId, stationIndex);
+  const propOps: Op[] = denseVariant
+    ? [{
+        t: 'group',
+        sourceId: `${base}:dense-${denseVariant}`,
+        semantic: `workarea:${zoneId === 'desk-collection' ? 'collection' : 'tele'}:${denseVariant}`,
+        ops: densePropArt(denseVariant, propBox, seed >>> 6),
+      }]
+    : propArt(propKind, propBox, seed >>> 6);
 
   return [
     ...matOps,
@@ -1282,8 +1372,8 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
     .filter((kit) => (kit.facing === 'north' || kit.facing === 'south') === lateralIsX)
     .map((kit) => Math.round(kit.latStart + kit.latLen / 2)))].sort((a, b) => a - b);
 
-  for (const kit of kits) {
-    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id) });
+  for (const [stationIndex, kit] of kits.entries()) {
+    ops.push({ t: 'group', sourceId: `${item.id}#${kit.chairId}@${kit.facing}`, semantic: 'workstation:kit', ops: workstationOps(kit, inner, item.id, item.zone, stationIndex) });
   }
 
   // Two-sided banks get a central partition — the cubicle divider the V1
@@ -1331,6 +1421,23 @@ function deskArt(item: Furniture, kits: readonly Workstation[] = []): Op[] {
       }
     }
     ops.push({ t: 'group', sourceId: `${item.id}:divider`, semantic: 'desk:divider', ops: dividers });
+  }
+
+  if (item.zone === 'desk-collection' || item.zone === 'tele-cs-ca') {
+    const tray = wide
+      ? { x: inner.x + 5, y: inner.y + inner.h - 6, w: Math.max(4, inner.w - 10), h: 3 }
+      : { x: inner.x + inner.w - 6, y: inner.y + 5, w: 3, h: Math.max(4, inner.h - 10) };
+    const cableOps: Op[] = [
+      rectOp(tray.x, tray.y, tray.w, tray.h, F.ink, 0.9),
+      rectOp(tray.x + 1, tray.y + 1, Math.max(1, tray.w - 2), Math.max(1, tray.h - 2), F.metalDark),
+      wide
+        ? rectOp(tray.x + Math.round(tray.w * 0.3), tray.y, 2, tray.h, F.metalHi, 0.7)
+        : rectOp(tray.x, tray.y + Math.round(tray.h * 0.3), tray.w, 2, F.metalHi, 0.7),
+      wide
+        ? rectOp(tray.x + Math.round(tray.w * 0.7), tray.y, 2, tray.h, F.metalHi, 0.7)
+        : rectOp(tray.x, tray.y + Math.round(tray.h * 0.7), tray.w, 2, F.metalHi, 0.7),
+    ];
+    ops.push({ t: 'group', sourceId: `${item.id}:cable-tray`, semantic: 'workarea:cable-tray', ops: cableOps });
   }
 
   return ops;

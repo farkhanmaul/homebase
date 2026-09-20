@@ -6556,12 +6556,13 @@
 <rect x="1088" y="355" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-3:prop" data-semantic="workstation:prop">
-<rect x="1054" y="370" width="8" height="3" fill="#8a4a33" />
-<rect x="1055" y="370" width="6" height="2" fill="#b9694a" />
-<rect x="1055" y="370" width="6" height="1" fill="#d68a66" />
-<rect x="1055" y="366" width="6" height="4" fill="#356b31" />
-<rect x="1056" y="365" width="4" height="3" fill="#5f9a56" />
-<rect x="1057" y="365" width="2" height="3" fill="#8cc47a" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-3:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="1055" y="367" width="6" height="2" fill="#16202c" />
+<rect x="1054" y="368" width="2" height="3" fill="#3b4652" />
+<rect x="1060" y="368" width="2" height="3" fill="#3b4652" />
+<rect x="1058" y="370" width="4" height="2" fill="#16202c" />
+<rect x="1059" y="370" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-UP-4@north" data-semantic="workstation:kit">
@@ -6597,11 +6598,14 @@
 <rect x="1154" y="355" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-4:prop" data-semantic="workstation:prop">
-<rect x="1120" y="368" width="8" height="5" fill="#16202c" />
-<rect x="1121" y="369" width="6" height="3" fill="#4a6d8c" />
-<rect x="1121" y="369" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1122" y="365" width="1" height="4" fill="#e0b64a" />
-<rect x="1124" y="365" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-4:dense-documents" data-semantic="workarea:collection:documents">
+<rect x="1120" y="366" width="8" height="6" fill="#16202c" />
+<rect x="1121" y="367" width="6" height="4" fill="#f7f0dc" />
+<rect x="1122" y="368" width="4" height="1" fill="#c3ac7c" />
+<rect x="1122" y="370" width="3" height="1" fill="#c3ac7c" />
+<rect x="1121" y="367" width="6" height="1" fill="#d8ccae" />
+<rect x="1124" y="367" width="1" height="4" fill="#3f6f8f" opacity="0.8" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-UP-5@north" data-semantic="workstation:kit">
@@ -6635,12 +6639,12 @@
 <rect x="1221" y="355" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-5:prop" data-semantic="workstation:prop">
-<rect x="1187" y="366" width="7" height="2" fill="#16202c" />
-<rect x="1188" y="366" width="5" height="1" fill="#3f6f8f" />
-<rect x="1188" y="368" width="6" height="2" fill="#16202c" />
-<rect x="1189" y="368" width="4" height="1" fill="#7a5f9f" />
-<rect x="1189" y="370" width="5" height="2" fill="#16202c" />
-<rect x="1190" y="370" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-UP-5:dense-notepad" data-semantic="workarea:collection:notepad">
+<rect x="1187" y="366" width="8" height="6" fill="#16202c" />
+<rect x="1188" y="367" width="6" height="4" fill="#f7f0dc" />
+<rect x="1189" y="369" width="4" height="1" fill="#c3ac7c" />
+<rect x="1193" y="365" width="1" height="6" fill="#e0b64a" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-2@south" data-semantic="workstation:kit">
@@ -6676,11 +6680,11 @@
 <rect x="1021" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-2:prop" data-semantic="workstation:prop">
-<rect x="987" y="385" width="8" height="5" fill="#16202c" />
-<rect x="988" y="386" width="6" height="3" fill="#4a6d8c" />
-<rect x="988" y="386" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="989" y="382" width="1" height="4" fill="#e0b64a" />
-<rect x="991" y="382" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-2:dense-clean" data-semantic="workarea:collection:clean">
+<rect x="988" y="384" width="5" height="4" fill="#16202c" />
+<rect x="989" y="385" width="3" height="2" fill="#e8e2d0" />
+<rect x="993" y="386" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-3@south" data-semantic="workstation:kit">
@@ -6714,11 +6718,13 @@
 <rect x="1088" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-3:prop" data-semantic="workstation:prop">
-<rect x="1054" y="383" width="8" height="6" fill="#16202c" />
-<rect x="1055" y="384" width="6" height="4" fill="#efe6d0" />
-<rect x="1056" y="385" width="4" height="1" fill="#c3ac7c" />
-<rect x="1056" y="387" width="3" height="1" fill="#c3ac7c" />
-<rect x="1055" y="384" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-3:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="1055" y="384" width="6" height="2" fill="#16202c" />
+<rect x="1054" y="385" width="2" height="3" fill="#3b4652" />
+<rect x="1060" y="385" width="2" height="3" fill="#3b4652" />
+<rect x="1058" y="387" width="4" height="2" fill="#16202c" />
+<rect x="1059" y="387" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-4@south" data-semantic="workstation:kit">
@@ -6754,12 +6760,14 @@
 <rect x="1154" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-4:prop" data-semantic="workstation:prop">
-<rect x="1120" y="383" width="7" height="2" fill="#16202c" />
-<rect x="1121" y="383" width="5" height="1" fill="#7a5f3f" />
-<rect x="1121" y="385" width="6" height="2" fill="#16202c" />
-<rect x="1122" y="385" width="4" height="1" fill="#4f8f6a" />
-<rect x="1122" y="387" width="5" height="2" fill="#16202c" />
-<rect x="1123" y="387" width="3" height="1" fill="#7a5f3f" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-4:dense-documents" data-semantic="workarea:collection:documents">
+<rect x="1120" y="383" width="8" height="6" fill="#16202c" />
+<rect x="1121" y="384" width="6" height="4" fill="#efe6d0" />
+<rect x="1122" y="385" width="4" height="1" fill="#c3ac7c" />
+<rect x="1122" y="387" width="3" height="1" fill="#c3ac7c" />
+<rect x="1121" y="384" width="6" height="1" fill="#d8ccae" />
+<rect x="1124" y="384" width="1" height="4" fill="#3f6f8f" opacity="0.8" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-5@south" data-semantic="workstation:kit">
@@ -6793,11 +6801,12 @@
 <rect x="1221" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-5:prop" data-semantic="workstation:prop">
-<rect x="1187" y="385" width="8" height="5" fill="#16202c" />
-<rect x="1188" y="386" width="6" height="3" fill="#4a6d8c" />
-<rect x="1188" y="386" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1189" y="382" width="1" height="4" fill="#e0b64a" />
-<rect x="1191" y="382" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-5:dense-notepad" data-semantic="workarea:collection:notepad">
+<rect x="1187" y="383" width="8" height="6" fill="#16202c" />
+<rect x="1188" y="384" width="6" height="4" fill="#f7f0dc" />
+<rect x="1189" y="386" width="4" height="1" fill="#c3ac7c" />
+<rect x="1193" y="382" width="1" height="6" fill="#e0b64a" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-6@south" data-semantic="workstation:kit">
@@ -6831,11 +6840,11 @@
 <rect x="1287" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-6:prop" data-semantic="workstation:prop">
-<rect x="1253" y="383" width="8" height="6" fill="#16202c" />
-<rect x="1254" y="384" width="6" height="4" fill="#efe6d0" />
-<rect x="1255" y="385" width="4" height="1" fill="#c3ac7c" />
-<rect x="1255" y="387" width="3" height="1" fill="#c3ac7c" />
-<rect x="1254" y="384" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-6:dense-clean" data-semantic="workarea:collection:clean">
+<rect x="1254" y="384" width="5" height="4" fill="#16202c" />
+<rect x="1255" y="385" width="3" height="2" fill="#e8e2d0" />
+<rect x="1259" y="386" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP#F-DC-T-DN-7@south" data-semantic="workstation:kit">
@@ -6871,12 +6880,13 @@
 <rect x="1353" y="398" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-7:prop" data-semantic="workstation:prop">
-<rect x="1319" y="387" width="8" height="3" fill="#8a4a33" />
-<rect x="1320" y="387" width="6" height="2" fill="#b9694a" />
-<rect x="1320" y="387" width="6" height="1" fill="#d68a66" />
-<rect x="1320" y="383" width="6" height="4" fill="#356b31" />
-<rect x="1321" y="382" width="4" height="3" fill="#5f9a56" />
-<rect x="1322" y="382" width="2" height="3" fill="#8cc47a" />
+<g data-source-id="F-DC-BANK-TOP:F-DC-T-DN-7:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="1320" y="384" width="6" height="2" fill="#16202c" />
+<rect x="1319" y="385" width="2" height="3" fill="#3b4652" />
+<rect x="1325" y="385" width="2" height="3" fill="#3b4652" />
+<rect x="1323" y="387" width="4" height="2" fill="#16202c" />
+<rect x="1324" y="387" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-TOP:spine" data-semantic="desk:spine">
@@ -6902,6 +6912,12 @@
 <rect x="1303" y="353" width="3" height="49" fill="#16202c" />
 <rect x="1304" y="354" width="1" height="47" fill="#2f7580" />
 <rect x="1304" y="354" width="1" height="1" fill="#56a7ac" opacity="0.85" />
+</g>
+<g data-source-id="F-DC-BANK-TOP:cable-tray" data-semantic="workarea:cable-tray">
+<rect x="911" y="397" width="519" height="3" fill="#16202c" opacity="0.9" />
+<rect x="912" y="398" width="517" height="1" fill="#5f6a72" />
+<rect x="1067" y="397" width="2" height="3" fill="#d5dde2" opacity="0.7" />
+<rect x="1274" y="397" width="2" height="3" fill="#d5dde2" opacity="0.7" />
 </g>
 <g data-source-id="F-DC-BANK-TOP:depth" data-semantic="furniture:depth">
 <rect x="907" y="404" width="527" height="2" fill="#1b2531" opacity="0.3" />
@@ -6985,11 +7001,13 @@
 <rect x="1021" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-2:prop" data-semantic="workstation:prop">
-<rect x="987" y="529" width="8" height="6" fill="#16202c" />
-<rect x="988" y="530" width="6" height="4" fill="#efe6d0" />
-<rect x="989" y="531" width="4" height="1" fill="#c3ac7c" />
-<rect x="989" y="533" width="3" height="1" fill="#c3ac7c" />
-<rect x="988" y="530" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-2:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="988" y="530" width="6" height="2" fill="#16202c" />
+<rect x="987" y="531" width="2" height="3" fill="#3b4652" />
+<rect x="993" y="531" width="2" height="3" fill="#3b4652" />
+<rect x="991" y="533" width="4" height="2" fill="#16202c" />
+<rect x="992" y="533" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-UP-3@north" data-semantic="workstation:kit">
@@ -7023,11 +7041,14 @@
 <rect x="1088" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-3:prop" data-semantic="workstation:prop">
-<rect x="1054" y="531" width="8" height="5" fill="#16202c" />
-<rect x="1055" y="532" width="6" height="3" fill="#4a6d8c" />
-<rect x="1055" y="532" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1056" y="528" width="1" height="4" fill="#e0b64a" />
-<rect x="1058" y="528" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-3:dense-documents" data-semantic="workarea:collection:documents">
+<rect x="1054" y="529" width="8" height="6" fill="#16202c" />
+<rect x="1055" y="530" width="6" height="4" fill="#f7f0dc" />
+<rect x="1056" y="531" width="4" height="1" fill="#c3ac7c" />
+<rect x="1056" y="533" width="3" height="1" fill="#c3ac7c" />
+<rect x="1055" y="530" width="6" height="1" fill="#d8ccae" />
+<rect x="1058" y="530" width="1" height="4" fill="#3f6f8f" opacity="0.8" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-UP-4@north" data-semantic="workstation:kit">
@@ -7063,11 +7084,12 @@
 <rect x="1154" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-4:prop" data-semantic="workstation:prop">
-<rect x="1120" y="531" width="8" height="5" fill="#16202c" />
-<rect x="1121" y="532" width="6" height="3" fill="#4a6d8c" />
-<rect x="1121" y="532" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1122" y="528" width="1" height="4" fill="#e0b64a" />
-<rect x="1124" y="528" width="1" height="3" fill="#3f7a8f" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-4:dense-notepad" data-semantic="workarea:collection:notepad">
+<rect x="1120" y="529" width="8" height="6" fill="#16202c" />
+<rect x="1121" y="530" width="6" height="4" fill="#f7f0dc" />
+<rect x="1122" y="532" width="4" height="1" fill="#c3ac7c" />
+<rect x="1126" y="528" width="1" height="6" fill="#e0b64a" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-UP-5@north" data-semantic="workstation:kit">
@@ -7101,12 +7123,11 @@
 <rect x="1221" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-5:prop" data-semantic="workstation:prop">
-<rect x="1187" y="529" width="7" height="2" fill="#16202c" />
-<rect x="1188" y="529" width="5" height="1" fill="#7a5f3f" />
-<rect x="1188" y="531" width="6" height="2" fill="#16202c" />
-<rect x="1189" y="531" width="4" height="1" fill="#4f8f6a" />
-<rect x="1189" y="533" width="5" height="2" fill="#16202c" />
-<rect x="1190" y="533" width="3" height="1" fill="#7a5f3f" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-5:dense-clean" data-semantic="workarea:collection:clean">
+<rect x="1188" y="530" width="5" height="4" fill="#16202c" />
+<rect x="1189" y="531" width="3" height="2" fill="#e8e2d0" />
+<rect x="1193" y="532" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-UP-6@north" data-semantic="workstation:kit">
@@ -7140,12 +7161,13 @@
 <rect x="1287" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-6:prop" data-semantic="workstation:prop">
-<rect x="1253" y="533" width="8" height="3" fill="#8a4a33" />
-<rect x="1254" y="533" width="6" height="2" fill="#b9694a" />
-<rect x="1254" y="533" width="6" height="1" fill="#d68a66" />
-<rect x="1254" y="529" width="6" height="4" fill="#356b31" />
-<rect x="1255" y="528" width="4" height="3" fill="#5f9a56" />
-<rect x="1256" y="528" width="2" height="3" fill="#8cc47a" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-6:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="1254" y="530" width="6" height="2" fill="#16202c" />
+<rect x="1253" y="531" width="2" height="3" fill="#3b4652" />
+<rect x="1259" y="531" width="2" height="3" fill="#3b4652" />
+<rect x="1257" y="533" width="4" height="2" fill="#16202c" />
+<rect x="1258" y="533" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-UP-7@north" data-semantic="workstation:kit">
@@ -7181,11 +7203,14 @@
 <rect x="1353" y="518" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-7:prop" data-semantic="workstation:prop">
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-UP-7:dense-documents" data-semantic="workarea:collection:documents">
 <rect x="1319" y="529" width="8" height="6" fill="#16202c" />
 <rect x="1320" y="530" width="6" height="4" fill="#f7f0dc" />
 <rect x="1321" y="531" width="4" height="1" fill="#c3ac7c" />
 <rect x="1321" y="533" width="3" height="1" fill="#c3ac7c" />
 <rect x="1320" y="530" width="6" height="1" fill="#d8ccae" />
+<rect x="1323" y="530" width="1" height="4" fill="#3f6f8f" opacity="0.8" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-2@south" data-semantic="workstation:kit">
@@ -7215,11 +7240,12 @@
 <rect x="1021" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-2:prop" data-semantic="workstation:prop">
-<rect x="987" y="548" width="9" height="5" fill="#16202c" />
-<rect x="988" y="549" width="7" height="3" fill="#4a6d8c" />
-<rect x="988" y="549" width="7" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="989" y="544" width="1" height="5" fill="#e0b64a" />
-<rect x="991" y="544" width="1" height="4" fill="#c05a48" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-2:dense-notepad" data-semantic="workarea:collection:notepad">
+<rect x="987" y="545" width="9" height="7" fill="#16202c" />
+<rect x="988" y="546" width="7" height="5" fill="#f7f0dc" />
+<rect x="989" y="548" width="5" height="1" fill="#c3ac7c" />
+<rect x="994" y="544" width="1" height="7" fill="#e0b64a" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-3@south" data-semantic="workstation:kit">
@@ -7248,11 +7274,11 @@
 <rect x="1088" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-3:prop" data-semantic="workstation:prop">
-<rect x="1053" y="545" width="9" height="7" fill="#16202c" />
-<rect x="1054" y="546" width="7" height="5" fill="#f2ecd8" />
-<rect x="1055" y="547" width="5" height="1" fill="#c3ac7c" />
-<rect x="1055" y="549" width="4" height="1" fill="#c3ac7c" />
-<rect x="1054" y="546" width="7" height="1" fill="#d8ccae" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-3:dense-clean" data-semantic="workarea:collection:clean">
+<rect x="1054" y="546" width="6" height="5" fill="#16202c" />
+<rect x="1055" y="547" width="4" height="3" fill="#e8e2d0" />
+<rect x="1060" y="548" width="2" height="2" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-4@south" data-semantic="workstation:kit">
@@ -7282,12 +7308,13 @@
 <rect x="1154" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-4:prop" data-semantic="workstation:prop">
-<rect x="1119" y="550" width="9" height="3" fill="#8a4a33" />
-<rect x="1120" y="550" width="7" height="2" fill="#b9694a" />
-<rect x="1120" y="550" width="7" height="1" fill="#d68a66" />
-<rect x="1120" y="545" width="7" height="5" fill="#356b31" />
-<rect x="1121" y="544" width="5" height="4" fill="#4f8f43" />
-<rect x="1123" y="544" width="2" height="4" fill="#79b566" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-4:dense-headset" data-semantic="workarea:collection:headset">
+<rect x="1120" y="546" width="7" height="2" fill="#16202c" />
+<rect x="1119" y="547" width="2" height="4" fill="#3b4652" />
+<rect x="1126" y="547" width="2" height="4" fill="#3b4652" />
+<rect x="1124" y="550" width="4" height="2" fill="#16202c" />
+<rect x="1125" y="550" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-5@south" data-semantic="workstation:kit">
@@ -7316,11 +7343,14 @@
 <rect x="1221" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-5:prop" data-semantic="workstation:prop">
-<rect x="1186" y="544" width="9" height="9" fill="#16202c" />
-<rect x="1187" y="545" width="6" height="7" fill="#e8e2d0" />
-<rect x="1187" y="545" width="6" height="1" fill="#fbf7ec" />
-<rect x="1193" y="546" width="2" height="5" fill="#e8e2d0" />
-<rect x="1187" y="549" width="6" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-5:dense-documents" data-semantic="workarea:collection:documents">
+<rect x="1186" y="545" width="9" height="7" fill="#16202c" />
+<rect x="1187" y="546" width="7" height="5" fill="#efe6d0" />
+<rect x="1188" y="547" width="5" height="1" fill="#c3ac7c" />
+<rect x="1188" y="549" width="4" height="1" fill="#c3ac7c" />
+<rect x="1187" y="546" width="7" height="1" fill="#d8ccae" />
+<rect x="1191" y="546" width="1" height="5" fill="#3f6f8f" opacity="0.8" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-6@south" data-semantic="workstation:kit">
@@ -7349,12 +7379,12 @@
 <rect x="1287" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-6:prop" data-semantic="workstation:prop">
-<rect x="1252" y="545" width="8" height="2" fill="#16202c" />
-<rect x="1253" y="545" width="6" height="1" fill="#3f6f8f" />
-<rect x="1253" y="547" width="7" height="2" fill="#16202c" />
-<rect x="1254" y="547" width="5" height="1" fill="#7a5f9f" />
-<rect x="1254" y="549" width="6" height="2" fill="#16202c" />
-<rect x="1255" y="549" width="4" height="1" fill="#3f6f8f" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-6:dense-notepad" data-semantic="workarea:collection:notepad">
+<rect x="1252" y="545" width="9" height="7" fill="#16202c" />
+<rect x="1253" y="546" width="7" height="5" fill="#f7f0dc" />
+<rect x="1254" y="548" width="5" height="1" fill="#c3ac7c" />
+<rect x="1259" y="544" width="1" height="7" fill="#e0b64a" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM#F-DC-B-DN-7@south" data-semantic="workstation:kit">
@@ -7384,11 +7414,11 @@
 <rect x="1353" y="560" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-7:prop" data-semantic="workstation:prop">
-<rect x="1319" y="548" width="9" height="5" fill="#16202c" />
-<rect x="1320" y="549" width="7" height="3" fill="#4a6d8c" />
-<rect x="1320" y="549" width="7" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1321" y="544" width="1" height="5" fill="#e0b64a" />
-<rect x="1323" y="544" width="1" height="4" fill="#b0742f" />
+<g data-source-id="F-DC-BANK-BOTTOM:F-DC-B-DN-7:dense-clean" data-semantic="workarea:collection:clean">
+<rect x="1320" y="546" width="6" height="5" fill="#16202c" />
+<rect x="1321" y="547" width="4" height="3" fill="#e8e2d0" />
+<rect x="1326" y="548" width="2" height="2" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:spine" data-semantic="desk:spine">
@@ -7414,6 +7444,12 @@
 <rect x="1303" y="516" width="3" height="48" fill="#16202c" />
 <rect x="1304" y="517" width="1" height="46" fill="#2f7580" />
 <rect x="1304" y="517" width="1" height="1" fill="#56a7ac" opacity="0.85" />
+</g>
+<g data-source-id="F-DC-BANK-BOTTOM:cable-tray" data-semantic="workarea:cable-tray">
+<rect x="911" y="559" width="519" height="3" fill="#16202c" opacity="0.9" />
+<rect x="912" y="560" width="517" height="1" fill="#5f6a72" />
+<rect x="1067" y="559" width="2" height="3" fill="#d5dde2" opacity="0.7" />
+<rect x="1274" y="559" width="2" height="3" fill="#d5dde2" opacity="0.7" />
 </g>
 <g data-source-id="F-DC-BANK-BOTTOM:depth" data-semantic="furniture:depth">
 <rect x="907" y="566" width="527" height="2" fill="#1b2531" opacity="0.3" />
@@ -9689,12 +9725,13 @@
 <rect x="1549" y="364" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R1:prop" data-semantic="workstation:prop">
-<rect x="1534" y="332" width="7" height="2" fill="#16202c" />
-<rect x="1535" y="332" width="5" height="1" fill="#3f6f8f" />
-<rect x="1535" y="334" width="6" height="2" fill="#16202c" />
-<rect x="1536" y="334" width="4" height="1" fill="#7a5f9f" />
-<rect x="1536" y="336" width="5" height="2" fill="#16202c" />
-<rect x="1537" y="336" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-R1:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1535" y="333" width="6" height="2" fill="#16202c" />
+<rect x="1534" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1540" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1538" y="336" width="4" height="2" fill="#16202c" />
+<rect x="1539" y="336" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-R2@east" data-semantic="workstation:kit">
@@ -9726,11 +9763,12 @@
 <rect x="1549" y="405" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R2:prop" data-semantic="workstation:prop">
+<g data-source-id="F-TC-BANK-L:F-TC-L-R2:dense-ticket" data-semantic="workarea:tele:ticket">
 <rect x="1534" y="373" width="8" height="6" fill="#16202c" />
-<rect x="1535" y="374" width="6" height="4" fill="#efe6d0" />
-<rect x="1536" y="375" width="4" height="1" fill="#c3ac7c" />
-<rect x="1536" y="377" width="3" height="1" fill="#c3ac7c" />
-<rect x="1535" y="374" width="6" height="1" fill="#d8ccae" />
+<rect x="1535" y="374" width="6" height="4" fill="#f7f0dc" />
+<rect x="1536" y="376" width="4" height="1" fill="#c3ac7c" />
+<rect x="1536" y="378" width="3" height="1" fill="#c05a48" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-R3@east" data-semantic="workstation:kit">
@@ -9761,12 +9799,13 @@
 <rect x="1549" y="446" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R3:prop" data-semantic="workstation:prop">
-<rect x="1534" y="419" width="8" height="3" fill="#8a4a33" />
-<rect x="1535" y="419" width="6" height="2" fill="#b9694a" />
-<rect x="1535" y="419" width="6" height="1" fill="#d68a66" />
-<rect x="1535" y="415" width="6" height="4" fill="#356b31" />
-<rect x="1536" y="414" width="4" height="3" fill="#5f9a56" />
-<rect x="1537" y="414" width="2" height="3" fill="#8cc47a" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-R3:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1535" y="416" width="6" height="2" fill="#16202c" />
+<rect x="1534" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1540" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1538" y="419" width="4" height="2" fill="#16202c" />
+<rect x="1539" y="419" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-R4@east" data-semantic="workstation:kit">
@@ -9798,12 +9837,12 @@
 <rect x="1549" y="488" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R4:prop" data-semantic="workstation:prop">
-<rect x="1534" y="456" width="7" height="2" fill="#16202c" />
-<rect x="1535" y="456" width="5" height="1" fill="#3f6f8f" />
-<rect x="1535" y="458" width="6" height="2" fill="#16202c" />
-<rect x="1536" y="458" width="4" height="1" fill="#7a5f9f" />
-<rect x="1536" y="460" width="5" height="2" fill="#16202c" />
-<rect x="1537" y="460" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-R4:dense-status" data-semantic="workarea:tele:status">
+<rect x="1534" y="457" width="8" height="4" fill="#16202c" />
+<rect x="1535" y="458" width="2" height="2" fill="#79b566" />
+<rect x="1538" y="458" width="2" height="2" fill="#c05a48" />
+<rect x="1536" y="458" width="4" height="1" fill="#d5dde2" opacity="0.75" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-R5@east" data-semantic="workstation:kit">
@@ -9834,11 +9873,13 @@
 <rect x="1549" y="530" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R5:prop" data-semantic="workstation:prop">
-<rect x="1534" y="500" width="8" height="5" fill="#16202c" />
-<rect x="1535" y="501" width="6" height="3" fill="#4a6d8c" />
-<rect x="1535" y="501" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1536" y="497" width="1" height="4" fill="#e0b64a" />
-<rect x="1538" y="497" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-R5:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1535" y="499" width="6" height="2" fill="#16202c" />
+<rect x="1534" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1540" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1538" y="502" width="4" height="2" fill="#16202c" />
+<rect x="1539" y="502" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-R6@east" data-semantic="workstation:kit">
@@ -9870,12 +9911,11 @@
 <rect x="1549" y="570" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-R6:prop" data-semantic="workstation:prop">
-<rect x="1534" y="543" width="8" height="3" fill="#8a4a33" />
-<rect x="1535" y="543" width="6" height="2" fill="#b9694a" />
-<rect x="1535" y="543" width="6" height="1" fill="#d68a66" />
-<rect x="1535" y="539" width="6" height="4" fill="#356b31" />
-<rect x="1536" y="538" width="4" height="3" fill="#5f9a56" />
-<rect x="1537" y="538" width="2" height="3" fill="#8cc47a" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-R6:dense-clean" data-semantic="workarea:tele:clean">
+<rect x="1535" y="540" width="5" height="4" fill="#16202c" />
+<rect x="1536" y="541" width="3" height="2" fill="#e8e2d0" />
+<rect x="1540" y="542" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L1@west" data-semantic="workstation:kit">
@@ -9906,11 +9946,13 @@
 <rect x="1509" y="358" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L1:prop" data-semantic="workstation:prop">
-<rect x="1518" y="338" width="8" height="5" fill="#16202c" />
-<rect x="1519" y="339" width="6" height="3" fill="#4a6d8c" />
-<rect x="1519" y="339" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1520" y="335" width="1" height="4" fill="#e0b64a" />
-<rect x="1522" y="335" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-L1:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1519" y="337" width="6" height="2" fill="#16202c" />
+<rect x="1518" y="338" width="2" height="3" fill="#3b4652" />
+<rect x="1524" y="338" width="2" height="3" fill="#3b4652" />
+<rect x="1522" y="340" width="4" height="2" fill="#16202c" />
+<rect x="1523" y="340" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L2@west" data-semantic="workstation:kit">
@@ -9942,11 +9984,12 @@
 <rect x="1509" y="400" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L2:prop" data-semantic="workstation:prop">
+<g data-source-id="F-TC-BANK-L:F-TC-L-L2:dense-ticket" data-semantic="workarea:tele:ticket">
 <rect x="1518" y="377" width="8" height="6" fill="#16202c" />
-<rect x="1519" y="378" width="6" height="4" fill="#efe6d0" />
-<rect x="1520" y="379" width="4" height="1" fill="#c3ac7c" />
-<rect x="1520" y="381" width="3" height="1" fill="#c3ac7c" />
-<rect x="1519" y="378" width="6" height="1" fill="#d8ccae" />
+<rect x="1519" y="378" width="6" height="4" fill="#f7f0dc" />
+<rect x="1520" y="380" width="4" height="1" fill="#c3ac7c" />
+<rect x="1520" y="382" width="3" height="1" fill="#c05a48" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-DC-T-DN-8@west" data-semantic="workstation:kit">
@@ -9977,12 +10020,13 @@
 <rect x="1509" y="432" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-DC-T-DN-8:prop" data-semantic="workstation:prop">
-<rect x="1518" y="410" width="7" height="2" fill="#16202c" />
-<rect x="1519" y="410" width="5" height="1" fill="#a8503f" />
-<rect x="1519" y="412" width="6" height="2" fill="#16202c" />
-<rect x="1520" y="412" width="4" height="1" fill="#3f6f8f" />
-<rect x="1520" y="414" width="5" height="2" fill="#16202c" />
-<rect x="1521" y="414" width="3" height="1" fill="#a8503f" />
+<g data-source-id="F-TC-BANK-L:F-DC-T-DN-8:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1519" y="411" width="6" height="2" fill="#16202c" />
+<rect x="1518" y="412" width="2" height="3" fill="#3b4652" />
+<rect x="1524" y="412" width="2" height="3" fill="#3b4652" />
+<rect x="1522" y="414" width="4" height="2" fill="#16202c" />
+<rect x="1523" y="414" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L3@west" data-semantic="workstation:kit">
@@ -10013,12 +10057,12 @@
 <rect x="1509" y="441" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L3:prop" data-semantic="workstation:prop">
-<rect x="1518" y="423" width="8" height="3" fill="#8a4a33" />
-<rect x="1519" y="423" width="6" height="2" fill="#b9694a" />
-<rect x="1519" y="423" width="6" height="1" fill="#d68a66" />
-<rect x="1519" y="419" width="6" height="4" fill="#356b31" />
-<rect x="1520" y="418" width="4" height="3" fill="#4f8f43" />
-<rect x="1521" y="418" width="2" height="3" fill="#79b566" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-L3:dense-status" data-semantic="workarea:tele:status">
+<rect x="1518" y="420" width="8" height="4" fill="#16202c" />
+<rect x="1519" y="421" width="2" height="2" fill="#79b566" />
+<rect x="1522" y="421" width="2" height="2" fill="#c05a48" />
+<rect x="1520" y="421" width="4" height="1" fill="#d5dde2" opacity="0.75" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L4@west" data-semantic="workstation:kit">
@@ -10050,11 +10094,13 @@
 <rect x="1509" y="483" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L4:prop" data-semantic="workstation:prop">
-<rect x="1518" y="460" width="8" height="8" fill="#16202c" />
-<rect x="1519" y="461" width="5" height="6" fill="#e8e2d0" />
-<rect x="1519" y="461" width="5" height="1" fill="#fbf7ec" />
-<rect x="1524" y="462" width="2" height="4" fill="#e8e2d0" />
-<rect x="1519" y="464" width="5" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-L4:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1519" y="462" width="6" height="2" fill="#16202c" />
+<rect x="1518" y="463" width="2" height="3" fill="#3b4652" />
+<rect x="1524" y="463" width="2" height="3" fill="#3b4652" />
+<rect x="1522" y="465" width="4" height="2" fill="#16202c" />
+<rect x="1523" y="465" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-DC-B-UP-8@west" data-semantic="workstation:kit">
@@ -10086,11 +10132,11 @@
 <rect x="1509" y="507" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-DC-B-UP-8:prop" data-semantic="workstation:prop">
-<rect x="1518" y="484" width="8" height="8" fill="#16202c" />
-<rect x="1519" y="485" width="5" height="6" fill="#e8e2d0" />
-<rect x="1519" y="485" width="5" height="1" fill="#fbf7ec" />
-<rect x="1524" y="486" width="2" height="4" fill="#e8e2d0" />
-<rect x="1519" y="488" width="5" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-TC-BANK-L:F-DC-B-UP-8:dense-clean" data-semantic="workarea:tele:clean">
+<rect x="1519" y="486" width="5" height="4" fill="#16202c" />
+<rect x="1520" y="487" width="3" height="2" fill="#e8e2d0" />
+<rect x="1524" y="488" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L5@west" data-semantic="workstation:kit">
@@ -10121,12 +10167,13 @@
 <rect x="1509" y="525" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L5:prop" data-semantic="workstation:prop">
-<rect x="1518" y="502" width="7" height="2" fill="#16202c" />
-<rect x="1519" y="502" width="5" height="1" fill="#3f6f8f" />
-<rect x="1519" y="504" width="6" height="2" fill="#16202c" />
-<rect x="1520" y="504" width="4" height="1" fill="#7a5f9f" />
-<rect x="1520" y="506" width="5" height="2" fill="#16202c" />
-<rect x="1521" y="506" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-L5:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1519" y="503" width="6" height="2" fill="#16202c" />
+<rect x="1518" y="504" width="2" height="3" fill="#3b4652" />
+<rect x="1524" y="504" width="2" height="3" fill="#3b4652" />
+<rect x="1522" y="506" width="4" height="2" fill="#16202c" />
+<rect x="1523" y="506" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-TC-L-L6@west" data-semantic="workstation:kit">
@@ -10158,11 +10205,12 @@
 <rect x="1509" y="566" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-TC-L-L6:prop" data-semantic="workstation:prop">
-<rect x="1518" y="546" width="8" height="5" fill="#16202c" />
-<rect x="1519" y="547" width="6" height="3" fill="#4a6d8c" />
-<rect x="1519" y="547" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1520" y="543" width="1" height="4" fill="#e0b64a" />
-<rect x="1522" y="543" width="1" height="3" fill="#b0742f" />
+<g data-source-id="F-TC-BANK-L:F-TC-L-L6:dense-ticket" data-semantic="workarea:tele:ticket">
+<rect x="1518" y="544" width="8" height="6" fill="#16202c" />
+<rect x="1519" y="545" width="6" height="4" fill="#f7f0dc" />
+<rect x="1520" y="547" width="4" height="1" fill="#c3ac7c" />
+<rect x="1520" y="549" width="3" height="1" fill="#c05a48" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L#F-DC-B-DN-8@west" data-semantic="workstation:kit">
@@ -10193,11 +10241,13 @@
 <rect x="1509" y="572" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-L:F-DC-B-DN-8:prop" data-semantic="workstation:prop">
-<rect x="1518" y="550" width="8" height="6" fill="#16202c" />
-<rect x="1519" y="551" width="6" height="4" fill="#f2ecd8" />
-<rect x="1520" y="552" width="4" height="1" fill="#c3ac7c" />
-<rect x="1520" y="554" width="3" height="1" fill="#c3ac7c" />
-<rect x="1519" y="551" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-TC-BANK-L:F-DC-B-DN-8:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1519" y="551" width="6" height="2" fill="#16202c" />
+<rect x="1518" y="552" width="2" height="3" fill="#3b4652" />
+<rect x="1524" y="552" width="2" height="3" fill="#3b4652" />
+<rect x="1522" y="554" width="4" height="2" fill="#16202c" />
+<rect x="1523" y="554" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-L:spine" data-semantic="desk:spine">
@@ -10238,6 +10288,12 @@
 <rect x="1507" y="557" width="46" height="3" fill="#16202c" />
 <rect x="1508" y="558" width="44" height="1" fill="#376f9c" />
 <rect x="1508" y="558" width="1" height="1" fill="#63a3c8" opacity="0.85" />
+</g>
+<g data-source-id="F-TC-BANK-L:cable-tray" data-semantic="workarea:cable-tray">
+<rect x="1548" y="332" width="3" height="238" fill="#16202c" opacity="0.9" />
+<rect x="1549" y="333" width="1" height="236" fill="#5f6a72" />
+<rect x="1548" y="403" width="3" height="2" fill="#d5dde2" opacity="0.7" />
+<rect x="1548" y="499" width="3" height="2" fill="#d5dde2" opacity="0.7" />
 </g>
 <g data-source-id="F-TC-BANK-L:depth" data-semantic="furniture:depth">
 <rect x="1507" y="576" width="46" height="2" fill="#1b2531" opacity="0.3" />
@@ -10309,11 +10365,13 @@
 <rect x="1774" y="364" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R1:prop" data-semantic="workstation:prop">
-<rect x="1759" y="331" width="8" height="8" fill="#16202c" />
-<rect x="1760" y="332" width="5" height="6" fill="#e8e2d0" />
-<rect x="1760" y="332" width="5" height="1" fill="#fbf7ec" />
-<rect x="1765" y="333" width="2" height="4" fill="#e8e2d0" />
-<rect x="1760" y="335" width="5" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R1:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1760" y="333" width="6" height="2" fill="#16202c" />
+<rect x="1759" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1765" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1763" y="336" width="4" height="2" fill="#16202c" />
+<rect x="1764" y="336" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-R2@east" data-semantic="workstation:kit">
@@ -10345,11 +10403,12 @@
 <rect x="1774" y="405" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R2:prop" data-semantic="workstation:prop">
-<rect x="1759" y="375" width="8" height="5" fill="#16202c" />
-<rect x="1760" y="376" width="6" height="3" fill="#4a6d8c" />
-<rect x="1760" y="376" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1761" y="372" width="1" height="4" fill="#e0b64a" />
-<rect x="1763" y="372" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R2:dense-ticket" data-semantic="workarea:tele:ticket">
+<rect x="1759" y="373" width="8" height="6" fill="#16202c" />
+<rect x="1760" y="374" width="6" height="4" fill="#f7f0dc" />
+<rect x="1761" y="376" width="4" height="1" fill="#c3ac7c" />
+<rect x="1761" y="378" width="3" height="1" fill="#c05a48" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-R3@east" data-semantic="workstation:kit">
@@ -10380,11 +10439,13 @@
 <rect x="1774" y="446" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R3:prop" data-semantic="workstation:prop">
-<rect x="1759" y="415" width="8" height="6" fill="#16202c" />
-<rect x="1760" y="416" width="6" height="4" fill="#efe6d0" />
-<rect x="1761" y="417" width="4" height="1" fill="#c3ac7c" />
-<rect x="1761" y="419" width="3" height="1" fill="#c3ac7c" />
-<rect x="1760" y="416" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R3:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1760" y="416" width="6" height="2" fill="#16202c" />
+<rect x="1759" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1765" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1763" y="419" width="4" height="2" fill="#16202c" />
+<rect x="1764" y="419" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-R4@east" data-semantic="workstation:kit">
@@ -10416,11 +10477,12 @@
 <rect x="1774" y="488" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R4:prop" data-semantic="workstation:prop">
-<rect x="1759" y="456" width="8" height="6" fill="#16202c" />
-<rect x="1760" y="457" width="6" height="4" fill="#f2ecd8" />
-<rect x="1761" y="458" width="4" height="1" fill="#c3ac7c" />
-<rect x="1761" y="460" width="3" height="1" fill="#c3ac7c" />
-<rect x="1760" y="457" width="6" height="1" fill="#d8ccae" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R4:dense-status" data-semantic="workarea:tele:status">
+<rect x="1759" y="457" width="8" height="4" fill="#16202c" />
+<rect x="1760" y="458" width="2" height="2" fill="#79b566" />
+<rect x="1763" y="458" width="2" height="2" fill="#c05a48" />
+<rect x="1761" y="458" width="4" height="1" fill="#d5dde2" opacity="0.75" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-R5@east" data-semantic="workstation:kit">
@@ -10451,12 +10513,13 @@
 <rect x="1774" y="530" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R5:prop" data-semantic="workstation:prop">
-<rect x="1759" y="502" width="8" height="3" fill="#8a4a33" />
-<rect x="1760" y="502" width="6" height="2" fill="#b9694a" />
-<rect x="1760" y="502" width="6" height="1" fill="#d68a66" />
-<rect x="1760" y="498" width="6" height="4" fill="#356b31" />
-<rect x="1761" y="497" width="4" height="3" fill="#4f8f43" />
-<rect x="1762" y="497" width="2" height="3" fill="#79b566" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R5:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1760" y="499" width="6" height="2" fill="#16202c" />
+<rect x="1759" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1765" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1763" y="502" width="4" height="2" fill="#16202c" />
+<rect x="1764" y="502" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-R6@east" data-semantic="workstation:kit">
@@ -10488,12 +10551,11 @@
 <rect x="1774" y="570" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-R6:prop" data-semantic="workstation:prop">
-<rect x="1759" y="539" width="7" height="2" fill="#16202c" />
-<rect x="1760" y="539" width="5" height="1" fill="#3f6f8f" />
-<rect x="1760" y="541" width="6" height="2" fill="#16202c" />
-<rect x="1761" y="541" width="4" height="1" fill="#7a5f9f" />
-<rect x="1761" y="543" width="5" height="2" fill="#16202c" />
-<rect x="1762" y="543" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-R6:dense-clean" data-semantic="workarea:tele:clean">
+<rect x="1760" y="540" width="5" height="4" fill="#16202c" />
+<rect x="1761" y="541" width="3" height="2" fill="#e8e2d0" />
+<rect x="1765" y="542" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L1@west" data-semantic="workstation:kit">
@@ -10524,11 +10586,13 @@
 <rect x="1734" y="364" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L1:prop" data-semantic="workstation:prop">
-<rect x="1743" y="331" width="8" height="8" fill="#16202c" />
-<rect x="1744" y="332" width="5" height="6" fill="#e8e2d0" />
-<rect x="1744" y="332" width="5" height="1" fill="#fbf7ec" />
-<rect x="1749" y="333" width="2" height="4" fill="#e8e2d0" />
-<rect x="1744" y="335" width="5" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L1:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1744" y="333" width="6" height="2" fill="#16202c" />
+<rect x="1743" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1749" y="334" width="2" height="3" fill="#3b4652" />
+<rect x="1747" y="336" width="4" height="2" fill="#16202c" />
+<rect x="1748" y="336" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L2@west" data-semantic="workstation:kit">
@@ -10560,12 +10624,12 @@
 <rect x="1734" y="405" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L2:prop" data-semantic="workstation:prop">
-<rect x="1743" y="373" width="7" height="2" fill="#16202c" />
-<rect x="1744" y="373" width="5" height="1" fill="#3f6f8f" />
-<rect x="1744" y="375" width="6" height="2" fill="#16202c" />
-<rect x="1745" y="375" width="4" height="1" fill="#7a5f9f" />
-<rect x="1745" y="377" width="5" height="2" fill="#16202c" />
-<rect x="1746" y="377" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L2:dense-ticket" data-semantic="workarea:tele:ticket">
+<rect x="1743" y="373" width="8" height="6" fill="#16202c" />
+<rect x="1744" y="374" width="6" height="4" fill="#f7f0dc" />
+<rect x="1745" y="376" width="4" height="1" fill="#c3ac7c" />
+<rect x="1745" y="378" width="3" height="1" fill="#c05a48" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L3@west" data-semantic="workstation:kit">
@@ -10596,11 +10660,13 @@
 <rect x="1734" y="446" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L3:prop" data-semantic="workstation:prop">
-<rect x="1743" y="417" width="8" height="5" fill="#16202c" />
-<rect x="1744" y="418" width="6" height="3" fill="#4a6d8c" />
-<rect x="1744" y="418" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1745" y="414" width="1" height="4" fill="#e0b64a" />
-<rect x="1747" y="414" width="1" height="3" fill="#b0742f" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L3:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1744" y="416" width="6" height="2" fill="#16202c" />
+<rect x="1743" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1749" y="417" width="2" height="3" fill="#3b4652" />
+<rect x="1747" y="419" width="4" height="2" fill="#16202c" />
+<rect x="1748" y="419" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L4@west" data-semantic="workstation:kit">
@@ -10632,11 +10698,12 @@
 <rect x="1734" y="488" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L4:prop" data-semantic="workstation:prop">
-<rect x="1743" y="455" width="8" height="8" fill="#16202c" />
-<rect x="1744" y="456" width="5" height="6" fill="#e8e2d0" />
-<rect x="1744" y="456" width="5" height="1" fill="#fbf7ec" />
-<rect x="1749" y="457" width="2" height="4" fill="#e8e2d0" />
-<rect x="1744" y="459" width="5" height="1" fill="#b0742f" opacity="0.8" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L4:dense-status" data-semantic="workarea:tele:status">
+<rect x="1743" y="457" width="8" height="4" fill="#16202c" />
+<rect x="1744" y="458" width="2" height="2" fill="#79b566" />
+<rect x="1747" y="458" width="2" height="2" fill="#c05a48" />
+<rect x="1745" y="458" width="4" height="1" fill="#d5dde2" opacity="0.75" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L5@west" data-semantic="workstation:kit">
@@ -10667,12 +10734,13 @@
 <rect x="1734" y="530" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L5:prop" data-semantic="workstation:prop">
-<rect x="1743" y="498" width="7" height="2" fill="#16202c" />
-<rect x="1744" y="498" width="5" height="1" fill="#3f6f8f" />
-<rect x="1744" y="500" width="6" height="2" fill="#16202c" />
-<rect x="1745" y="500" width="4" height="1" fill="#7a5f9f" />
-<rect x="1745" y="502" width="5" height="2" fill="#16202c" />
-<rect x="1746" y="502" width="3" height="1" fill="#3f6f8f" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L5:dense-headset" data-semantic="workarea:tele:headset">
+<rect x="1744" y="499" width="6" height="2" fill="#16202c" />
+<rect x="1743" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1749" y="500" width="2" height="3" fill="#3b4652" />
+<rect x="1747" y="502" width="4" height="2" fill="#16202c" />
+<rect x="1748" y="502" width="2" height="1" fill="#d5dde2" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R#F-TC-R-L6@west" data-semantic="workstation:kit">
@@ -10704,11 +10772,11 @@
 <rect x="1734" y="570" width="2" height="1" fill="#d5dde2" />
 </g>
 <g data-source-id="F-TC-BANK-R:F-TC-R-L6:prop" data-semantic="workstation:prop">
-<rect x="1743" y="541" width="8" height="5" fill="#16202c" />
-<rect x="1744" y="542" width="6" height="3" fill="#4a6d8c" />
-<rect x="1744" y="542" width="6" height="1" fill="#d5dde2" opacity="0.7" />
-<rect x="1745" y="538" width="1" height="4" fill="#e0b64a" />
-<rect x="1747" y="538" width="1" height="3" fill="#c05a48" />
+<g data-source-id="F-TC-BANK-R:F-TC-R-L6:dense-clean" data-semantic="workarea:tele:clean">
+<rect x="1744" y="540" width="5" height="4" fill="#16202c" />
+<rect x="1745" y="541" width="3" height="2" fill="#e8e2d0" />
+<rect x="1749" y="542" width="2" height="1" fill="#e8e2d0" />
+</g>
 </g>
 </g>
 <g data-source-id="F-TC-BANK-R:spine" data-semantic="desk:spine">
@@ -10734,6 +10802,12 @@
 <rect x="1732" y="533" width="46" height="3" fill="#16202c" />
 <rect x="1733" y="534" width="44" height="1" fill="#376f9c" />
 <rect x="1733" y="534" width="1" height="1" fill="#63a3c8" opacity="0.85" />
+</g>
+<g data-source-id="F-TC-BANK-R:cable-tray" data-semantic="workarea:cable-tray">
+<rect x="1773" y="332" width="3" height="238" fill="#16202c" opacity="0.9" />
+<rect x="1774" y="333" width="1" height="236" fill="#5f6a72" />
+<rect x="1773" y="403" width="3" height="2" fill="#d5dde2" opacity="0.7" />
+<rect x="1773" y="499" width="3" height="2" fill="#d5dde2" opacity="0.7" />
 </g>
 <g data-source-id="F-TC-BANK-R:depth" data-semantic="furniture:depth">
 <rect x="1732" y="576" width="46" height="2" fill="#1b2531" opacity="0.3" />
