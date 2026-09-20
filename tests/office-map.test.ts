@@ -351,7 +351,7 @@ void test('the certificate table has its own hotspot distinct from the board', (
   assert.deepEqual(cert?.rect, certFurniture!.rect);
 });
 
-void test('the v4 west lane stays clear for the real 18-wide actor and the board/side chairs are non-solid', () => {
+void test('the west lane stays solid-free and corrected side chairs remain non-solid outside the banks', () => {
   const wall = officeMap.walls.find((entry) => entry.id === 'w-m2-east')!;
   const wallFace = wall.rect.x + wall.rect.w;
   const bankLeft = Math.min(officeMap.furniture.find((item) => item.id === 'F-DC-BANK-TOP')!.rect.x, officeMap.furniture.find((item) => item.id === 'F-DC-BANK-BOTTOM')!.rect.x);
@@ -366,7 +366,11 @@ void test('the v4 west lane stays clear for the real 18-wide actor and the board
   for (const id of ['F-DC-T-SIDE', 'F-DC-B-SIDE']) {
     const chair = officeMap.furniture.find((item) => item.id === id)!;
     assert.equal(chair.solid, false);
-    assert.ok(chair.rect.x >= bankLeft - 1e-6, `${id} sits at/after the bank left edge`);
+    assert.ok(chair.rect.x < bankLeft, `${id} sits left of the bank`);
+    for (const deskId of ['F-DC-BANK-TOP', 'F-DC-BANK-BOTTOM']) {
+      const desk = officeMap.furniture.find((item) => item.id === deskId)!;
+      assert.equal(intersectRect(chair.rect, desk.rect), null, `${id} clears ${deskId}`);
+    }
   }
 });
 

@@ -51,7 +51,7 @@ const MIN_LAYERED_OPS: Record<FurnitureKind, number> = {
 };
 
 // The exact asset that must not drift during an art-only pass.
-const MAP_SHA256 = '0eeec47926eef3f099292c8de2b52266a576683c410727d8f387a602092153c5';
+const MAP_SHA256 = '7a8d6ed0b055eb6c1c7913d24ab242756ae1ee4e2590599118d6f87958faebb7';
 
 function topGroups(ops: readonly Op[]): GroupOp[] {
   return ops.filter((op): op is GroupOp => op.t === 'group');

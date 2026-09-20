@@ -381,6 +381,15 @@ function buildFurniture(sources: Sources): Furniture[] {
   const fromV1 = sources.furniture.furniture.filter((item) => !supersededV1Rooms.has(item.room));
   const all = [...fromV1, ...sources.pantry.furniture, ...sources.workareas.furniture];
   const furniture = all.map(toFurniture);
+  // User correction superseding the v4 overlap compromise: keep each side
+  // chair left of (and aligned with) its bank's first upper-row chair instead
+  // of painting it entirely inside the solid desk footprint.
+  for (const [sideId, rowId] of [['F-DC-T-SIDE', 'F-DC-T-UP-1'], ['F-DC-B-SIDE', 'F-DC-B-UP-1']] as const) {
+    const side = furniture.find((item) => item.id === sideId);
+    const row = furniture.find((item) => item.id === rowId);
+    if (!side || !row) throw new Error(`missing Desk Collection correction pair ${sideId}/${rowId}`);
+    side.rect = { ...side.rect, x: round2(row.rect.x - side.rect.w - 5), y: row.rect.y };
+  }
   // User-corrected pantry inventory: one compact stool directly south/front of
   // the pantry counter. It is seating, not a blocker or interaction seat.
   furniture.push({

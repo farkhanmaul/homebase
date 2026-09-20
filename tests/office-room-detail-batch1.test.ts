@@ -145,7 +145,7 @@ void test('Batch 1 output is deterministic, clean, within budget, and preserves 
   assert.ok(flattenOps(first).length <= 12_000, `painted op total ${flattenOps(first).length} stays within budget`);
   assert.equal(flattenOps(first).filter((op) => op.t === 'text').length, 0, 'no text/debug label is added');
   const hashes: Readonly<Record<string, string>> = {
-    'lib/office-map.json': '0eeec47926eef3f099292c8de2b52266a576683c410727d8f387a602092153c5',
+    'lib/office-map.json': '7a8d6ed0b055eb6c1c7913d24ab242756ae1ee4e2590599118d6f87958faebb7',
     'public/room/bilik-geng-v4.png': '8c553abc4058f76e1328f9d3ad9c0b24a07ab68108bc25ed0554da717beb178e',
     'public/room/bilik-geng-zone.png': '1df4c17ab39648dd34ec89994ea74438d99d7c36a52172d699b122282eeb9547',
   };
