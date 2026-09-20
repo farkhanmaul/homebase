@@ -2,6 +2,8 @@
 
 Prototipe interaktif ruang virtual pixel-art untuk geng kantor kecil. Fokus versi ini: ruangan, enam avatar tetap, status, perpindahan spot, chat lokal, dan tampilan responsif.
 
+> **Dokumentasi lengkap:** lihat [`docs/PROJECT.md`](docs/PROJECT.md) — arsitektur, runtime game, rilis V2, deployment Pages, backend/API, konvensi, dan backlog.
+
 ## Menjalankan lokal
 
 ```bash
