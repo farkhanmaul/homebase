@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = readFileSync(resolve(ROOT, 'vite.pages.config.ts'), 'utf8');
+const GLOBAL_CSS = readFileSync(resolve(ROOT, 'app/globals.css'), 'utf8');
 const RUNTIME_FILES = [
   '.nojekyll',
   'robots.txt',
@@ -28,4 +29,9 @@ void test('Pages runtime allowlist excludes source and legacy preview assets', (
   for (const forbidden of ['team-six-source.png', 'bilik-geng-v4.png', 'office-pixel.png', 'office-idle-sheet.png']) {
     assert.doesNotMatch(CONFIG, new RegExp(forbidden.replace(/[./-]/g, '\\$&')));
   }
+});
+
+void test('production CSS has no root-relative avatar URLs outside the Pages base path', () => {
+  assert.doesNotMatch(GLOBAL_CSS, /url\(['"]\/avatar\//);
+  assert.doesNotMatch(GLOBAL_CSS, /office-idle-sheet-960\.png/);
 });
