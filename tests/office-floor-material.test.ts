@@ -104,7 +104,7 @@ void test('front-of-house and toilet/wet are the only building-carpet exceptions
 void test('manifest surface kinds and geometry stay byte-for-byte equivalent', () => {
   assert.deepEqual(officeMap.surfaces, EXPECTED_SURFACES);
   const bytes = readFileSync(resolve(ROOT, 'lib', 'office-map.json'));
-  assert.equal(createHash('sha256').update(bytes).digest('hex'), '28f553ed62365bba858a4e69a1da317d46ebaff4e43a724936e7952a54db90d9');
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), '0eeec47926eef3f099292c8de2b52266a576683c410727d8f387a602092153c5');
 });
 
 void test('Bilik source and generated zone raster stay byte-identical', () => {

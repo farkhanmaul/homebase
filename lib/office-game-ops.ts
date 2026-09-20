@@ -21,7 +21,7 @@
 // and deterministic, so the canvas and the standalone preview are identical.
 
 import { BILIK_GENG_ZONE_ID, type Furniture, type FurnitureKind, type OfficeManifest, type Opening, type Rect, type Wall, type WindowRect } from './office-map.ts';
-import { type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
+import { flattenOps, type GroupOp, type Op, type PaintedOp, type PreviewOps, type RectOp } from './office-render-ops.ts';
 
 // The raster art underlay for the Bilik Geng Kami zone. It is painted as one
 // image op over the zone's own vector art, at the exact approved zone rect; the
@@ -2306,10 +2306,8 @@ function wallArtOps(r: Rect, kind: 'clock' | 'art'): PaintedOp[] {
   return ops;
 }
 
-// The wastafel alcove is a real, walkable service nook but carries no approved
-// furniture item, so its basin is painted as zone-derived detail rather than an
-// invented collider: a tiled sill, a rimmed bowl with a tap and a couple of cups,
-// all derived from and contained by the approved zone rect.
+// Wastafel is an open wall fixture, not a separate room: its north side remains
+// open while a compact mirror and basin sit against the south/bottom wall.
 export function serviceNookOps(manifest: OfficeManifest): Op[] {
   const F = GAME_PALETTE;
   const zone = manifest.zones.find((entry) => entry.id === 'wastafel');
@@ -2318,20 +2316,56 @@ export function serviceNookOps(manifest: OfficeManifest): Op[] {
   const inner = inset(r, 3);
   if (inner.w < 24 || inner.h < 16) return [];
   const ops: Op[] = [];
-  ops.push(rectOp(inner.x, inner.y, inner.w, 1, F.serviceHi, 0.7));
-  const basin = { x: inner.x + 2, y: inner.y + Math.round(inner.h * 0.35), w: Math.max(8, inner.w - 4), h: Math.max(6, Math.round(inner.h * 0.5)) };
+  const mirror = { x: inner.x + 8, y: inner.y + inner.h - 7, w: Math.max(20, inner.w - 16), h: 7 };
+  ops.push(rectOp(mirror.x, mirror.y, mirror.w, mirror.h, F.ink));
+  ops.push(rectOp(mirror.x + 1, mirror.y + 1, mirror.w - 2, mirror.h - 2, F.windowGlass));
+  ops.push(rectOp(mirror.x + 2, mirror.y + 2, Math.max(2, mirror.w - 8), 1, F.windowGlassHi, 0.75));
+  const basin = { x: inner.x + Math.round((inner.w - 24) / 2), y: mirror.y - 9, w: 24, h: 8 };
   ops.push(rectOp(basin.x, basin.y, basin.w, basin.h, F.ink));
   ops.push(rectOp(basin.x + 1, basin.y + 1, Math.max(1, basin.w - 2), Math.max(1, basin.h - 2), F.sinkRim));
   ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), Math.max(1, basin.h - 4), F.sinkBasin));
   ops.push(rectOp(basin.x + 2, basin.y + 2, Math.max(1, basin.w - 4), 1, F.metalHi, 0.6));
-  ops.push(rectOp(basin.x + 3, basin.y + 3, Math.max(1, basin.w - 8), Math.max(1, basin.h - 6), F.sinkWater, 0.4));
+  ops.push(rectOp(basin.x + 3, basin.y + 3, Math.max(1, basin.w - 6), Math.max(1, basin.h - 5), F.sinkWater, 0.4));
   const tapX = basin.x + Math.round(basin.w / 2) - 1;
   ops.push(rectOp(tapX, basin.y - 3, 2, 4, F.sinkTap));
   ops.push(rectOp(tapX - 3, basin.y - 3, 8, 2, F.sinkTap));
   ops.push(rectOp(tapX - 2, basin.y - 1, 6, 1, F.metalHi, 0.6));
-  ops.push(rectOp(inner.x + inner.w - 6, inner.y + 2, 4, 5, F.ink));
-  ops.push(rectOp(inner.x + inner.w - 5, inner.y + 3, 2, 3, F.cup));
   return ops;
+}
+
+/** Two visual-only toilet fixtures; locked-room collision remains authoritative. */
+export function toiletFixtureGroups(manifest: OfficeManifest): GroupOp[] {
+  const F = GAME_PALETTE;
+  const groups: GroupOp[] = [];
+  for (const zoneId of ['toilet-wanita', 'toilet-pria'] as const) {
+    const zone = manifest.zones.find((entry) => entry.id === zoneId);
+    if (!zone) continue;
+    const r = snap(zone.rect);
+    const centreX = Math.round(r.x + r.w / 2);
+    const tank = { x: centreX - 11, y: r.y + r.h - 10, w: 22, h: 7 };
+    const bowlCentreY = tank.y - 8;
+    const tankOps: Op[] = [
+      rectOp(tank.x, tank.y, tank.w, tank.h, F.ink),
+      rectOp(tank.x + 1, tank.y + 1, tank.w - 2, tank.h - 2, F.sinkRim),
+      rectOp(tank.x + 2, tank.y + 1, tank.w - 4, 1, F.metalHi, 0.8),
+    ];
+    const bowlOps: Op[] = [
+      circleOp(centreX, bowlCentreY, 8, F.ink),
+      circleOp(centreX, bowlCentreY, 6, F.sinkRim),
+      circleOp(centreX, bowlCentreY - 1, 4, F.sinkBasin),
+      rectOp(centreX - 5, tank.y - 4, 10, 5, F.sinkRim),
+    ];
+    groups.push({
+      t: 'group',
+      sourceId: `fixture:${zoneId}`,
+      semantic: 'service:toilet-up',
+      ops: [
+        { t: 'group', sourceId: `fixture:${zoneId}:tank`, semantic: 'toilet:tank-bottom', ops: tankOps },
+        { t: 'group', sourceId: `fixture:${zoneId}:bowl`, semantic: 'toilet:bowl-up', ops: bowlOps },
+      ],
+    });
+  }
+  return groups;
 }
 
 /**
@@ -2443,6 +2477,9 @@ export function buildGameWorldOps(manifest: OfficeManifest): Op[] {
 
   // Service-nook detail (the wastafel basin) derived from its own zone rect.
   ops.push(...serviceNookOps(manifest));
+  // Fixture groups expose semantic test contracts but runtime receives only
+  // paint ops, so furniture-group cardinality and collision remain untouched.
+  for (const fixture of toiletFixtureGroups(manifest)) ops.push(...flattenOps(fixture.ops));
 
   for (const window of manifest.windows) ops.push(...windowOps(window));
   for (const wall of manifest.walls) ops.push(...wallOps(wall));

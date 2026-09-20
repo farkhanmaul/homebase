@@ -51,7 +51,7 @@ const MIN_LAYERED_OPS: Record<FurnitureKind, number> = {
 };
 
 // The exact asset that must not drift during an art-only pass.
-const MAP_SHA256 = '28f553ed62365bba858a4e69a1da317d46ebaff4e43a724936e7952a54db90d9';
+const MAP_SHA256 = '0eeec47926eef3f099292c8de2b52266a576683c410727d8f387a602092153c5';
 
 function topGroups(ops: readonly Op[]): GroupOp[] {
   return ops.filter((op): op is GroupOp => op.t === 'group');
@@ -404,7 +404,7 @@ void test('plant decorations sit in the zone perimeter, never across a room inte
 });
 
 void test('the decoration pass adds no collider and no manifest furniture', () => {
-  assert.equal(officeMap.furniture.length, 123, 'the approved furniture inventory is untouched');
+  assert.equal(officeMap.furniture.length, 124, 'the approved furniture inventory is untouched');
   assert.equal(officeMap.blocks.length, 17, 'the approved block list is untouched');
   assert.equal(officeMap.blocks.filter((block) => block.kind === 'sealed').length, 8, 'sealed blocks untouched');
   // Decorations are pure paint: nothing about them reaches collision.

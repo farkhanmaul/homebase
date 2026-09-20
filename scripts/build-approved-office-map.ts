@@ -257,7 +257,7 @@ const WALL_SPECS: WallSpec[] = [
   { id: 'w-tw-left', kind: 'full', x1: 468, y1: 424, x2: 468, y2: 501 },
   { id: 'w-tw-top', kind: 'full', x1: 468, y1: 424, x2: 512, y2: 424 },
   { id: 'w-strip-left', kind: 'full', x1: 512, y1: 389, x2: 512, y2: 501 },
-  { id: 'w-wastafel-top', kind: 'full', x1: 512, y1: 476, x2: 554, y2: 476 },
+
   { id: 'w-strip-right', kind: 'full', x1: 554, y1: 415, x2: 554, y2: 501 },
   { id: 'w-tp-top', kind: 'full', x1: 554, y1: 415, x2: 591, y2: 415 },
   { id: 'w-server-left', kind: 'full', x1: 591, y1: 381, x2: 591, y2: 501 },
@@ -381,6 +381,15 @@ function buildFurniture(sources: Sources): Furniture[] {
   const fromV1 = sources.furniture.furniture.filter((item) => !supersededV1Rooms.has(item.room));
   const all = [...fromV1, ...sources.pantry.furniture, ...sources.workareas.furniture];
   const furniture = all.map(toFurniture);
+  // User-corrected pantry inventory: one compact stool directly south/front of
+  // the pantry counter. It is seating, not a blocker or interaction seat.
+  furniture.push({
+    id: 'F-PS-PANTRY-STOOL',
+    kind: 'chair',
+    solid: false,
+    zone: 'pantry',
+    rect: rectOf(415, 357, 435, 375),
+  });
   const seen = new Set<string>();
   for (const item of furniture) {
     if (seen.has(item.id)) throw new Error(`duplicate furniture id from approved sources: ${item.id}`);
@@ -547,7 +556,7 @@ const EXPECTED_COUNTS: Record<string, Partial<Record<FurnitureKind, number>>> = 
   'direktur-finance': { desk: 2, counter: 1, chair: 2 },
   'bilik-geng-kami': { desk: 2, chair: 6, cabinet: 1 },
   resepsionis: { counter: 1, chair: 1, sofa: 4 },
-  pantry: { counter: 1, dispenser: 1, fridge: 1 },
+  pantry: { counter: 1, dispenser: 1, fridge: 1, chair: 1 },
   'meeting-2': { table: 2, chair: 6 },
   sirkulasi: { table: 2, chair: 2 },
   'desk-collection': { desk: 2, chair: 34, board: 1 },

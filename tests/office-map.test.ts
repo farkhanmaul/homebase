@@ -237,7 +237,7 @@ const EXPECTED_INVENTORY: Record<string, Partial<Record<FurnitureKind, number>>>
   'bilik-geng-kami': { desk: 2, chair: 6, cabinet: 1 },
   resepsionis: { counter: 1, chair: 1, sofa: 4 },
   'lorong-utama': { dispenser: 2 },
-  pantry: { counter: 1, dispenser: 1, fridge: 1 },
+  pantry: { counter: 1, dispenser: 1, fridge: 1, chair: 1 },
   'meeting-2': { table: 2, chair: 6 },
   sirkulasi: { table: 2, chair: 2 },
   'desk-collection': { desk: 2, chair: 34, board: 1 },

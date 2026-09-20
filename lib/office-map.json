@@ -539,16 +539,6 @@
       }
     },
     {
-      "id": "w-wastafel-top",
-      "kind": "full",
-      "rect": {
-        "x": 645,
-        "y": 580.63,
-        "w": 52.5,
-        "h": 6.25
-      }
-    },
-    {
       "id": "w-strip-right",
       "kind": "full",
       "rect": {
@@ -2352,6 +2342,18 @@
         "y": 301.25,
         "w": 8.75,
         "h": 52.5
+      }
+    },
+    {
+      "id": "F-PS-PANTRY-STOOL",
+      "kind": "chair",
+      "solid": false,
+      "zone": "pantry",
+      "rect": {
+        "x": 523.75,
+        "y": 435,
+        "w": 25,
+        "h": 22.5
       }
     }
   ],
